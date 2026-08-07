@@ -1,0 +1,6 @@
+# Deny by default: publish only the files required to run the skill.
+*
+!.gitignore
+!orchestrator/
+orchestrator/*
+!orchestrator/SKILL.md
