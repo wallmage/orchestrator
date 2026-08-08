@@ -1,6 +1,10 @@
-# Deny by default: publish only the files required to run the skill.
+# Deny by default: publish the functional skill files only; internal working
+# documents, plans, sync tooling, and tests never leave this machine.
 *
 !.gitignore
+!LICENSE
+!README.md
 !orchestrator/
 orchestrator/*
 !orchestrator/SKILL.md
+!orchestrator/watcher.sh
