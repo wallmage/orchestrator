@@ -1,38 +1,8 @@
 #!/bin/sh
-# CANONICAL WATCHER — §3 Watcher Protocol, implemented to the letter. NEVER write
-# a watcher from memory: instantiate THIS file via Monitor with env vars. Improvements
-# are edited INTO this file (same-turn skill sync) so no lesson can be dropped.
-#
-# Required env: LOG (absolute path to job log)
-# Optional env: JOB (job id), MILESTONE_FILE + MILESTONE_MSG (launch-enabler),
-#               POLL_SECS (60), HEARTBEAT_SECS (300), CPU_PATTERN (pgrep -f pattern, default "codex exec"), CPU_IDLE_MAX (max cputime-seconds per poll that still
-#               counts as idle, default 2), DEDUP_SECS (480), REMOTE_DEDUP_SECS (1800),
-#               PIDFILE (preferred over CPU_PATTERN: file holding the runner PID),
-#               OUTFILE (empty/missing on finish => FINISHED-SUSPECT), MAX_PROCS (8), MAX_RSS_GB (8)
-#
-# Wake category → mechanism map:
-# armed-OK    first event within 5s proves the LOG PATH IS REAL (script-bug killer).
-# DEATH       log vanishes after being seen; absent log => LAUNCH FAILURE at 120s, or vanishes after being seen → immediate.
-# ERROR       failure signature that is STILL UNRESOLVED ONE POLL LATER (still in the
-#             log tail, or new failures accumulated). Self-healed errors are noise.
-# STALL       2 zero-growth polls THEN idle CPU over the next poll (busy CPU with a
-#             quiet log is legitimate LOCAL work, not a stall). Sockets disambiguate
-#             the idle-CPU case: open connection = REMOTE-THINKING (model reasoning
-#             in the data center, no local footprint — alive, long suppression);
-#             zero sockets = true STALL (nothing local, nothing remote). Diagnosis
-#             pre-packaged: cputime delta / open sockets / last line. Dedup ≤1 per
-#             DEDUP_SECS (STALL) / REMOTE_DEDUP_SECS (REMOTE-THINKING).
-# WAITING     waiting-for-input signature at the tail of a FROZEN log, confirmed on
-#             the next poll (a signature mid-scroll is noise).
-# FINISH      ^EXIT=<n>$ only (runner-written, lands after -o is flushed; turn.completed is
-#             too early and an agent message saying "Final output" is NOT a finish). Not success:
-#             refusal/block signatures → FINISHED-SUSPECT if any match.
-# MILESTONE   named file appears → fires once (downstream work can start NOW).
-# RIGHT-WORK  one wake at ~3 min with the last log line so the orchestrator verifies
-#             the job is doing the RIGHT work, not just work.
-# HEARTBEAT   every HEARTBEAT_SECS with byte count — watcher proof-of-life. A missing
-#             heartbeat means the watcher is dead: rebuild NOW. (User pulse rides
-#             every second heartbeat — orchestrator side.)
+# Canonical watcher — instantiate via Monitor with env vars; never hand-write one.
+# Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS
+#      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX DEDUP_SECS REMOTE_DEDUP_SECS MAX_PROCS MAX_RSS_GB
+# Wake semantics documented in SKILL.md §3.
 
 JOB=${JOB:-job}
 POLL=${POLL_SECS:-60}
@@ -74,22 +44,9 @@ cpu_secs() {
   } END { printf "%d", total }'
 }
 
-seen_log=0
-missing_polls=0
-prev_size=-1
-zero_polls=0
-stall_cpu_ref=-1
-last_stall_wake=0
-err_pend=0
-ms_done=0
-rw_done=0
-armed_ts=0
-last_hb=0
-last_res=0
-last_res_wake=0
-last_err_wake=0
-last_wait_wake=0
-wait_pend=0
+seen_log=0; missing_polls=0; prev_size=-1; zero_polls=0; stall_cpu_ref=-1
+last_stall_wake=0; err_pend=0; ms_done=0; rw_done=0; armed_ts=0; last_hb=0
+last_res=0; last_res_wake=0; last_err_wake=0; last_wait_wake=0; wait_pend=0
 
 while true; do
   now=$(date +%s)
@@ -112,9 +69,7 @@ while true; do
     fi
   else
     if [ "$seen_log" = "0" ]; then
-      seen_log=1
-      armed_ts=$now
-      last_hb=$now
+      seen_log=1; armed_ts=$now; last_hb=$now
       echo "ARMED OK [$JOB]: log exists, $(wc -c < "$LOG" | tr -d ' ') bytes"
     fi
 
@@ -134,7 +89,7 @@ while true; do
       wait_pend=0
     fi
 
-    # FINISH first: a terminal event outranks any signature still in the log
+    # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed.
     if grep -qE '^EXIT=[0-9]+\r?$' "$LOG" 2>/dev/null; then
       TAILTXT=$(tail -c 1200 "$LOG" | tr '\n' ' ')
       SUSPECT=""
@@ -153,7 +108,7 @@ while true; do
       exit 0
     fi
 
-    # ERROR — wake only if still unresolved one poll later
+    # ERROR: wake only if still in the tail one poll later; scrolled-out = self-healed noise.
     if grep -qE "$FAIL_SIGS" "$LOG" 2>/dev/null; then
       if [ "$err_pend" = "1" ]; then
         if tail -c 4000 "$LOG" | grep -qE "$FAIL_SIGS"; then
@@ -162,9 +117,9 @@ while true; do
             echo "ERROR [$JOB] (unresolved one poll later): $(grep -aE "$FAIL_SIGS" "$LOG" | tail -1 | cut -c1-300)"
           fi
         fi
-        err_pend=0   # scrolled out of the tail: worker self-healed, noise
+        err_pend=0
       else
-        err_pend=1   # first sighting: note it, wake only if it survives a poll
+        err_pend=1
       fi
     else
       err_pend=0
@@ -193,7 +148,7 @@ while true; do
       rw_done=1
     fi
 
-    # STALL — 2 zero-growth polls, then idle CPU over the next poll confirms it
+    # STALL: 2 zero-growth polls, then idle CPU confirms. Busy CPU = local work; idle + socket = remote reasoning.
     size=$(stat -f %z "$LOG" 2>/dev/null || stat -c %s "$LOG" 2>/dev/null || echo 0)
     if [ "$size" = "$prev_size" ]; then
       zero_polls=$((zero_polls+1))
@@ -205,22 +160,18 @@ while true; do
             last_stall_wake=$now
           fi
         elif [ "$stall_cpu_ref" = "-1" ]; then
-          stall_cpu_ref=$cpu_now   # start CPU observation window
+          stall_cpu_ref=$cpu_now
         else
           delta=$((cpu_now - stall_cpu_ref))
           stall_cpu_ref=$cpu_now
           if [ "$delta" -le "$CPU_IDLE_MAX" ]; then
             socks=$({ [ -n "$PIDS" ] && lsof -i -a -p "$PIDS"; } 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
             if [ "$socks" -gt 0 ]; then
-              # Idle local CPU + live connection = the model is reasoning in the
-              # data center (no local footprint). Alive, not stalled — long
-              # suppression so an hour of thinking doesn't spam wakes.
               if [ $((now - last_stall_wake)) -ge "$REMOTE_DEDUP" ]; then
                 echo "REMOTE-THINKING [$JOB]: log frozen $((zero_polls*POLL))s, local CPU idle, $socks open sockets to the model service — waiting on data-center reasoning. Last: $(tail -1 "$LOG" | cut -c1-200)"
                 last_stall_wake=$now
               fi
             elif [ $((now - last_stall_wake)) -ge "$DEDUP" ]; then
-              # Idle CPU AND no connection: nothing local, nothing remote — stalled.
               echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s at $size bytes, cputime +${delta}s/poll (idle), 0 open sockets. Last: $(tail -1 "$LOG" | cut -c1-200)"
               last_stall_wake=$now
             fi

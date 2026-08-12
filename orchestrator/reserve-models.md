@@ -1,4 +1,4 @@
-# Reserve models — load this file only when dispatching one of these
+# Reserve Models
 
 ## Kimi K3 (`kimi-code/k3-256k`, effort max) — taste-critical front-end design; user trigger only
 
