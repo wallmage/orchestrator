@@ -11,7 +11,7 @@ A single “brain” agent (you, Fable 5) receives the high‑level goal or idea
 
 | Model & Effort | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
-| **Fable (you)** | Orchestrator | Max | Max | Judgment only; outsource everything outsourceable. Never a pipeline's "Claude worker" (that's Opus) |
+| **Fable (you)** | Orchestrator | Max | Max | Judgment only, never labor |
 | Opus `claude-opus-5` effort low | Default Worker | Low | Medium | STANDARD WORKER, ~90% of dispatches |
 | Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness |
 | Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs |
@@ -37,10 +37,9 @@ echo "EXIT=$?" >> <STATE>/<job>.log
 - `<STATE>` = session scratchpad. Read the `-o` file, NEVER the log. Grep the log only for: `thread_id` (to resume) and `^EXIT=`. Success = `EXIT=0` AND non-empty `-o`.
 - Flags: `-m` + `-c model_reasoning_effort=` on EVERY dispatch. `-s read-only` for analysis. `--output-schema <file>` when acting on the result (rejects type-less properties and `uniqueItems`). Worktrees: name the path in the prompt ("Work in `<path>`"); `--add-dir <dir>` for writable dirs outside the root; `-C` breaks the cwd rule. Situational: `-i <img>`, `--skip-git-repo-check`, `--ephemeral`, `-p <profile>`.
 - Models: `gpt-5.6-sol|luna|terra`, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini` (bare `gpt-5.6` rejected). Effort: gpt-5.6-* take `none|low|medium|high|xhigh|max` (`ultra`→max); others stop at `xhigh`; `minimal` rejected by all. Invalid value = 400 at request time, EXIT=1.
-- JSONL events: `thread.started` `turn.started` `turn.completed` `turn.failed` `item.started` `item.updated` `item.completed`. Done = `^EXIT=` only (`turn.completed` lands before `-o` is flushed); fail = `turn.failed` or `EXIT=[1-9]`.
 - Resume: `codex exec resume <thread_id> --json -o <f> "<delta>"` (no `-C`/`-s` — inherits shell cwd). Cancel: `TaskStop` the Bash task, confirm no `EXIT=` written. Auth failure: `codex login` / `codex doctor` — never improvise.
 - Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f> [-m <model>]`; plain `codex review` takes the same scope flags but no `--json`/`-o`/`-m`/`--output-schema`.
-- Silent 30–60+ min is normal; liveness = cputime growing + `lsof -i` ESTABLISHED (AdGuard proxies all traffic; loopback :49178 IS the tunnel). Never demand full ingestion past a few hundred KB — it samples. Response ceiling ≈30–60k tokens. Cancelled streams log as 499s on dashboards.
+- Silent 30–60+ min is normal; liveness = cputime growing + `lsof -i` ESTABLISHED (AdGuard proxies all traffic; loopback :49178 IS the tunnel). Never demand full ingestion past a few hundred KB — it samples. Response ceiling ≈30–60k tokens.
 - `claude` CLI worker: `claude-opus-5`; `--json-schema` strict (strip `$schema`/`$id`/`x-*`); replies may be fenced.
 
 ## Dispatch Mechanics
@@ -49,7 +48,7 @@ echo "EXIT=$?" >> <STATE>/<job>.log
 - Codex can fan out to 3 internal subagents but won't unless told — every parallelizable dispatch includes: "This task can be faster with subagents. Use subagents for parallelism."
 - Prepend to every Codex prompt: `[$superpowers:using-superpowers](/Users/wallny/.codex/plugins/cache/openai-curated-remote/superpowers/6.2.0/skills/using-superpowers/SKILL.md)` (bump version when plugin updates). TDD = verifiable acceptance checks (failing tests first, tests in diff).
 - Contracts: `<project>/docs/orchestration/MM-DD-##.md`, dispatched as "Read and execute exactly the contract at <path>". One rolling `ledger.md` per project (user decisions verbatim, task log, standing orders). No report files — report inline in chat.
-- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — no sanitizing, ever (user order 2026-08-13). New files: add to the `cp` line in sync.sh + .gitignore allowlist the turn created. Internal docs, plans, sync tooling stay ignored.
+- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — no sanitizing, ever. New files: add to the `cp` line in sync.sh + .gitignore allowlist the turn created. Internal docs, plans, sync tooling stay ignored.
 - After ANY edit to this skill, SAME turn: `sh /Users/wallny/Developer/Skills/Orchestrator/sync/sync.sh` — copies the files and commits+pushes itself.
 
 ## Worktrees & Parallelism
