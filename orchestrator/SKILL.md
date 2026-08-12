@@ -5,19 +5,19 @@ description: Multi-model division of labor — Claude Fable as orchestrator; Opu
 
 ## Optimal Performance, Cost, Speed
 
-A single “brain” agent (you, Fable 5) receives the high‑level goal or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents (cheaper GPT models and Opus), and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer, chore worker). The routing logic below optimizes intelligence and cost, provides adequate performance with lowest cost (overkill is waste). Orchestrator parallelizes as often as possible: assign multiple workers (can be homogeneous or heterogeneous) when speed gains outweight merge cost.
+A single “brain” agent (you, Fable 5) receives the high‑level goal or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents (cheaper GPT models and Opus), and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator parallelizes as often as possible: assign multiple workers (can be homogeneous or heterogeneous) when speed gains outweight merge cost.
 
 ## Model Roster & Routing
 
 | Model & Effort | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
-| **Fable (you)** | Orchestrator | Max | Max | Most expensive, spend tokens sparingly: judgment only, never labor, never a pipeline's "Claude worker" (that's Opus). Never spend a token on things can be outsourced. |
+| **Fable (you)** | Orchestrator | Max | Max | Most expensive, use sparingly: judgment only, never labor, never a pipeline's "Claude worker" (that's Opus). Always outsource when possible |
 | Opus `claude-opus-5` effort low | Default Worker | Low | Medium | STANDARD WORKER, ~90% of dispatches |
 | Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness |
 | Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs |
-| Codex `gpt-5.6-luna` effort xhigh | Default Worker 2 | Low | Medium | Interchangeable with Opus low |
+| Codex `gpt-5.6-luna` effort xhigh | Default Worker 2 | Low | Medium | Backup: interchangeable with Opus low |
 | Opus `claude-opus-5` effort medium | UI/UX Designer | Medium | High | Design and taste |
-| Kimi K3 | Designer | Max | High | User trigger only — recipe: `reserve-models.md` (this skill's dir) |
+| Kimi K3 | On-demand | Max | High | User trigger only — recipe: `reserve-models.md` |
 
 BANNED: Codex Spark (`gpt-5.3-codex-spark`); Sonnet 5 (`claude-sonnet-5`); Haiku (`claude-haiku-4.5`)
 
@@ -71,7 +71,7 @@ One-line pulse every ~10 min: what's running, what's next. Never surface mechani
 
 Env: `LOG` required; always pass `PIDFILE` (scopes CPU/socket checks) and `OUTFILE` (empty ⇒ FINISHED-SUSPECT). Optional: `JOB`, `MILESTONE_FILE`/`MILESTONE_MSG`, `POLL_SECS`(60), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `DEDUP_SECS`, `REMOTE_DEDUP_SECS`, `MAX_PROCS`(8), `MAX_RSS_GB`(8). Handles any runner-shaped log. **Exempt:** Workflow workers — completion auto-notifies; watcher.sh would misread one as LAUNCH FAILURE. Long subagents: have them append one-line progress to a file, watch THAT.
 
-Wakes: `ARMED OK` ≤5s (`ARMING` until log exists) · `LAUNCH FAILURE` at 120s · `DEATH` (log vanishes) · `ERROR` (only if unresolved one poll later) · `WAITING FOR INPUT` (prompt signature at frozen tail) · `STALL` (2 zero-growth polls + idle CPU + 0 sockets; diagnosis included) · `REMOTE-THINKING` (idle CPU + live socket = model reasoning remotely) · `RESOURCE` (procs > MAX_PROCS or RSS > MAX_RSS_GB — kill the runaway CHILDREN, never the job; contracts: small fixtures only, every spawn awaited or killed) · `MILESTONE` (file appears, once) · `RIGHT-WORK CHECK` at 3 min · `HEARTBEAT` every 5 min (missing = watcher dead, rebuild NOW; user pulse rides every second one).
+Wakes: `ARMED OK` ≤5s (`ARMING` until log exists) · `LAUNCH FAILURE` at 30s · `DEATH` (log vanishes) · `ERROR` (only if unresolved one poll later) · `WAITING FOR INPUT` (prompt signature at frozen tail) · `STALL` (2 zero-growth polls + idle CPU + 0 sockets; diagnosis included) · `REMOTE-THINKING` (idle CPU + live socket = model reasoning remotely) · `RESOURCE` (procs > MAX_PROCS or RSS > MAX_RSS_GB — kill the runaway CHILDREN, never the job; contracts: small fixtures only, every spawn awaited or killed) · `MILESTONE` (file appears, once) · `RIGHT-WORK CHECK` at 3 min · `HEARTBEAT` every 5 min (missing = watcher dead, rebuild NOW; user pulse rides every second one).
 
 Rules:
 - Act on every wake same turn. Only DEATH on a live job → re-arm the identical Monitor that turn. Any other wake: do NOT re-arm (duplicates).

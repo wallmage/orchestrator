@@ -63,7 +63,7 @@ while true; do
     fi
     missing_polls=$((missing_polls+1))
     if [ "$missing_polls" = "1" ]; then echo "ARMING [$JOB]: watcher up, log not present yet at $LOG"; fi
-    if [ $((now - start_ts)) -ge 120 ]; then
+    if [ $((now - start_ts)) -ge 30 ]; then
       echo "LAUNCH FAILURE [$JOB]: log never appeared at $LOG — wrong state dir or dead launch. Fix NOW."
       exit 0
     fi
