@@ -47,10 +47,10 @@ echo "EXIT=$?" >> <STATE>/<job>.log
 
 - **Model AND effort pinned on every spawn.** Claude-side workers ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'low', label: '...'})` (`'medium'` for hardest ~10%); one worker is still a one-`agent()` Workflow. Plain `Agent` tool BANNED (no effort field).
 - Codex can fan out to 3 internal subagents but won't unless told — every parallelizable dispatch includes: "This task can be faster with subagents. Use subagents for parallelism."
-- Prepend to every Codex prompt: `[$superpowers:using-superpowers]($HOME/.codex/plugins/cache/openai-curated-remote/superpowers/6.2.0/skills/using-superpowers/SKILL.md)` (bump version when plugin updates). TDD = verifiable acceptance checks (failing tests first, tests in diff).
+- Prepend to every Codex prompt: `[$superpowers:using-superpowers](/Users/wallny/.codex/plugins/cache/openai-curated-remote/superpowers/6.2.0/skills/using-superpowers/SKILL.md)` (bump version when plugin updates). TDD = verifiable acceptance checks (failing tests first, tests in diff).
 - Contracts: `<project>/docs/orchestration/MM-DD-##.md`, dispatched as "Read and execute exactly the contract at <path>". One rolling `ledger.md` per project (user decisions verbatim, task log, standing orders). No report files — report inline in chat.
-- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — the sanitizer only rewrites `$HOME`→`$HOME`; never genericize slugs, flags, or content (user order 2026-08-13). Add new files to sync extras + .gitignore allowlist the turn created. Internal docs, plans, sync tooling, tests stay ignored.
-- After ANY edit to this skill, SAME turn: `sh sync/sync.sh` from $HOME/Developer/Skills/Orchestrator (chore worker, or directly for trivial edits). If sync/NEEDS-REVIEW.txt exists, paste it and stop; otherwise the script commits+pushes itself.
+- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — the sanitizer only rewrites `/Users/wallny`→`$HOME`; never genericize slugs, flags, or content (user order 2026-08-13). Add new files to sync extras + .gitignore allowlist the turn created. Internal docs, plans, sync tooling, tests stay ignored.
+- After ANY edit to this skill, SAME turn: `sh sync/sync.sh` from /Users/wallny/Developer/Skills/Orchestrator (chore worker, or directly for trivial edits). If sync/NEEDS-REVIEW.txt exists, paste it and stop; otherwise the script commits+pushes itself.
 
 ## Worktrees & Parallelism
 
@@ -68,7 +68,7 @@ One-line pulse every ~10 min: what's running, what's next. Never surface mechani
 
 **Every CLI-launched job arms a watcher in the SAME tool-call batch as the dispatch.** Never hand-write one — instantiate `watcher.sh` (this skill's dir; all wake categories, dedup, finish≠success live there):
 
-`Monitor(persistent:true, timeout_ms:14400000, description:"<job> watcher", command:"LOG=<STATE>/<job>.log JOB=<job> PIDFILE=<STATE>/<job>.pid OUTFILE=<STATE>/<job>.final.txt sh $HOME/.claude/skills/orchestrator/watcher.sh")`
+`Monitor(persistent:true, timeout_ms:14400000, description:"<job> watcher", command:"LOG=<STATE>/<job>.log JOB=<job> PIDFILE=<STATE>/<job>.pid OUTFILE=<STATE>/<job>.final.txt sh /Users/wallny/.claude/skills/orchestrator/watcher.sh")`
 
 Env: `LOG` required; always pass `PIDFILE` (scopes CPU/socket checks) and `OUTFILE` (empty ⇒ FINISHED-SUSPECT). Optional: `JOB`, `MILESTONE_FILE`/`MILESTONE_MSG`, `POLL_SECS`(60), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `DEDUP_SECS`, `REMOTE_DEDUP_SECS`, `MAX_PROCS`(8), `MAX_RSS_GB`(8). Handles any runner-shaped log. **Exempt:** Workflow workers — completion auto-notifies; watcher.sh would misread one as LAUNCH FAILURE. Long subagents: have them append one-line progress to a file, watch THAT.
 
