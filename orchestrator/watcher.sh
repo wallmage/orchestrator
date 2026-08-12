@@ -5,7 +5,7 @@
 # Wake semantics documented in SKILL.md §3.
 
 JOB=${JOB:-job}
-POLL=${POLL_SECS:-5}
+POLL=${POLL_SECS:-3}
 ARM_POLL=5
 start_ts=$(date +%s)
 HB=${HEARTBEAT_SECS:-300}
@@ -63,7 +63,7 @@ while true; do
     fi
     missing_polls=$((missing_polls+1))
     if [ "$missing_polls" = "1" ]; then echo "ARMING [$JOB]: watcher up, log not present yet at $LOG"; fi
-    if [ $((now - start_ts)) -ge 15 ]; then
+    if [ $((now - start_ts)) -ge 10 ]; then
       echo "LAUNCH FAILURE [$JOB]: log never appeared at $LOG — wrong state dir or dead launch. Fix NOW."
       exit 0
     fi
