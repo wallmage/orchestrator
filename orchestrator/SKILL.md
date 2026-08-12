@@ -49,8 +49,8 @@ echo "EXIT=$?" >> <STATE>/<job>.log
 - Codex can fan out to 3 internal subagents but won't unless told — every parallelizable dispatch includes: "This task can be faster with subagents. Use subagents for parallelism."
 - Prepend to every Codex prompt: `[$superpowers:using-superpowers](/Users/wallny/.codex/plugins/cache/openai-curated-remote/superpowers/6.2.0/skills/using-superpowers/SKILL.md)` (bump version when plugin updates). TDD = verifiable acceptance checks (failing tests first, tests in diff).
 - Contracts: `<project>/docs/orchestration/MM-DD-##.md`, dispatched as "Read and execute exactly the contract at <path>". One rolling `ledger.md` per project (user decisions verbatim, task log, standing orders). No report files — report inline in chat.
-- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — the sanitizer only rewrites `/Users/wallny`→`$HOME`; never genericize slugs, flags, or content (user order 2026-08-13). Add new files to sync extras + .gitignore allowlist the turn created. Internal docs, plans, sync tooling, tests stay ignored.
-- After ANY edit to this skill, SAME turn: `sh sync/sync.sh` from /Users/wallny/Developer/Skills/Orchestrator (chore worker, or directly for trivial edits). If sync/NEEDS-REVIEW.txt exists, paste it and stop; otherwise the script commits+pushes itself.
+- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — no sanitizing, ever (user order 2026-08-13). New files: add to the `cp` line in sync.sh + .gitignore allowlist the turn created. Internal docs, plans, sync tooling stay ignored.
+- After ANY edit to this skill, SAME turn: `sh /Users/wallny/Developer/Skills/Orchestrator/sync/sync.sh` — copies the files and commits+pushes itself.
 
 ## Worktrees & Parallelism
 
