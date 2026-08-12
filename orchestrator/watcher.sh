@@ -2,9 +2,6 @@
 # CANONICAL WATCHER — §3 Watcher Protocol, implemented to the letter. NEVER write
 # a watcher from memory: instantiate THIS file via Monitor with env vars. Improvements
 # are edited INTO this file (same-turn skill sync) so no lesson can be dropped.
-# Fully tested 2026-08-13: 16 scenarios (arm, finish, suspect×3, error, self-heal,
-# waiting, death, launch-failure, milestone, stall×2, remote-thinking, heartbeat,
-# resource) all pass, plus a live codex exec end-to-end run.
 #
 # Required env: LOG (absolute path to job log)
 # Optional env: JOB (job id), MILESTONE_FILE + MILESTONE_MSG (launch-enabler),
