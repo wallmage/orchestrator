@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Multi-model division of labor — the strongest model as orchestrator; Opus, Codex (gpt models) or other models as worker. Use when the user says "orchestrate this task" or starts any delegated job. Defines the model routing and cost/intelligence roster, CLI tools, flags, and usage for all scenarios.
+description: Multi-model division of labor — Claude Fable as orchestrator; Opus, Codex (gpt models) or other models as worker. Use when the user says "orchestrate this task" or starts any delegated job. Defines the model routing and cost/intelligence roster, CLI tools, flags, and usage for all scenarios.
 ---
 
 ## Role
@@ -11,15 +11,15 @@ You (Fable) do design, decomposition, dispatch, verification, synthesis — judg
 
 | Model & Effort | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
-| **Orchestrator (strongest model)** | Orchestrator | Max | Max | Judgment only; outsource everything outsourceable. Never a pipeline's "Claude worker" (that's Opus) |
-| Opus `the fallback model` effort low | Default Worker | Low | Medium | STANDARD WORKER, ~90% of dispatches |
-| Primary executor (e.g. Codex `sol` tier) effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness |
-| Bulk executor (e.g. Codex `luna` tier) effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs |
-| Bulk executor (e.g. Codex `luna` tier) effort xhigh | Default Worker 2 | Low | Medium | Interchangeable with Opus low |
-| Opus `the fallback model` effort medium | UI/UX Designer | Medium | High | Design and taste |
+| **Fable (you)** | Orchestrator | Max | Max | Judgment only; outsource everything outsourceable. Never a pipeline's "Claude worker" (that's Opus) |
+| Opus `claude-opus-5` effort low | Default Worker | Low | Medium | STANDARD WORKER, ~90% of dispatches |
+| Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness |
+| Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs |
+| Codex `gpt-5.6-luna` effort xhigh | Default Worker 2 | Low | Medium | Interchangeable with Opus low |
+| Opus `claude-opus-5` effort medium | UI/UX Designer | Medium | High | Design and taste |
 | Kimi K3 | Designer | Max | High | User trigger only — recipe: `reserve-models.md` (this skill's dir) |
 
-BANNED: Experimental fast executor tier; Sonnet 5 (`claude-sonnet-5`); Haiku (`claude-haiku-4.5`)
+BANNED: Codex Spark (`gpt-5.3-codex-spark`); Sonnet 5 (`claude-sonnet-5`); Haiku (`claude-haiku-4.5`)
 
 ## Codex CLI
 
@@ -36,12 +36,12 @@ echo "EXIT=$?" >> <STATE>/<job>.log
 
 - `<STATE>` = session scratchpad. Read the `-o` file, NEVER the log. Grep the log only for: `thread_id` (to resume), `turn.completed` usage (token cost — Codex only; Workflow workers self-report), `^EXIT=`. Success = `EXIT=0` AND non-empty `-o`.
 - Flags: `-m` + `-c model_reasoning_effort=` on EVERY dispatch. `-s read-only` for analysis. `--output-schema <file>` when acting on the result (rejects type-less properties and `uniqueItems`). Worktrees: name the path in the prompt ("Work in `<path>`"); `--add-dir <dir>` for writable dirs outside the root; `-C` breaks the cwd rule. Situational: `-i <img>`, `--skip-git-repo-check`, `--ephemeral`, `-p <profile>`.
-- Models: `the primary executor model|luna|terra`, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini` (bare `the current primary model` rejected). Effort: the current primary model-* take `none|low|medium|high|xhigh|max` (`ultra`→max); others stop at `xhigh`; `minimal` rejected by all. Invalid value = 400 `invalid_enum_value`, EXIT=1.
+- Models: `gpt-5.6-sol|luna|terra`, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini` (bare `gpt-5.6` rejected). Effort: gpt-5.6-* take `none|low|medium|high|xhigh|max` (`ultra`→max); others stop at `xhigh`; `minimal` rejected by all. Invalid value = 400 `invalid_enum_value`, EXIT=1.
 - JSONL events: `thread.started` `turn.started` `turn.completed` `turn.failed` `item.started` `item.updated` `item.completed`. Done = `^EXIT=` only (`turn.completed` lands before `-o` is flushed); fail = `turn.failed` or `EXIT=[1-9]`.
 - Resume: `codex exec resume <thread_id> --json -o <f> "<delta>"` (no `-C`/`-s` — inherits shell cwd). Cancel: `TaskStop` the Bash task, confirm no `EXIT=` written. Auth failure: `codex login` / `codex doctor` — never improvise.
 - Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f> [-m <model>]`; plain `codex review` takes the same scope flags but no `--json`/`-o`/`-m`/`--output-schema`.
-- Silent 30–60+ min is normal; liveness = cputime growing + `lsof -i` ESTABLISHED (a local proxy can make the API tunnel appear as loopback traffic). Never demand full ingestion past a few hundred KB — it samples. Response ceiling ≈30–60k tokens. Cancelled streams log as 499s on dashboards.
-- `claude` CLI worker: `the fallback model`; `--json-schema` strict (strip `$schema`/`$id`/`x-*`); replies may be fenced.
+- Silent 30–60+ min is normal; liveness = cputime growing + `lsof -i` ESTABLISHED (AdGuard proxies all traffic; loopback :49178 IS the tunnel). Never demand full ingestion past a few hundred KB — it samples. Response ceiling ≈30–60k tokens. Cancelled streams log as 499s on dashboards.
+- `claude` CLI worker: `claude-opus-5`; `--json-schema` strict (strip `$schema`/`$id`/`x-*`); replies may be fenced.
 
 ## Dispatch Mechanics
 
@@ -49,7 +49,7 @@ echo "EXIT=$?" >> <STATE>/<job>.log
 - Codex can fan out to 3 internal subagents but won't unless told — every parallelizable dispatch includes: "This task can be faster with subagents. Use subagents for parallelism."
 - Prepend to every Codex prompt: `[$superpowers:using-superpowers]($HOME/.codex/plugins/cache/openai-curated-remote/superpowers/6.2.0/skills/using-superpowers/SKILL.md)` (bump version when plugin updates). TDD = verifiable acceptance checks (failing tests first, tests in diff).
 - Contracts: `<project>/docs/orchestration/MM-DD-##.md`, dispatched as "Read and execute exactly the contract at <path>". One rolling `ledger.md` per project (user decisions verbatim, task log, standing orders). No report files — report inline in chat.
-- Public repo: functional files (SKILL.md, watcher.sh, future runtime assets) publish — add to sync extras + .gitignore allowlist the turn created. Internal docs, plans, sync tooling, tests stay ignored.
+- Public repo: functional files (SKILL.md, watcher.sh, reserve-models.md, future runtime assets) publish VERBATIM — the sanitizer only rewrites `$HOME`→`$HOME`; never genericize slugs, flags, or content (user order 2026-08-13). Add new files to sync extras + .gitignore allowlist the turn created. Internal docs, plans, sync tooling, tests stay ignored.
 - After ANY edit to this skill, SAME turn: `sh sync/sync.sh` from $HOME/Developer/Skills/Orchestrator (chore worker, or directly for trivial edits). If sync/NEEDS-REVIEW.txt exists, paste it and stop; otherwise the script commits+pushes itself.
 
 ## Worktrees & Parallelism
