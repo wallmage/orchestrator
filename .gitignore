@@ -8,3 +8,4 @@
 orchestrator/*
 !orchestrator/SKILL.md
 !orchestrator/watcher.sh
+!orchestrator/reserve-models.md
