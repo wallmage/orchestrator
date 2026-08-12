@@ -34,7 +34,7 @@ codex exec --json -o <STATE>/<job>.final.txt -m <model> -c model_reasoning_effor
 echo "EXIT=$?" >> <STATE>/<job>.log
 ```
 
-- `<STATE>` = session scratchpad. Read the `-o` file, NEVER the log. Grep the log only for: `thread_id` (to resume), `turn.completed` usage (token cost — Codex only; Workflow workers self-report), `^EXIT=`. Success = `EXIT=0` AND non-empty `-o`.
+- `<STATE>` = session scratchpad. Read the `-o` file, NEVER the log. Grep the log only for: `thread_id` (to resume) and `^EXIT=`. Success = `EXIT=0` AND non-empty `-o`.
 - Flags: `-m` + `-c model_reasoning_effort=` on EVERY dispatch. `-s read-only` for analysis. `--output-schema <file>` when acting on the result (rejects type-less properties and `uniqueItems`). Worktrees: name the path in the prompt ("Work in `<path>`"); `--add-dir <dir>` for writable dirs outside the root; `-C` breaks the cwd rule. Situational: `-i <img>`, `--skip-git-repo-check`, `--ephemeral`, `-p <profile>`.
 - Models: `gpt-5.6-sol|luna|terra`, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini` (bare `gpt-5.6` rejected). Effort: gpt-5.6-* take `none|low|medium|high|xhigh|max` (`ultra`→max); others stop at `xhigh`; `minimal` rejected by all. Invalid value = 400 at request time, EXIT=1.
 - JSONL events: `thread.started` `turn.started` `turn.completed` `turn.failed` `item.started` `item.updated` `item.completed`. Done = `^EXIT=` only (`turn.completed` lands before `-o` is flushed); fail = `turn.failed` or `EXIT=[1-9]`.
