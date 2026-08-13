@@ -78,7 +78,7 @@ Each wake message names its condition and carries its own diagnosis — act on i
 Rules:
 - Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake.
 - No HEARTBEAT for 5+ min = the watcher itself died — re-arm it.
-- Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
+- Birth check: log must exist by 15s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
 - On RESOURCE: kill only hung/abandoned child processes; a legitimately heavy job gets its limits raised.
 - No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
 - `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
