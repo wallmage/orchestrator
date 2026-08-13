@@ -27,20 +27,21 @@ Dispatch = this runner via Bash `run_in_background`, watcher armed same batch:
 
 ```sh
 exec </dev/null                   # live stdin pipe freezes codex exec
-echo $$ > <STATE>/<job>.pid       # scopes watcher CPU/socket checks to this job
+echo $$ > <SCRATCH>/<job>.pid       # scopes watcher CPU/socket checks to this job
 cd <PROJECT ROOT>                 # never a worktree — session cwd files the Codex app's project list
-codex exec --json -o <STATE>/<job>.final.txt -m <model> -c model_reasoning_effort=<effort> \
-  -s workspace-write "<prompt>" > <STATE>/<job>.log 2>&1
-echo "EXIT=$?" >> <STATE>/<job>.log
+codex exec --json -o <SCRATCH>/<job>.final.txt -m <model> -c model_reasoning_effort=<effort> \
+  -s workspace-write "<prompt>" > <SCRATCH>/<job>.log 2>&1
+echo "EXIT=$?" >> <SCRATCH>/<job>.log
 ```
 
-- `<STATE>` = session scratchpad. Read the `-o` file, NEVER the log. Grep the log only for: `thread_id` (to resume) and `^EXIT=`. Success = `EXIT=0` AND non-empty `-o`.
-- Flags: `-m` + `-c model_reasoning_effort=` on EVERY dispatch. `-s read-only` for analysis. `--output-schema <file>` when acting on the result (rejects type-less properties and `uniqueItems`). Worktrees: name the path in the prompt ("Work in `<path>`"); `--add-dir <dir>` for writable dirs outside the root; `-C` breaks the cwd rule. Situational: `-i <img>`, `--skip-git-repo-check`, `--ephemeral`, `-p <profile>`.
-- Models: `gpt-5.6-sol|luna|terra`, `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini` (bare `gpt-5.6` rejected). Effort: gpt-5.6-* take `none|low|medium|high|xhigh|max` (`ultra`→max); others stop at `xhigh`; `minimal` rejected by all. Invalid value = 400 at request time, EXIT=1.
-- Resume: `codex exec resume <thread_id> --json -o <f> "<delta>"` (no `-C`/`-s` — inherits shell cwd). Cancel: `TaskStop` the Bash task, confirm no `EXIT=` written. Auth failure: `codex login` / `codex doctor` — never improvise.
-- Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f> [-m <model>]`; plain `codex review` takes the same scope flags but no `--json`/`-o`/`-m`/`--output-schema`.
-- Silent 30–60+ min is normal; liveness = cputime growing + `lsof -i` ESTABLISHED (AdGuard proxies all traffic; loopback :49178 IS the tunnel). Never demand full ingestion past a few hundred KB — it samples. Response ceiling ≈30–60k tokens.
-- `claude` CLI worker: `claude-opus-5`; `--json-schema` strict (strip `$schema`/`$id`/`x-*`); replies may be fenced.
+- `<SCRATCH>` = this session's scratchpad directory (temporary files, OS-cleaned; one `.pid` + `.log` + `.final.txt` per job). Read the `-o` file, NEVER the log. Grep the log only for: `thread_id` (to resume) and `^EXIT=`. Success = `EXIT=0` AND non-empty `-o`.
+- `-m` + `-c model_reasoning_effort=` on EVERY dispatch. `-s read-only` for analysis-only jobs (can read files, cannot change them).
+- `--output-schema <file>`: pass a JSON Schema file describing the exact shape of the final answer. Use it whenever the answer will be parsed or acted on mechanically — free-form prose breaks parsing. Codex rejects sloppy schemas: every property must declare an explicit `type`, and the `uniqueItems` keyword is unsupported.
+- `-C <dir>` (sets Codex's working folder) is BANNED — always `cd` to the project root instead, per the runner. For edits in a worktree: name the path in the prompt ("Work in `<path>`") and add `--add-dir <dir>` to make it writable. Rare: `-i <img>` attaches an image; `--skip-git-repo-check` allows running outside a git repo.
+- Models: `gpt-5.6-sol` or `gpt-5.6-luna` only (bare `gpt-5.6` is invalid). Effort: `low|medium|high|xhigh`.
+- Resume: `codex exec resume <thread_id> --json -o <f> "<delta>"` — continues that Codex conversation with its memory intact, so send only the follow-up. Takes no `-C`/`-s`; inherits shell cwd. Cancel: `TaskStop` the Bash task, confirm no `EXIT=` written.
+- Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f>` — built-in reviewer that computes the diff scope itself; a prompt-based review makes Codex reconstruct the diff and sometimes gets it wrong.
+- Never demand full ingestion of inputs past a few hundred KB — Codex samples big files. Response ceiling ≈30–60k tokens; don't request bigger outputs.
 
 ## Dispatch Mechanics
 
@@ -67,7 +68,7 @@ One-line pulse every ~10 min: what's running, what's next. Never surface mechani
 
 **Every CLI-launched job arms a watcher in the SAME tool-call batch as the dispatch.** Never hand-write one — instantiate `watcher.sh` (this skill's dir; all wake categories, dedup, finish≠success live there):
 
-`Monitor(persistent:true, timeout_ms:14400000, description:"<job> watcher", command:"LOG=<STATE>/<job>.log JOB=<job> PIDFILE=<STATE>/<job>.pid OUTFILE=<STATE>/<job>.final.txt sh /Users/wallny/.claude/skills/orchestrator/watcher.sh")`
+`Monitor(persistent:true, timeout_ms:14400000, description:"<job> watcher", command:"LOG=<SCRATCH>/<job>.log JOB=<job> PIDFILE=<SCRATCH>/<job>.pid OUTFILE=<SCRATCH>/<job>.final.txt sh /Users/wallny/.claude/skills/orchestrator/watcher.sh")`
 
 Env: `LOG` required; always pass `PIDFILE` (scopes CPU/socket checks) and `OUTFILE` (empty ⇒ FINISHED-SUSPECT). Optional: `JOB`, `MILESTONE_FILE`/`MILESTONE_MSG`, `POLL_SECS`(3), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `DEDUP_SECS`, `REMOTE_DEDUP_SECS`, `MAX_PROCS`(8), `MAX_RSS_GB`(8). Handles any runner-shaped log. **Exempt:** Workflow workers — completion auto-notifies; watcher.sh would misread one as LAUNCH FAILURE. Long subagents: have them append one-line progress to a file, watch THAT.
 
