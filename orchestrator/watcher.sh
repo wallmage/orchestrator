@@ -7,7 +7,7 @@
 
 JOB=${JOB:-job}
 POLL=${POLL_SECS:-3}
-ARM_POLL=5
+ARM_POLL=3
 start_ts=$(date +%s)
 HB=${HEARTBEAT_SECS:-300}
 CPU_PATTERN=${CPU_PATTERN:-codex exec}
