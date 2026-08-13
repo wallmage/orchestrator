@@ -1,7 +1,8 @@
 #!/bin/sh
 # Canonical watcher — instantiate via Monitor with env vars; never hand-write one.
 # Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS
-#      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX DEDUP_SECS REMOTE_DEDUP_SECS MAX_PROCS MAX_RSS_GB
+#      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX MAX_PROCS MAX_RSS_GB
+# Each alarm fires once per episode; it re-arms only after its condition clears.
 # Wake semantics documented in SKILL.md §3.
 
 JOB=${JOB:-job}
@@ -11,8 +12,6 @@ start_ts=$(date +%s)
 HB=${HEARTBEAT_SECS:-300}
 CPU_PATTERN=${CPU_PATTERN:-codex exec}
 CPU_IDLE_MAX=${CPU_IDLE_MAX:-2}
-DEDUP=${DEDUP_SECS:-480}
-REMOTE_DEDUP=${REMOTE_DEDUP_SECS:-1800}
 
 FAIL_SIGS='"type":"turn.failed"|^EXIT=[1-9]|usage limit|quota|rate limit|Task failed|Cancelled|Blocked by workspace|^Traceback|只允许写入|权限阻止|沙箱拒绝|未修改任何文件'
 HARD_SIGS='"type":"turn.failed"|^EXIT=[1-9]'
@@ -45,8 +44,8 @@ cpu_secs() {
 }
 
 seen_log=0; missing_polls=0; prev_size=-1; zero_polls=0; stall_cpu_ref=-1
-last_stall_wake=0; err_pend=0; ms_done=0; rw_done=0; armed_ts=0; last_hb=0
-last_res=0; last_res_wake=0; last_err_wake=0; last_wait_wake=0; wait_pend=0
+err_pend=0; ms_done=0; rw_done=0; armed_ts=0; last_hb=0; last_res=0; wait_pend=0
+remote_announced=0; stall_announced=0; err_announced=0; res_announced=0; wait_announced=0
 
 while true; do
   now=$(date +%s)
@@ -80,13 +79,14 @@ while true; do
       W=""
     fi
     if [ -n "$W" ]; then
-      if [ "$wait_pend" = "1" ] && [ $((now - last_wait_wake)) -ge "$DEDUP" ]; then
-        last_wait_wake=$now
+      if [ "$wait_pend" = "1" ] && [ "$wait_announced" = "0" ]; then
+        wait_announced=1
         echo "WAITING FOR INPUT [$JOB]: $(printf '%s' "$W" | cut -c1-300)"
       fi
       wait_pend=1
     else
       wait_pend=0
+      wait_announced=0
     fi
 
     # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed.
@@ -112,10 +112,12 @@ while true; do
     if grep -qE "$FAIL_SIGS" "$LOG" 2>/dev/null; then
       if [ "$err_pend" = "1" ]; then
         if tail -c 4000 "$LOG" | grep -qE "$FAIL_SIGS"; then
-          if [ $((now - last_err_wake)) -ge "$DEDUP" ]; then
-            last_err_wake=$now
+          if [ "$err_announced" = "0" ]; then
+            err_announced=1
             echo "ERROR [$JOB] (unresolved one poll later): $(grep -aE "$FAIL_SIGS" "$LOG" | tail -1 | cut -c1-300)"
           fi
+        else
+          err_announced=0   # scrolled out of the tail: episode over
         fi
         err_pend=0
       else
@@ -123,6 +125,7 @@ while true; do
       fi
     else
       err_pend=0
+      err_announced=0
     fi
 
     if [ $((now - last_res)) -ge 120 ]; then
@@ -131,9 +134,13 @@ while true; do
       if [ -n "$PIDS" ]; then
         nproc=$(printf '%s' "$PIDS" | tr ',' '\n' | grep -c .)
         rssgb=$(ps -o rss= -p "$PIDS" 2>/dev/null | awk '{t+=$1} END{printf "%.1f", t/1048576}')
-        if { [ "$nproc" -gt "${MAX_PROCS:-8}" ] || [ "${rssgb%%.*}" -ge "${MAX_RSS_GB:-8}" ]; } && [ $((now - last_res_wake)) -ge "$DEDUP" ]; then
-          last_res_wake=$now
-          echo "RESOURCE [$JOB]: $nproc procs, ${rssgb}GB RSS — kill the runaway CHILDREN, not the job."
+        if [ "$nproc" -gt "${MAX_PROCS:-8}" ] || [ "${rssgb%%.*}" -ge "${MAX_RSS_GB:-8}" ]; then
+          if [ "$res_announced" = "0" ]; then
+            res_announced=1
+            echo "RESOURCE [$JOB]: $nproc procs, ${rssgb}GB RSS — kill the runaway CHILDREN, not the job."
+          fi
+        else
+          res_announced=0
         fi
       fi
     fi
@@ -155,9 +162,9 @@ while true; do
       if [ "$zero_polls" -ge 2 ]; then
         collect_pids; cpu_now=$(cpu_secs)
         if [ "$cpu_now" = "-1" ]; then
-          if [ $((now - last_stall_wake)) -ge "$DEDUP" ]; then
+          if [ "$stall_announced" = "0" ]; then
+            stall_announced=1
             echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s at $size bytes and NO live process in scope (${PIDFILE:+pidfile }${PIDFILE:-$CPU_PATTERN}) — likely dead. Last: $(tail -1 "$LOG" | cut -c1-200)"
-            last_stall_wake=$now
           fi
         elif [ "$stall_cpu_ref" = "-1" ]; then
           stall_cpu_ref=$cpu_now
@@ -167,13 +174,14 @@ while true; do
           if [ "$delta" -le "$CPU_IDLE_MAX" ]; then
             socks=$({ [ -n "$PIDS" ] && lsof -i -a -p "$PIDS"; } 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
             if [ "$socks" -gt 0 ]; then
-              if [ $((now - last_stall_wake)) -ge "$REMOTE_DEDUP" ]; then
+              # Announce once per quiet spell; heartbeat covers aliveness after that.
+              if [ "$remote_announced" = "0" ]; then
                 echo "REMOTE-THINKING [$JOB]: log frozen $((zero_polls*POLL))s, local CPU idle, $socks open sockets to the model service — waiting on data-center reasoning. Last: $(tail -1 "$LOG" | cut -c1-200)"
-                last_stall_wake=$now
+                remote_announced=1
               fi
-            elif [ $((now - last_stall_wake)) -ge "$DEDUP" ]; then
+            elif [ "$stall_announced" = "0" ]; then
+              stall_announced=1
               echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s at $size bytes, cputime +${delta}s/poll (idle), 0 open sockets. Last: $(tail -1 "$LOG" | cut -c1-200)"
-              last_stall_wake=$now
             fi
           fi
         fi
@@ -181,6 +189,8 @@ while true; do
     else
       zero_polls=0
       stall_cpu_ref=-1
+      remote_announced=0
+      stall_announced=0
     fi
     prev_size=$size
 
