@@ -16,11 +16,11 @@ Routing: ~90% of implementation → Workers 1–4 (default 1). Hardest ~10% (int
 | **Fable 5** (this session) | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never a pipeline worker (Opus low); outsource whenever possible. |
 | Workflow `model:'opus', effort:'low'` (Opus 5) | Worker 1 (default) | Low | Medium | § Dispatch Mechanics |
 | Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 2 | Low | Medium | Read `cursor-cli.md` first |
-| Grok Build CLI `grok-4.6` effort medium | Worker 3 | Low | Medium | Read `grok-cli.md` first |
-| Codex CLI `gpt-5.6-luna` effort xhigh | Worker 4 | Low | Medium | Read `codex-cli.md` first |
+| Grok Build CLI `grok-4.6 --effort medium` | Worker 3 | Low | Medium | Read `grok-cli.md` first |
+| Codex CLI `gpt-5.6-luna effort=xhigh` | Worker 4 | Low | Medium | Read `codex-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Escalated 1 (default) | Medium | High | § Dispatch Mechanics |
-| Codex CLI `gpt-5.6-sol` effort high | Escalated 2 | Medium | High | Read `codex-cli.md` first |
-| Codex CLI `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Read `codex-cli.md` first |
+| Codex CLI `gpt-5.6-sol effort=high` | Escalated 2 | Medium | High | Read `codex-cli.md` first |
+| Codex CLI `gpt-5.6-luna effort=high` | Chore Worker | FREE | Low | Read `codex-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
 | Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | On-demand | Max | High | Read `cursor-cli.md` first |
 
