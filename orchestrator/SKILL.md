@@ -9,20 +9,22 @@ A single “brain” agent (highest intelligence and cost) receives the tasks or
 
 ## Model Roster & Routing
 
-| Model & Effort | Role | Cost | Intelligence | Notes |
-| --- | --- | --- | --- | --- |
-| **Fable 5** | Orchestrator | Max | Max | Most expensive, use sparingly: judgment only, never labor, never a pipeline's "Claude worker" (that's Opus). Always outsource when possible. |
-| Opus `claude-opus-5` effort low | Default Worker 1 | Low | Medium | STANDARD WORKER, ~90% of dispatches. `Workflow` only — § Dispatch Mechanics. |
-| Cursor CLI grok-4.6 effort medium, fast mode | Worker 2 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `cursor-cli.md` for CLI instructions before dispatching. |
-| Grok Build CLI `grok-4.6` effort medium | Worker 3 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `grok-cli.md` for CLI instructions before dispatching. |
-| Codex `gpt-5.6-luna` effort xhigh | Worker 4 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `codex-cli.md` for CLI instructions before dispatching. |
-| Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness. Read `codex-cli.md`. |
-| Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs. Read `codex-cli.md`. |
-|                                              |                  |        |              |                                                              |
-| Opus `claude-opus-5` effort medium | UI/UX Designer | Medium | High | Design and taste. `Workflow` only — § Dispatch Mechanics. |
-| Kimi K3 via Cursor CLI `kimi-k3-high` or `kimi-k3-max` | On-demand | Max | High | User trigger only. Read `cursor-cli.md` for CLI instructions before dispatching. |
+Routing: ~90% of implementation → Workers 1–4 (pick by availability/parallelism, all equivalent). Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1–2. Mechanical zero-judgment batch work → Chore Worker (free). Large code/diff reading → Worker 1 (never Fable). Designer and Kimi K3 only on explicit user trigger. Fable: judgment only, never labor.
 
-BANNED: Sonnet 5 (`claude-sonnet-5` Sonnet is more expensive than Opus, always use Opus low instead of Sonnet); Haiku (`claude-haiku-4.5`)
+| Harness & model | Role | Cost | Intel | Notes |
+| --- | --- | --- | --- | --- |
+| **Fable 5** (this session) | Orchestrator | Max | Max | Never a pipeline worker; outsource whenever possible. |
+| Workflow `model:'opus', effort:'low'` (Opus 5) | Worker 1 (default) | Low | Medium | § Dispatch Mechanics |
+| Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 2 | Low | Medium | Read `cursor-cli.md` first |
+| Grok Build CLI `grok-4.6` `--effort medium` | Worker 3 | Low | Medium | Read `grok-cli.md` first |
+| Codex CLI `gpt-5.6-luna` effort xhigh | Worker 4 | Low | Medium | Read `codex-cli.md` first |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | Escalated 1 (default) | Medium | High | § Dispatch Mechanics |
+| Codex CLI `gpt-5.6-sol` effort high | Escalated 2 | Medium | High | Read `codex-cli.md` first |
+| Codex CLI `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Read `codex-cli.md` first |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
+| Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | On-demand | Max | High | Read `cursor-cli.md` first |
+
+BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5; effort `max`/`ultra` anywhere.
 
 ## Debate and Align on Big Plans
 
