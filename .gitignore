@@ -8,4 +8,6 @@
 orchestrator/*
 !orchestrator/SKILL.md
 !orchestrator/watcher.sh
-!orchestrator/reserve-models.md
+!orchestrator/codex-cli.md
+!orchestrator/grok-cli.md
+!orchestrator/cursor-cli.md

@@ -1,63 +1,62 @@
 ---
 name: orchestrator
-description: Multi-model division of labor — Claude Fable as orchestrator; Opus, Codex (gpt models) or other models as worker. Use when the user says "orchestrate this task" or starts any delegated job. Defines the model routing and cost/intelligence roster, CLI tools, flags, and usage for all scenarios.
+description: Multi-model division of labor — strongest/expensive model as orchestrator, cheaper yet capable models as worker. Use when the user says "orchestrate this task" or starts any delegated job. Defines the model routing and cost/intelligence roster, CLI tools, flags, and usage for all scenarios.
 ---
 
 ## Optimal Performance, Cost, Speed
 
-A single “brain” agent (you, Fable 5) receives the high‑level goal or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents (cheaper GPT models and Opus), and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator parallelizes as often as possible: assign multiple workers (can be homogeneous or heterogeneous) when speed gains outweight merge cost.
+A single “brain” agent (highest intelligence and cost) receives the tasks or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents, and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search etc) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator always tries to parallelize if possible: assign multiple workers (can be homogeneous or heterogeneous) when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully so it’s fully transparent to users. 
 
 ## Model Roster & Routing
 
 | Model & Effort | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
-| **Fable (you)** | Orchestrator | Max | Max | Most expensive, use sparingly: judgment only, never labor, never a pipeline's "Claude worker" (that's Opus). Always outsource when possible |
-| Opus `claude-opus-5` effort low | Default Worker | Low | Medium | STANDARD WORKER, ~90% of dispatches |
-| Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness |
-| Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs |
-| Codex `gpt-5.6-luna` effort xhigh | Default Worker 2 | Low | Medium | Backup: interchangeable with Opus low |
+| **Fable 5** | Orchestrator | Max | Max | Most expensive, use sparingly: judgment only, never labor, never a pipeline's "Claude worker" (that's Opus). Always outsource when possible. |
+| Opus `claude-opus-5` effort low | Default Worker 1 | Low | Medium | STANDARD WORKER, ~90% of dispatches |
+| Cursor CLI grok-4.6 effort medium, fast mode | Worker 2 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `cursor-cli.md` for CLI instructions before dispatching. |
+| Grok Build CLI `grok-4.6` effort medium | Worker 3 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `grok-cli.md` for CLI instructions before dispatching. |
+| Codex `gpt-5.6-luna` effort xhigh | Worker 4 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `codex-cli.md` for CLI instructions before dispatching. |
+| Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness. Read `codex-cli.md`. |
+| Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs. Read `codex-cli.md`. |
+|                                              |                  |        |              |                                                              |
 | Opus `claude-opus-5` effort medium | UI/UX Designer | Medium | High | Design and taste |
-| Kimi K3 | On-demand | Max | High | User trigger only — recipe: `reserve-models.md` |
+| Kimi K3 via Cursor CLI `kimi-k3-high` or `kimi-k3-max` | On-demand | Max | High | User trigger only. Read `cursor-cli.md` for CLI instructions before dispatching. |
 
 BANNED: Codex Spark (`gpt-5.3-codex-spark`); Sonnet 5 (`claude-sonnet-5` Sonnet is more expensive than Opus, always use Opus low instead of Sonnet); Haiku (`claude-haiku-4.5`)
 
-## Codex CLI
+## Debate and Align on Big Plans
 
-Dispatch = this runner via Bash `run_in_background`, watcher armed same batch:
+Independent, no superpowers, 
 
-```sh
-exec </dev/null                   # live stdin pipe freezes codex exec
-echo $$ > <TMP_PATH>/<job>.pid       # scopes watcher CPU/socket checks to this job
-cd <PROJECT ROOT>                 # never a worktree — session cwd files the Codex app's project list
-codex exec --json -o <TMP_PATH>/<job>.final.txt -m <model> -c model_reasoning_effort=<effort> \
-  -s workspace-write "<prompt>" > <TMP_PATH>/<job>.log 2>&1
-printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log   # leading \n: a log without trailing newline would bury EXIT= mid-line
-```
+## Best Among Workers
+
+## CLI Worker Mechanics (shared)
+
+Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `cursor-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
+
+Runner shape (every CLI):
+- Bash `run_in_background`, watcher armed in the SAME batch.
+- `exec </dev/null` first (a live stdin pipe freezes some CLIs), `echo $$ > <TMP_PATH>/<job>.pid`, `cd <PROJECT ROOT>` (never `-C`/`--cwd`-style flags).
+- stdout+stderr → `<TMP_PATH>/<job>.log`; then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n` so EXIT= never lands mid-line); final answer → `<TMP_PATH>/<job>.final.txt`.
 
 Files:
 - `<TMP_PATH>` = this session's temp directory; one `.pid` + `.log` + `.final.txt` per job; OS-cleaned, no manual cleanup.
-- Read the `-o` file, NEVER the log.
-- Grep the log only for `thread_id` (to resume) and `^EXIT=`.
-- Success = `EXIT=0` AND non-empty `-o` file.
+- Read `.final.txt`, NEVER the log. Grep the log only for the resume id and `^EXIT=`.
+- Success = `EXIT=0` AND non-empty `.final.txt`.
 
-Flags:
-- `-m` + `-c model_reasoning_effort=` on EVERY dispatch.
-- Models: `gpt-5.6-sol` or `gpt-5.6-luna` only (bare `gpt-5.6` is invalid).
-- Effort: `low|medium|high|xhigh`.
-- `-s read-only` for analysis-only jobs.
-- `--output-schema <file>`: a JSON Schema file fixing the exact shape of the final answer. Use whenever the answer will be parsed or acted on mechanically. Every property must declare an explicit `type`; `uniqueItems` is unsupported.
-- `-C <dir>` (sets Codex's working folder) is BANNED — always `cd` to the project root, per the runner.
-- Worktree edits: name the path in the prompt ("Work in `<path>`") and add `--add-dir <dir>` to make it writable.
-- Rare: `-i <img>` attaches an image; `--skip-git-repo-check` allows running outside a git repo.
+Flags (every dispatch):
+- Model AND effort stated explicitly; only slugs listed in the CLI file.
+- Unattended approval flag on; read-only mode for analysis-only jobs; worktree edits name the path in the prompt (+ the CLI's extra-dir flag if it sandboxes).
+- CLI-native worktree flags BANNED — orchestrator owns worktrees.
+- Structured answers: use the CLI's schema flag when it has one, otherwise demand JSON in the prompt.
 
 Prompts:
-- Codex parent thread can fan out 3 parallel subagents (max 4 workers). Codex will not use subagents unless explicitly reminded. Remind Codex when job benefits from parallelism "Use subagents to make the task faster"
-- **Superpowers:** prepend to every Codex prompt: `[$superpowers:using-superpowers](~/.codex/plugins/cache/openai-curated-remote/superpowers/6.2.0/skills/using-superpowers/SKILL.md)` (update version # if plugin changes). TDD is enforced as verifiable acceptance checks (failing-tests-first, tests present in the diff), not as trust.
+- Every CLI can fan out subagents but won't unless reminded: "Use subagents to make the task faster".
+- **Superpowers:** prepend `[$superpowers:using-superpowers](<path in CLI file>)` to every prompt. TDD is enforced as verifiable acceptance checks (failing-tests-first, tests present in the diff), not as trust.
 
 Follow-ups:
-- Resume: `codex exec resume <thread_id> --json -o <f> "<delta>"` — send only the follow-up (memory intact). Takes no `-C`/`-s`; inherits shell cwd.
+- Resume with the CLI's resume flag + id from the log, same cwd, send only the delta (memory intact).
 - Cancel: `TaskStop` the Bash task; confirm no `EXIT=` was written.
-- Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f>`.
 
 ## Watcher Protocol
 
