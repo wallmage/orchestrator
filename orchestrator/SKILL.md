@@ -12,17 +12,17 @@ A single “brain” agent (highest intelligence and cost) receives the tasks or
 | Model & Effort | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
 | **Fable 5** | Orchestrator | Max | Max | Most expensive, use sparingly: judgment only, never labor, never a pipeline's "Claude worker" (that's Opus). Always outsource when possible. |
-| Opus `claude-opus-5` effort low | Default Worker 1 | Low | Medium | STANDARD WORKER, ~90% of dispatches |
+| Opus `claude-opus-5` effort low | Default Worker 1 | Low | Medium | STANDARD WORKER, ~90% of dispatches. `Workflow` only — § Dispatch Mechanics. |
 | Cursor CLI grok-4.6 effort medium, fast mode | Worker 2 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `cursor-cli.md` for CLI instructions before dispatching. |
 | Grok Build CLI `grok-4.6` effort medium | Worker 3 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `grok-cli.md` for CLI instructions before dispatching. |
 | Codex `gpt-5.6-luna` effort xhigh | Worker 4 | Low | Medium | STANDARD WORKER, ~90% of dispatches. Read `codex-cli.md` for CLI instructions before dispatching. |
 | Codex `gpt-5.6-sol` effort high | Escalated Worker | Medium | High | Hardest ~10%: intricate design/parsing/subtle correctness. Read `codex-cli.md`. |
 | Codex `gpt-5.6-luna` effort high | Chore Worker | FREE | Low | Mechanical/zero-judgment trivia and batch jobs. Read `codex-cli.md`. |
 |                                              |                  |        |              |                                                              |
-| Opus `claude-opus-5` effort medium | UI/UX Designer | Medium | High | Design and taste |
+| Opus `claude-opus-5` effort medium | UI/UX Designer | Medium | High | Design and taste. `Workflow` only — § Dispatch Mechanics. |
 | Kimi K3 via Cursor CLI `kimi-k3-high` or `kimi-k3-max` | On-demand | Max | High | User trigger only. Read `cursor-cli.md` for CLI instructions before dispatching. |
 
-BANNED: Codex Spark (`gpt-5.3-codex-spark`); Sonnet 5 (`claude-sonnet-5` Sonnet is more expensive than Opus, always use Opus low instead of Sonnet); Haiku (`claude-haiku-4.5`)
+BANNED: Sonnet 5 (`claude-sonnet-5` Sonnet is more expensive than Opus, always use Opus low instead of Sonnet); Haiku (`claude-haiku-4.5`)
 
 ## Debate and Align on Big Plans
 
