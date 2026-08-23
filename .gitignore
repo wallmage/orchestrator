@@ -12,4 +12,4 @@ orchestrator/*
 !orchestrator/grok-cli.md
 !orchestrator/cursor-cli.md
 !orchestrator/debate.md
-!orchestrator/adversarial-review.md
+!orchestrator/reviewer-adversarial.md
