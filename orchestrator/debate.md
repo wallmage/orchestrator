@@ -1,6 +1,6 @@
 # Debate and Align on Big Plans
 
-The orchestrator authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: orchestrator solo ≈6/10 → +1 reviewer ≈8 → +2 ≈9.3. Capped at 3 reviewers max.
+The orchestrator authors spec + implementation plans, dispatches adversarial reviewers, arbitrates. Adversarial reviewers = independent top CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: orchestrator solo ≈6/10 → +1 reviewer ≈8 → +2 ≈9.3. Capped at 3 reviewers max.
 
 ## Tiers
 
@@ -11,9 +11,12 @@ The orchestrator authors spec + implementation plan, dispatches reviewers, arbit
 | 2-5h | 2 | 60 min max |
 | >5h OR very messy / irreversible | 3 | can be hours |
 
-Escalate one tier if a round agrees suspiciously fast.
+Only debate with an adversarial reviewer for “Big Jobs” sizing 1h+. Escalate one tier if a round agrees suspiciously fast.
 
-## Committee
+## Adversarial Reviewer Committee
+
+* Same prompt for every reviewer: `adversarial-reviewer.md`, read by path.
+* Fixed order: 1 reviewer = always grok 4.6 xhigh; 2 reviewers = always grok 4.6 xhigh and gpt-5.6-sol xhigh; 3 reviewers = all
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|
@@ -21,39 +24,35 @@ Escalate one tier if a round agrees suspiciously fast.
 | Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
 | Cursor CLI `kimi-k3-max` | `--mode ask` | `cursor-cli.md` |
 
-- Same prompt for every reviewer: `adversarial-reviewer.md`, read by path. Diversity comes from model family.
-
-## Sizing gate
-
-<30 min and reversible → no process: decide, dispatch. Longer, or irreversible/messy → big job (tiers above). Cost is irrelevant on big jobs.
-
 ## Drafting (orchestrator)
 
-1. One-time read per big job, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` (plain local files; superpowers is deliberately NOT installed in Claude Code — no hooks, no auto-trigger): `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work). Optional: `*-reviewer-prompt.md` siblings to extend the battery. All other skills are executor-side via the `using-superpowers` prefix; the orchestrator never reads them.
-2. Human first. Follow brainstorming fully with the human: probe, ask every clarifying question, surface unspoken requirements, present the design, get approval. No reviewer is dispatched before human sign-off on the spec. Only exit: human says "don't ask me" → human dropped, the orchestrator talks to reviewers only from then on.
-3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate to all-PASS. Then plan at `...-plan.md` (writing-plans format; path override) from the agreed spec; debate to all-PASS. TDD steps in plans are for workers, not the orchestrator.
+1. Read once per big job (local files; superpowers is not installed in Claude Code): `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work).
+2. Human first: follow brainstorming fully, thorough Q&A until the human approves the spec, unless the human says not to be bothered. Reviewers only after that.
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate to all-PASS. Then plan at `...-plan.md` from the agreed spec; debate to all-PASS.
 4. Each doc carries a version header, changelog, numbered decision table (stable anchors). Only the orchestrator edits.
 
 ## Executing the plan
 
-Read once per big job: `.../skills/subagent-driven-development/SKILL.md`; use its `scripts/` (`task-brief`, `review-package`, `sdd-workspace`) and prompt templates by path. Deltas for us:
-- Implementers and reviewers = CLI workers via runner + watcher (`SKILL.md` § CLI Worker Mechanics), model/effort explicit.
-- Parallel implementers allowed — one per worktree; merge per `SKILL.md` § Worktrees. Its `finishing-a-development-branch` handoff does not apply.
-- Reviews per `SKILL.md` § Reviewers: per task → SDD `task-reviewer-prompt.md`; pre-merge and final whole-branch → `judgment-reviewer.md`; big jobs add `adversarial-reviewer.md` on a different family at the final review. BASE recorded before dispatch (never `HEAD~1`).
-- Ledger, fix-loop caps, escalation, rulings list to human: as written.
+Read once per big job and follow: `.../skills/subagent-driven-development/SKILL.md` (its helper scripts and reviewer template live in that dir). Two overrides: parallel implementers are allowed, one per worktree (SDD says never); pre-merge and final whole-branch review use `judgment-reviewer.md`, and merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
 
 ## Conversation mechanics
 
-- A reviewer is a CLI process: no shared mind. Its memory = its CLI session (resume id); its voice = its final reply, which the runner writes to `<TMP_PATH>/<reviewer>.r<N>.final.txt` (new file per round, never overwrite; `.log` alongside). The orchestrator reads `.final.txt` only and deliberately skips `.log` (full session transcript: reasoning, tool calls, NDJSON; can be 100k+ lines — a 60-min, 300k-token read-through yields a 100-line verdict, and only the verdict belongs in the orchestrator's context).
-- `.log` is for exceptions only (final missing/empty, EXIT≠0, or a verdict the orchestrator suspects). Never read it whole: `wc -l`; `grep -n` for the anchor, finding id, file name, `error`/`failed`; `tail -n 100`; then `sed -n 'a,bp'` ±50 lines around hits. Budget ≤10% of the file.
-- Round N = resume that reviewer's thread (per its CLI file, same cwd) with the round-N template; runner + watcher per `SKILL.md` § CLI Worker Mechanics. All reviewers per round in parallel.
-- This is a real conversation: reviewer remembers everything; the orchestrator sends only deltas.
+- Reviewer memory = its CLI session; every round resumes it (same cwd) and sends only the delta. Reviewers run in parallel.
+- Each reply lands in `<TMP_PATH>/<reviewer>.r<N>.final.txt`, one file per round. The orchestrator reads that file only.
+- `.log` only when the final is missing/empty, EXIT≠0, or a verdict smells wrong — and never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 lines around hits; ≤10% of the file.
 
 ## Reviewer prompt
 
-`adversarial-reviewer.md` (skill dir), read by the reviewer by path, never pasted. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
+Reviewer is told the path of `adversarial-reviewer.md` (skill dir) and reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
-Honesty clause (verbatim, every round, binds the orchestrator too): "Be 100% honest. Accept or reject only on facts and reasoning. Do not defer, do not agree to be agreeable; hold your ground while you believe you are right, and always explain why. Concede only when convinced."
+Honesty rules (verbatim every round; bind the orchestrator too):
+```
+1. Verdicts rest on evidence and reasoning only. Agreement is never a courtesy; disagreement is never a posture.
+2. A finding stands until refuted with a specific fact or argument — not by restatement, authority, or repetition. If your finding was rejected without a refutation, say so and restate it.
+3. Concede the moment you are shown wrong, and name exactly what convinced you. A concession without that reason is invalid.
+4. Never soften, drop, or downgrade a finding to end the round. Never add one to look useful.
+5. Every accept/reject carries one line of why. No "fair point", no "you're right" without the reason.
+```
 
 ## Rounds
 
@@ -66,12 +65,12 @@ Honesty clause (verbatim, every round, binds the orchestrator too): "Be 100% hon
 
 Round 1:
 ```
-Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty clause>
+Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
 Number every finding. Do not edit any file.
 ```
 Round N:
 ```
-<doc path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>. <honesty clause>
+<doc path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>. <honesty rules>
 Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 ```
 

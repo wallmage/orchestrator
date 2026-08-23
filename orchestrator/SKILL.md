@@ -22,7 +22,7 @@ BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5.
 | Codex CLI `gpt-5.6-luna` xhigh | Worker 4 | Low | Medium | Read `codex-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Escalated 1 (default) | Medium | High | § Dispatch Mechanics |
 | Codex CLI `gpt-5.6-sol` high | Escalated 2 | Medium | High | Read `codex-cli.md` first |
-| Codex CLI `gpt-5.6-luna` high | Chore Worker | FREE | Low | Read `codex-cli.md` first |
+| Codex CLI `gpt-5.6-luna` high | Reader/Chore Worker | FREE | Low | Read `codex-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
 | Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | On-demand | Max | High | Read `cursor-cli.md` first |
 
