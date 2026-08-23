@@ -1,15 +1,15 @@
 # Debate and Align on Big Plans
 
-Fable authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Human sees only the final go/no-go, never the debate. Cost irrelevant here. Observed: solo ≈6/10 → 1 partner ≈8 → 2 ≈9.3; returns concave — cap committee at 3, spend surplus on rounds and depth, never a 4th voice.
+Fable authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Human sees only the final go/no-go, never the debate. Cost irrelevant here. Observed: solo ≈6/10 → 1 partner ≈8 → 2 ≈9.3. 3 partners max.
 
 ## Tiers
 
-| Job size | Partners | Time box |
+| Job size | Partners | Time box to align 100% |
 |---|---|---|
-| <30 min, reversible | 0 | — |
-| 30–60 min | 1 | ~5 min (spec+plan may be one doc, one debate) |
-| >1 h | 2 | 15–20 min |
-| >5 h / multi-day / irreversible | 3 | hours if needed |
+| <1h, easily reversible | 0 | — |
+| 1-2h | 1 | 30 min max |
+| 2-5h | 2 | 60 min max |
+| >5 h OR very messy / irreversible | 3 | can be hours |
 
 Escalate one tier if a round agrees suspiciously fast.
 
@@ -22,7 +22,6 @@ Escalate one tier if a round agrees suspiciously fast.
 | Cursor CLI `kimi-k3-max` | `--mode ask` | `cursor-cli.md` |
 
 - No roles per model: every reviewer runs the full battery. Diversity comes from model family. Order of addition arbitrary — rotate; record outcomes in the project ledger; prefer a model only on repeated evidence.
-- Opus excluded (Fable's family → correlated blind spots). Never a 4th member.
 
 ## Sizing gate
 
