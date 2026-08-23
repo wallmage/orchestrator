@@ -1,60 +1,67 @@
 # Debate and Align on Big Plans
 
-Fable authors the plan, dispatches reviewers, arbitrates. Reviewers are independent CLI models, read-only, one-on-one, unaware of each other. Human sees only the final go/no-go. Cost is irrelevant here: highest-tier intelligence only. Observed: solo plan ≈6/10 → 1 partner ≈8 → 2 partners ≈9.3.
+Fable authors the spec, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Human sees only the final go/no-go. Cost irrelevant here. Observed: solo ≈6/10 → 1 partner ≈8 → 2 ≈9.3; returns are concave — cap at 3, spend surplus on depth (rounds, spikes), never on a 4th voice.
 
 ## Tiers
 
-| Job size | Partners | Time box | Roles |
-|---|---|---|---|
-| <30 min, reversible | 0 | — | Decide alone. |
-| 30–60 min | 1 | ~5 min | Verifier |
-| >1 h | 2 | 15–20 min | Verifier + Adversary |
-| >5 h / multi-day / irreversible | 3 (cap) | as needed | Verifier + Adversary + Red Team |
+| Job size | Partners | Time box |
+|---|---|---|
+| <30 min, reversible | 0 | — |
+| 30–60 min | 1 | ~5 min |
+| >1 h | 2 | 15–20 min |
+| >5 h / multi-day / irreversible | 3 | hours if needed; add a 2nd pass after the plan is split into task contracts |
 
-Fixed battery, never chosen by diagnosing the draft (author can't see own blind spots). Escalate one tier if a round agrees suspiciously fast.
+Escalate one tier if a round agrees suspiciously fast.
 
-## Partners (fixed order of addition)
+## Committee
 
-| # | Role | Harness | Read-only flag | Dispatch |
-|---|---|---|---|---|
-| 1 | Verifier | Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
-| 2 | Adversary | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `grok-cli.md` |
-| 3 | Red Team | Cursor CLI `kimi-k3-max` | `--mode ask` | `cursor-cli.md` |
+| Harness | Read-only flag | Dispatch |
+|---|---|---|
+| Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
+| Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `grok-cli.md` |
+| Cursor CLI `kimi-k3-max` | `--mode ask` | `cursor-cli.md` |
 
-Model notes (update only on strong repeated evidence): sol — evidence-cited verification, completeness bias; grok — strong economy/simplicity, may pass designs that don't mechanically work.
+- No roles per model: every reviewer runs the full battery below. Diversity comes from model family, not assigned lenses. Order of addition is arbitrary — rotate; record outcomes in the project ledger, promote a preference only on repeated evidence.
+- Opus excluded: same family as Fable → correlated blind spots. Never add a 4th member.
 
-## Roles (quote verbatim; extend with job specifics, never dilute)
+## Battery (verbatim in every round-1 prompt)
 
-- **Verifier — is it wrong?** "Verify every verifiable claim against ground truth — run commands, read the code, check docs/platform facts. Cite evidence per finding. Find everything that cannot work as written."
-- **Adversary — is it too much?** "Attack complexity, scope, cost. Find what should not be built or decided at all, propose the simpler alternative, price what the draft's structures cost over time."
-- **Red Team — what's missing / breaks later?** "Assume this is adopted exactly as written. Find where it fails afterward: missing requirements, unhandled cases, invalidated assumptions, long-term consequences nobody will re-check."
+Review under three lenses, in order:
+1. **Wrong?** Verify every verifiable claim against ground truth — run commands, read code, check docs/platform facts. Cite evidence. Find everything that cannot work as written.
+2. **Too much?** Attack complexity, scope, cost. Name what should not be built or decided at all; propose the simpler alternative; price the long-term cost.
+3. **Missing / breaks later?** Assume adoption exactly as written. Find missing requirements, unhandled cases, invalidated assumptions, consequences nobody will re-check.
 
-## Hard rules
+## Drafting
 
-1. Single writer: only Fable edits the artifact (the spec at `<project>/docs/orchestration/MM-DD-##.md`).
-2. Isolation: reviewers never learn others exist; never attribute origin; no shared docs, no cross-rebuttal.
-3. Arbiter: Fable accepts/rejects each item on merit. Rejections explained in that reviewer's thread only; acceptances merged, version bumped, all reviewers re-review the same version.
-4. Pointers, not payloads: reviewers run in the project root and read files themselves; prompts carry paths.
-5. No superpowers prefix, no framework files. Review outputs live in `<TMP_PATH>`, never in the repo.
-6. Runner/watcher/resume per `SKILL.md` § CLI Worker Mechanics; one persistent thread per reviewer, later rounds via that CLI's resume.
-
-## Invocation
-
-```
-Role: <verbatim role>.
-Context: <1–2 sentences: purpose, consumer>.
-Read: <artifact path(s)>.
-Output: PASS or NO-GO, then numbered findings, each quoting the exact text it targets.
-Do not edit any file.
-```
+1. Fable writes a decision brief: goals, constraints, decisions taken, open questions (the only prose Fable authors).
+2. Drafter expands it to the spec: Workflow `model:'opus', effort:'medium'`, prompt includes "Read and follow `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/brainstorming/SKILL.md` and `.../writing-plans/SKILL.md`" (local files; no plugin needed). Drafter never reviews.
+3. Fable edits → v1 at `<project>/docs/orchestration/MM-DD-##.md`. Spec carries a version header, a changelog, and a numbered decision table (stable anchors for every contested choice).
 
 ## Rounds
 
-1. Draft with a numbered decision table for contested choices (stable addresses).
-2. Round 1: all reviewers in parallel on the same version — disagreement is the harvest.
-3. Merge all round-1 output at once; bump version once. Never review different versions concurrently after round 1.
-4. Later rounds delta-scoped: "Verify only that items <N…> were applied; do not reopen settled design." Exit condition per reviewer: "you hear from me again only if your signed items change."
-5. Cap 3 rounds per reviewer; then Fable decides unilaterally, logs dissent in the decision table.
-6. Done when every reviewer returns PASS on the same version → human go/no-go → execute.
+1. Round 1: dispatch all reviewers in parallel on v1, round-1 template. Runner/watcher per `SKILL.md` § CLI Worker Mechanics; Fable reads only `.final.txt`.
+2. Fable rules on every finding on merit. Merge accepted ones → bump version once; no concurrent versions after round 1.
+3. Round N: resume each reviewer's own thread (CLI resume per its file) with the round-N template. Rejections explained only to that reviewer, briefly.
+4. Stop when: all reviewers PASS on the same version; or a round yields zero accepted changes; or the time box is spent. Then Fable decides, logs dissent in the decision table → human go/no-go → execute.
 
-Conflicts: Fable rules on merit, records rationale in the decision table; the overruled side gets decision + reasoning in its own thread, never the other's identity or words.
+## Templates
+
+Round 1:
+```
+Read <spec path> (v1). Context: <1–2 sentences: purpose, consumer>.
+<battery verbatim>
+Output, terse: PASS or NO-GO; then numbered findings — severity, quoted anchor, issue, fix. Do not edit any file.
+```
+Round N:
+```
+<spec path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>.
+Re-review v<N> only for new or unresolved findings; same format; PASS if none.
+```
+
+## Hard rules
+
+1. Single writer: only Fable edits the spec. Reviewers read-only; their only output is their reply.
+2. Isolation: reviewers never learn others exist; never attribute origin; no shared docs, no cross-rebuttal. Conflicts: Fable rules, records rationale in the decision table; the overruled side gets decision + reason in its own thread.
+3. Pointers, not payloads: reviewers run in the project root and read files themselves. Spikes/experiments go to `<TMP_PATH>`.
+4. Superpowers: Fable none; reviewers and drafter keep their normal prefix.
+5. No framework files. `<TMP_PATH>` holds only runner plumbing, never documents.
