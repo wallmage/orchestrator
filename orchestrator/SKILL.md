@@ -11,6 +11,8 @@ A single “brain” agent (highest intelligence and cost) receives the tasks or
 
 Routing: ~90% of implementation → Workers 1–4 (default 1). Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1–2. Mechanical zero-judgment batch work → Chore Worker (free). Kimi K3 only on explicit user trigger. 
 
+BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5. 
+
 | Harness & Model | Role | Cost | Intel | Notes |
 | --- | --- | --- | --- | --- |
 | **Fable 5** (this session) | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never a pipeline worker (Opus low); outsource whenever possible. |
@@ -24,11 +26,9 @@ Routing: ~90% of implementation → Workers 1–4 (default 1). Hardest ~10% (int
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
 | Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | On-demand | Max | High | Read `cursor-cli.md` first |
 
-BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5; effort `max`/`ultra` anywhere.
-
 ## Debate and Align on Big Plans
 
-Independent, no superpowers, 
+Big jobs earn upfront planning spend: Fable drafts, then independent read-only CLI reviewers (sol xhigh → grok xhigh → kimi-k3-max; fixed roles Verifier/Adversary/Red Team, one-on-one, unaware of each other) attack it over ≤3 rounds; Fable arbitrates. Solo ≈6/10, +1 ≈8, +2 ≈9.3. Tiers: <30 min none; 30–60 min 1 partner (~5 min); >1 h 2 (15–20 min); >5 h 3. Read `debate.md` first.
 
 ## Best Among Workers
 
