@@ -9,7 +9,7 @@ A single orchestrator agent (highest intelligence and cost) receives the tasks o
 
 ## Model Roster & Routing
 
-Routing: ~90% of implementation → Workers 1–4 (default 1). Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1–2. Mechanical zero-judgment batch work → Chore Worker (free). Kimi K3 only on explicit user trigger. 
+Routing: ~90% of implementation → Workers 1–4 (default 1). Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1–2. Mechanical zero-judgment batch work → Chore Worker (free). Speed-critical patchwork, bulk code reading → Gemini Flash (free, fastest). Kimi K3 only on explicit user trigger. 
 
 BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5. 
 
@@ -25,10 +25,11 @@ BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5.
 | Codex CLI `gpt-5.6-luna` high | Reader/Chore Worker | FREE | Low | Read `codex-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
 | Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | On-demand | Max | High | Read `cursor-cli.md` first |
+| Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Fast Reader/Chore | FREE | Low–Med | 3–5× faster than any frontier fast mode; half a tier below Workers 1–4. Patchwork, bulk code reading, misc fast execution. Effort ALWAYS high. Read `agy-cli.md` first |
 
-## Debate and Align on Big Plans
+## Debate and Align on Big Jobs
 
-Big jobs (>30 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
 
 ## Reviewers
 
@@ -46,7 +47,7 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## CLI Worker Mechanics (shared)
 
-Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `cursor-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
+Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `cursor-cli.md`, `agy-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
 
 Runner shape (every CLI):
 - Bash `run_in_background`, watcher armed in the SAME batch.
