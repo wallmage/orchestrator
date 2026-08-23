@@ -16,7 +16,7 @@ printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
 Files: `-o` writes `.final.txt` directly. Resume id = `thread_id` in the log. Log `item.type":"error"` entries can be benign warnings (e.g. "Under-development features enabled") — failure is `"type":"turn.failed"` or `EXIT≠0`, nothing else.
 
 Flags:
-- `-m` + `-c model_reasoning_effort=` on EVERY dispatch (config default is `gpt-5.6-sol` xhigh — never rely on it).
+- `-m` + `-c model_reasoning_effort=` on EVERY dispatch (config default is `gpt-5.6-luna` xhigh — never rely on it).
 - Models: `gpt-5.6-sol` or `gpt-5.6-luna` only (bare `gpt-5.6` is invalid). Effort: `low|medium|high|xhigh` only. `max` and `ultra` exist but are BANNED — never pass them.
 - `-s read-only` for analysis-only jobs (`-s` values: `read-only|workspace-write|danger-full-access`).
 - `--output-schema <file>`: JSON Schema file fixing the final answer's shape; `-o` then holds the JSON. Every property must declare an explicit `type`; `uniqueItems` unsupported.
