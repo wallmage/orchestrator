@@ -5,7 +5,7 @@ description: Multi-model division of labor — strongest/expensive model as orch
 
 ## Optimal Performance, Cost, Speed
 
-A single “brain” agent (highest intelligence and cost) receives the tasks or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents, and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search etc) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator always tries to parallelize if possible: assign multiple workers (can be homogeneous or heterogeneous) when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully so it’s fully transparent to users. 
+A single “brain” agent (highest intelligence and cost) receives the tasks or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents, and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search etc) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator always tries to parallelize if possible: aggressively assign multiple workers (can be homogeneous or heterogeneous) when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully so it’s fully transparent to users. 
 
 ## Model Roster & Routing
 
@@ -31,6 +31,8 @@ BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5.
 Big jobs earn upfront planning spend. Fable reads superpowers brainstorming/writing-plans from the Codex install (one-time) and writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; full Wrong?/Too much?/Missing? battery each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; Fable arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <30 min none; 30–60 min 1 (~5 min); >1 h 2 (15–20 min); >5 h 3. Read `debate.md` first.
 
 ## Best Among Workers
+
+## Handoff Ledger
 
 ## CLI Worker Mechanics (shared)
 

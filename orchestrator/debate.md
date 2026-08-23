@@ -1,6 +1,6 @@
 # Debate and Align on Big Plans
 
-Fable authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Human sees only the final go/no-go. Cost irrelevant here. Observed: solo ≈6/10 → 1 partner ≈8 → 2 ≈9.3; returns concave — cap committee at 3, spend surplus on rounds and depth, never a 4th voice.
+Fable authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Human sees only the final go/no-go, never the debate. Cost irrelevant here. Observed: solo ≈6/10 → 1 partner ≈8 → 2 ≈9.3; returns concave — cap committee at 3, spend surplus on rounds and depth, never a 4th voice.
 
 ## Tiers
 
@@ -26,13 +26,19 @@ Escalate one tier if a round agrees suspiciously fast.
 
 ## Drafting (Fable)
 
-1. One-time read, this job only: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/brainstorming/SKILL.md` and `.../writing-plans/SKILL.md` (local files; superpowers is deliberately NOT installed in Claude Code — no hooks, no auto-trigger). Use their design checklist and plan format; skip their interactive Q&A and execution-handoff parts. Their `*-reviewer-prompt.md` siblings may extend the battery.
+1. One-time read, this job only, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` (plain local files; superpowers is deliberately NOT installed in Claude Code — no hooks, no auto-trigger):
+   - `brainstorming/SKILL.md` — before the spec: design checklist (skip its interactive Q&A).
+   - `writing-plans/SKILL.md` — before the plan: plan format (skip execution handoff).
+   - `receiving-code-review/SKILL.md` — before round-1 verdicts: rigor on incoming findings, no performative agreement.
+   - Optional: `requesting-code-review/` and `writing-plans/*-reviewer-prompt.md` siblings to extend the battery.
+   All other skills (TDD, executing-plans, verification, debugging, worktrees, parallel dispatch) are executor-side; Fable never reads them. Executors get them via the `using-superpowers` prefix (`SKILL.md` § CLI Worker Mechanics).
 2. Write the spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate it to all-PASS. Then write the plan at `...-plan.md` from the agreed spec; debate it to all-PASS. Plans follow writing-plans format (TDD steps are for workers, not Fable).
 3. Each doc carries a version header, changelog, and numbered decision table (stable anchors for every contested choice). Only Fable edits.
 
 ## Conversation mechanics
 
-- A reviewer is a CLI process: no shared mind. Its memory = its CLI session (resume id); its voice = its final reply, which the runner writes to `<TMP_PATH>/<reviewer>.r<N>.final.txt` (new file per round, never overwrite; `.log` alongside). Fable reads `.final.txt` only; the `.log` holds the full transcript (reasoning, tool calls) — open it only when a reply looks unfounded.
+- A reviewer is a CLI process: no shared mind. Its memory = its CLI session (resume id); its voice = its final reply, which the runner writes to `<TMP_PATH>/<reviewer>.r<N>.final.txt` (new file per round, never overwrite; `.log` alongside). Fable reads `.final.txt` only and deliberately skips `.log` (full session transcript: reasoning, tool calls, NDJSON; can be 100k+ lines — a 60-min, 300k-token read-through yields a 100-line verdict, and only the verdict belongs in Fable's context).
+- `.log` is for exceptions only (final missing/empty, EXIT≠0, or a verdict Fable suspects). Never read it whole: `wc -l`; `grep -n` for the anchor, finding id, file name, `error`/`failed`; `tail -n 100`; then `sed -n 'a,bp'` ±50 lines around hits. Budget ≤10% of the file.
 - Round N = resume that reviewer's thread (per its CLI file, same cwd) with the round-N template; runner + watcher per `SKILL.md` § CLI Worker Mechanics. All reviewers per round in parallel.
 - This is a real conversation: reviewer remembers everything; Fable sends only deltas.
 
@@ -50,7 +56,7 @@ Honesty clause (verbatim, every round, binds Fable too): "Be 100% honest. Accept
 1. Round 1: all reviewers in parallel on v1.
 2. Fable rules on every finding on merit. Merge accepted ones → bump version once; never concurrent versions.
 3. Round N: resume each thread with the round-N template; rejections explained to that reviewer only, one line each.
-4. No round cap. Done only when every reviewer returns PASS on the same version → human go/no-go → execute. Stalemate (one item unchanged 3 rounds, both sides holding) → that single item goes to the human; everything else continues.
+4. No round cap. Done only when every reviewer returns PASS on the same version → human go/no-go → execute. Stalemate (one item unchanged 3 rounds, both sides holding): Fable has final say — rare; convince first, overrule last. Record rationale in the decision table, tell that reviewer, continue. Human is never pulled into the debate.
 
 ## Templates
 
@@ -71,5 +77,5 @@ Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 1. Single writer: only Fable edits the docs. Reviewers read-only; their only output is their reply.
 2. Isolation: reviewers never learn others exist; never attribute origin; no shared docs, no cross-rebuttal. Conflicts: Fable rules, records rationale in the decision table; the overruled side gets decision + reason in its own thread.
 3. Pointers, not payloads: reviewers run in the project root and read files themselves. Spikes/experiments go to `<TMP_PATH>`.
-4. Superpowers: Fable reads the two skill files above for this job only; reviewers keep their normal prefix.
+4. Superpowers: Fable reads only the skill files listed under Drafting; reviewers and executors get the normal `using-superpowers` prefix.
 5. No framework files. `<TMP_PATH>` is transport only, never documentation.
