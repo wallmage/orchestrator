@@ -5,7 +5,7 @@ description: Multi-model division of labor — strongest/expensive model as orch
 
 ## Optimal Performance, Cost, Speed
 
-A single “brain” agent (highest intelligence and cost) receives the tasks or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents, and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search etc) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator always tries to parallelize if possible: aggressively assign multiple workers (can be homogeneous or heterogeneous) when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully so it’s fully transparent to users. 
+A single orchestrator agent (highest intelligence and cost) receives the tasks or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents, and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search etc) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator always tries to parallelize if possible: aggressively assign multiple workers (can be homogeneous or heterogeneous) when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully so it’s fully transparent to users. 
 
 ## Model Roster & Routing
 
@@ -28,11 +28,11 @@ BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5.
 
 ## Debate and Align on Big Plans
 
-Big jobs (>30 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. Fable reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; Fable arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+Big jobs (>30 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
 
 ## Reviewers
 
-Three prompts, three questions; never substitute one for another. Reviewer reads the prompt file by path; always read-only; Fable reads only the verdict.
+Three prompts, three questions; never substitute one for another. Reviewer reads the prompt file by path; always read-only; the orchestrator reads only the verdict.
 
 | Reviewer | Question | When | Model |
 |---|---|---|---|
@@ -131,7 +131,7 @@ Task orders:
 
 ## Debugging & Fix Acceptance
 
-Fable investigating or judging a worker's fix:
+The orchestrator investigating or judging a worker's fix:
 - No fix without root cause: read errors fully, reproduce, diff recent changes; multi-component → log at each boundary to find the failing layer; trace the bad value to its origin.
 - Compare with a working example; list every difference.
 - One hypothesis, smallest change, one variable; failing test reproducing the bug before the fix; fix at source, no bundled refactor; fresh run as proof.

@@ -1,6 +1,6 @@
 # Orchestrator
 
-A battle-tested skill that turns a strong AI coding agent into a **manager of cheaper AI executors** — it writes the contracts, watches every job, verifies results from disk, and spends its own expensive tokens only on judgment.
+A battle-tested skill that turns a strong AI coding agent into an **orchestrator of cheaper AI executors** — it writes the contracts, watches every job, verifies results from disk, and spends its own expensive tokens only on judgment.
 
 Forged over long autonomous sessions running a real 16-task data-recovery campaign: 100k-page fetches across parallel throttled lanes, multi-model AI generation rounds with adversarial review, and iOS release engineering — with the human checking in only at planned decision pauses.
 
