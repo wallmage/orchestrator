@@ -24,16 +24,24 @@ Escalate one tier if a round agrees suspiciously fast.
 - No roles per model: every reviewer runs the full battery. Diversity comes from model family. Order of addition arbitrary — rotate; record outcomes in the project ledger; prefer a model only on repeated evidence.
 - Opus excluded (Fable's family → correlated blind spots). Never a 4th member.
 
+## Sizing gate
+
+<30 min and reversible → no process: decide, dispatch. Longer, or irreversible/messy → big job (tiers above). Cost is irrelevant on big jobs.
+
 ## Drafting (Fable)
 
-1. One-time read, this job only, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` (plain local files; superpowers is deliberately NOT installed in Claude Code — no hooks, no auto-trigger):
-   - `brainstorming/SKILL.md` — before the spec: design checklist (skip its interactive Q&A).
-   - `writing-plans/SKILL.md` — before the plan: plan format (skip execution handoff).
-   - `receiving-code-review/SKILL.md` — before round-1 verdicts: rigor on incoming findings, no performative agreement.
-   - Optional: `requesting-code-review/` and `writing-plans/*-reviewer-prompt.md` siblings to extend the battery.
-   All other skills (TDD, executing-plans, verification, debugging, worktrees, parallel dispatch) are executor-side; Fable never reads them. Executors get them via the `using-superpowers` prefix (`SKILL.md` § CLI Worker Mechanics).
-2. Write the spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate it to all-PASS. Then write the plan at `...-plan.md` from the agreed spec; debate it to all-PASS. Plans follow writing-plans format (TDD steps are for workers, not Fable).
-3. Each doc carries a version header, changelog, and numbered decision table (stable anchors for every contested choice). Only Fable edits.
+1. One-time read per big job, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` (plain local files; superpowers is deliberately NOT installed in Claude Code — no hooks, no auto-trigger): `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work). Optional: `*-reviewer-prompt.md` siblings to extend the battery. All other skills are executor-side via the `using-superpowers` prefix; Fable never reads them.
+2. Human first. Follow brainstorming fully with the human: probe, ask every clarifying question, surface unspoken requirements, present the design, get approval. No partner is dispatched before human sign-off on the spec. Only exit: human says "don't ask me" → human dropped, Fable talks to partners only from then on.
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate to all-PASS. Then plan at `...-plan.md` (writing-plans format; path override) from the agreed spec; debate to all-PASS. TDD steps in plans are for workers, not Fable.
+4. Each doc carries a version header, changelog, numbered decision table (stable anchors). Only Fable edits.
+
+## Executing the plan
+
+Read once per big job: `.../skills/subagent-driven-development/SKILL.md`; use its `scripts/` (`task-brief`, `review-package`, `sdd-workspace`) and prompt templates by path. Deltas for us:
+- Implementers and reviewers = CLI workers via runner + watcher (`SKILL.md` § CLI Worker Mechanics), model/effort explicit.
+- Parallel implementers allowed — one per worktree; merge per `SKILL.md` § Worktrees. Its `finishing-a-development-branch` handoff does not apply.
+- Per-task and final reviews: `.../skills/requesting-code-review/code-reviewer.md`, read-only reviewer, BASE recorded before dispatch (never `HEAD~1`).
+- Ledger, fix-loop caps, escalation, rulings list to human: as written.
 
 ## Conversation mechanics
 
@@ -77,5 +85,5 @@ Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 1. Single writer: only Fable edits the docs. Reviewers read-only; their only output is their reply.
 2. Isolation: reviewers never learn others exist; never attribute origin; no shared docs, no cross-rebuttal. Conflicts: Fable rules, records rationale in the decision table; the overruled side gets decision + reason in its own thread.
 3. Pointers, not payloads: reviewers run in the project root and read files themselves. Spikes/experiments go to `<TMP_PATH>`.
-4. Superpowers: Fable reads only the skill files listed under Drafting; reviewers and executors get the normal `using-superpowers` prefix.
+4. Superpowers: Fable reads only the files named in Drafting/Executing; reviewers and executors get the normal `using-superpowers` prefix.
 5. No framework files. `<TMP_PATH>` is transport only, never documentation.

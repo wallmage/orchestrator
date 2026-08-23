@@ -28,7 +28,7 @@ BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5.
 
 ## Debate and Align on Big Plans
 
-Big jobs earn upfront planning spend. Fable reads superpowers brainstorming/writing-plans from the Codex install (one-time) and writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; full Wrong?/Too much?/Missing? battery each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; Fable arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <30 min none; 30–60 min 1 (~5 min); >1 h 2 (15–20 min); >5 h 3. Read `debate.md` first.
+Big jobs (>30 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. Fable reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; full Wrong?/Too much?/Missing? battery each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; Fable arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <30 min none; 30–60 min 1 (~5 min); >1 h 2 (15–20 min); >5 h 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
 
 ## Best Among Workers
 
@@ -111,9 +111,22 @@ Task orders:
 
 - Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff READING to Opus low, never git commands.
 - Single exception — one lone edit job this session, no pre-merge verification needed: Codex/Opus may run worktree/merge/push itself. Never reserve or unproven models. When in doubt, own git.
+- Create: native `EnterWorktree` first (check you are not already in one); raw `git worktree add` only without it (`.worktrees/<branch>`, verify `git check-ignore`). Install deps, run the suite; dispatch only on a green baseline.
+- Fan-out brief = scope, goal, constraints ("touch only X"), expected output. Don't fan out when failures are related, the job needs whole-system view, nobody knows what's broken yet, or state is shared.
+- On return: read summaries, check edit overlap between workers, full suite once on the merged tree, spot-check one thing per worker (systematic errors).
+- Merge from main root: checkout main, pull, merge, full suite on merged tree; red → stop, keep worktree; green → push, `git worktree remove` (from outside), `git worktree prune`, `git branch -d`. Removal refused = files exist nowhere else → never `--force`, surface them. Rejected push → investigate, never force-push.
 - Close every job: `git worktree list` + `git log --oneline -3`; finish anything stranded.
 
 
+
+## Debugging & Fix Acceptance
+
+Fable investigating or judging a worker's fix:
+- No fix without root cause: read errors fully, reproduce, diff recent changes; multi-component → log at each boundary to find the failing layer; trace the bad value to its origin.
+- Compare with a working example; list every difference.
+- One hypothesis, smallest change, one variable; failing test reproducing the bug before the fix; fix at source, no bundled refactor; fresh run as proof.
+- Reject: symptom patches, timeout bumps, multi-change fixes, "probably X". 3 failed fixes = architecture problem → stop, back to spec/debate.
+- Truly environmental (rare; 95% is incomplete investigation): document, handle (retry/timeout/error), add logging.
 
 ## Principles
 
