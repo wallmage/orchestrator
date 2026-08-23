@@ -21,7 +21,7 @@ Escalate one tier if a round agrees suspiciously fast.
 | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `grok-cli.md` |
 | Cursor CLI `kimi-k3-max` | `--mode ask` | `cursor-cli.md` |
 
-- No roles per model: every reviewer runs the full battery. Diversity comes from model family. Order of addition arbitrary — rotate; record outcomes in the project ledger; prefer a model only on repeated evidence.
+- Same prompt for every reviewer: `adversarial-reviewer.md`, read by path. Diversity comes from model family.
 
 ## Sizing gate
 
@@ -39,7 +39,7 @@ Escalate one tier if a round agrees suspiciously fast.
 Read once per big job: `.../skills/subagent-driven-development/SKILL.md`; use its `scripts/` (`task-brief`, `review-package`, `sdd-workspace`) and prompt templates by path. Deltas for us:
 - Implementers and reviewers = CLI workers via runner + watcher (`SKILL.md` § CLI Worker Mechanics), model/effort explicit.
 - Parallel implementers allowed — one per worktree; merge per `SKILL.md` § Worktrees. Its `finishing-a-development-branch` handoff does not apply.
-- Per-task and final reviews: `.../skills/requesting-code-review/code-reviewer.md`, read-only reviewer, BASE recorded before dispatch (never `HEAD~1`).
+- Reviews per `SKILL.md` § Reviewers: per task → SDD `task-reviewer-prompt.md`; pre-merge and final whole-branch → `judgment-reviewer.md`; big jobs add `adversarial-reviewer.md` on a different family at the final review. BASE recorded before dispatch (never `HEAD~1`).
 - Ledger, fix-loop caps, escalation, rulings list to human: as written.
 
 ## Conversation mechanics
@@ -49,12 +49,9 @@ Read once per big job: `.../skills/subagent-driven-development/SKILL.md`; use it
 - Round N = resume that reviewer's thread (per its CLI file, same cwd) with the round-N template; runner + watcher per `SKILL.md` § CLI Worker Mechanics. All reviewers per round in parallel.
 - This is a real conversation: reviewer remembers everything; Fable sends only deltas.
 
-## Battery (verbatim in round 1)
+## Reviewer prompt
 
-Review under three lenses, in order:
-1. **Wrong?** Verify every verifiable claim against ground truth — run commands, read code, check docs/platform facts. Cite evidence. Find everything that cannot work as written.
-2. **Too much?** Attack complexity, scope, cost. Name what should not be built or decided at all; propose the simpler alternative; price the long-term cost.
-3. **Missing / breaks later?** Assume adoption exactly as written. Find missing requirements, unhandled cases, invalidated assumptions, consequences nobody will re-check.
+`adversarial-reviewer.md` (skill dir), read by the reviewer by path, never pasted. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
 Honesty clause (verbatim, every round, binds Fable too): "Be 100% honest. Accept or reject only on facts and reasoning. Do not defer, do not agree to be agreeable; hold your ground while you believe you are right, and always explain why. Concede only when convinced."
 
@@ -69,9 +66,8 @@ Honesty clause (verbatim, every round, binds Fable too): "Be 100% honest. Accept
 
 Round 1:
 ```
-Read <doc path> (v1). Context: <1–2 sentences: purpose, consumer>.
-<battery verbatim> <honesty clause>
-Output, terse: PASS or NO-GO; then numbered findings — severity, quoted anchor, issue, fix. Do not edit any file.
+Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty clause>
+Number every finding. Do not edit any file.
 ```
 Round N:
 ```

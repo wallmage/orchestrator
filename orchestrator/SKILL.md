@@ -28,7 +28,17 @@ BANNED: Sonnet 5 (pricier than Opus low); Haiku 4.5.
 
 ## Debate and Align on Big Plans
 
-Big jobs (>30 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. Fable reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; full Wrong?/Too much?/Missing? battery each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; Fable arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <30 min none; 30–60 min 1 (~5 min); >1 h 2 (15–20 min); >5 h 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+Big jobs (>30 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. Fable reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (sol xhigh, grok xhigh, kimi-k3-max; no Opus — same family; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; Fable arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+
+## Reviewers
+
+Three prompts, three questions; never substitute one for another. Reviewer reads the prompt file by path; always read-only; Fable reads only the verdict.
+
+| Reviewer | Question | When | Model |
+|---|---|---|---|
+| SDD `task-reviewer-prompt.md` (superpowers path) | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result, every job | Codex CLI `gpt-5.6-luna` high / Grok medium |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | pre-merge on non-trivial diffs; final whole-branch | Codex CLI `gpt-5.6-sol` xhigh, `-s read-only` |
+| `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate (`debate.md`); final branch on big jobs, different family than judgment | top-tier, per `debate.md` committee |
 
 ## Best Among Workers
 

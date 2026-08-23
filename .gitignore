@@ -13,3 +13,4 @@ orchestrator/*
 !orchestrator/cursor-cli.md
 !orchestrator/debate.md
 !orchestrator/adversarial-reviewer.md
+!orchestrator/judgment-reviewer.md
