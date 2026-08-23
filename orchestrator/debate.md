@@ -1,15 +1,15 @@
 # Debate and Align on Big Plans
 
-The orchestrator authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Human sees only the final go/no-go, never the debate. Cost irrelevant here. Observed: solo ≈6/10 → 1 partner ≈8 → 2 ≈9.3. 3 partners max.
+The orchestrator authors spec + implementation plan, dispatches reviewers, arbitrates. Reviewers = independent top-tier CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: orchestrator solo ≈6/10 → +1 reviewer ≈8 → +2 ≈9.3. Capped at 3 reviewers max.
 
 ## Tiers
 
-| Job size | Partners | Time box to align 100% |
+| Job size | Reviewers | Time box to align |
 |---|---|---|
 | <1h, easily reversible | 0 | — |
 | 1-2h | 1 | 30 min max |
 | 2-5h | 2 | 60 min max |
-| >5 h OR very messy / irreversible | 3 | can be hours |
+| >5h OR very messy / irreversible | 3 | can be hours |
 
 Escalate one tier if a round agrees suspiciously fast.
 
@@ -17,8 +17,8 @@ Escalate one tier if a round agrees suspiciously fast.
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|
-| Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
 | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `grok-cli.md` |
+| Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
 | Cursor CLI `kimi-k3-max` | `--mode ask` | `cursor-cli.md` |
 
 - Same prompt for every reviewer: `adversarial-reviewer.md`, read by path. Diversity comes from model family.
@@ -30,7 +30,7 @@ Escalate one tier if a round agrees suspiciously fast.
 ## Drafting (orchestrator)
 
 1. One-time read per big job, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` (plain local files; superpowers is deliberately NOT installed in Claude Code — no hooks, no auto-trigger): `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work). Optional: `*-reviewer-prompt.md` siblings to extend the battery. All other skills are executor-side via the `using-superpowers` prefix; the orchestrator never reads them.
-2. Human first. Follow brainstorming fully with the human: probe, ask every clarifying question, surface unspoken requirements, present the design, get approval. No partner is dispatched before human sign-off on the spec. Only exit: human says "don't ask me" → human dropped, the orchestrator talks to partners only from then on.
+2. Human first. Follow brainstorming fully with the human: probe, ask every clarifying question, surface unspoken requirements, present the design, get approval. No reviewer is dispatched before human sign-off on the spec. Only exit: human says "don't ask me" → human dropped, the orchestrator talks to reviewers only from then on.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate to all-PASS. Then plan at `...-plan.md` (writing-plans format; path override) from the agreed spec; debate to all-PASS. TDD steps in plans are for workers, not the orchestrator.
 4. Each doc carries a version header, changelog, numbered decision table (stable anchors). Only the orchestrator edits.
 
