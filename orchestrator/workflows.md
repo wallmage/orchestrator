@@ -1,29 +1,30 @@
 # Dynamic Workflows (Fable orchestrating Opus fleets)
 
-Claude-side only: `Workflow` tool runs JS script spawning Opus agents in-process. No other roster model can join. CLI workers still exist for cross-family review + grok/gemini capacity — this = Claude fleet, not replacement.
+Claude-side only: `Workflow` tool runs JS script spawning Opus agents in-process. No other roster model can join. CLI workers still exist for cross-family review + grok/gemini capacity — Claude fleet, not replacement.
 
-When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-day loops. Single one-off Opus job = still one-`agent()` Workflow (§ Dispatch Mechanics).
+When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-day loops. Single one-off Opus job = still one-`agent()` Workflow (§ Dispatch Mechanics). Hybrid default: scout the work-list inline first, then Workflow pipelines over it. Big multi-phase work = sequential Workflows, one per phase, Fable judging between — never one giant script.
 
 ## Unique powers vs CLI dispatch
 
-- Deterministic control flow at zero Fable cost: loops/conditionals/fan-out run as script, not Fable turns. One script → dozens of agents → one return value.
+- Deterministic control flow at zero Fable cost: loops/conditionals/fan-out run as script, not Fable turns. One script → dozens of agents → one return value. Runs in background, completion notifies; `/workflows` = live progress.
 - Structured returns: `agent(prompt,{schema})` → validated JSON, auto-retry on mismatch. No logs/watcher/pid/jq.
-- Native parallelism: ~16 concurrent, 1000/run cap.
-- Effort per call: `'low'` mechanical, `'medium'` worker tier, `'high'` verify/judge/design.
+- Native parallelism: ~16 concurrent (excess queues), 1000/run cap.
+- Effort per call: `'low'` mechanical, `'medium'` worker tier, `'high'` verify/judge/design (`xhigh|max` exist — hardest judge stages only).
 - Per-agent worktrees: `{isolation:'worktree'}` for parallel file mutations — costly, only when needed; auto-removed if unchanged; orchestrator still merges (§ Worktrees).
-- Recovery: every run persists script (path in tool result) + `journal.jsonl` (each agent's actual return). Resume `{scriptPath, resumeFromRunId}`: unchanged `agent()` prefix cached instant, edited/new run live. SAME SESSION ONLY; TaskStop prior run first. Cross-session: read journal, author continuation script. Read journal before diagnosing empty result.
-- Budget: user "+500k" directive → `budget.total`; guard `while (budget.total && budget.remaining() > 50_000)`. Hard ceiling — `agent()` throws past it.
+- Recovery: pass script inline (`script` param), never pre-Write — every run persists it (path in tool result) + `journal.jsonl` (each agent's actual return; if missing → `agent-<id>.jsonl` in transcript dir). Iterate: Edit persisted file, re-invoke `{scriptPath}`. Resume: `{scriptPath, resumeFromRunId}` — unchanged `agent()` prefix cached instant, edited/new run live. SAME SESSION ONLY; TaskStop prior run first. Cross-session: journal → author continuation script. Read journal before diagnosing empty result.
+- Budget: user "+500k" directive → `budget.total`; guard `while (budget.total && budget.remaining() > 50_000)` (unset → Infinity → runs to agent cap). Hard ceiling — `agent()` throws past it. Pool shared with main loop.
 
 ## Script contract
 
-- Plain JS, async body, no TS syntax. Banned (break resume): `Date.now()`, `Math.random()`, argless `new Date()` — timestamps via `args`.
+- Plain JS, async body, no TS syntax, no fs/Node APIs (agents touch disk). Banned (break resume): `Date.now()`, `Math.random()`, argless `new Date()` — timestamps via `args`.
 - `export const meta = {name, description, phases?, whenToUse?}` FIRST, pure literal (no vars/calls/spread). `phase('X')` titles match `meta.phases` exactly.
 - `agent(prompt, opts)` → final text, or validated object with `schema`. Dead/skipped agent → `null`; `.filter(Boolean)`. Opts: `label`, `phase` (set explicitly inside pipeline/parallel stages — global `phase()` races), `schema`, `model`, `effort`, `isolation`, `agentType`. Agents return raw data (final text = return value, not user message).
-- `pipeline(items, ...stages)` DEFAULT — no barrier, item A stage 3 while B stage 1. Stage gets `(prev, originalItem, index)`; stage throw → item `null`, rest skipped.
-- `parallel([...thunks])` BARRIER — thunks `() => agent(...)`, NOT bare promises. Never rejects; failed thunk → `null`. Use ONLY when stage needs ALL prior results (dedup/merge, early-exit on zero, cross-compare).
-- `args` global = Workflow `args` input verbatim — pass real JSON, never stringified.
-- `workflow(nameOr{scriptPath}, args)`: child workflow inline; shares caps/budget/abort; nesting 1 level max.
-- `log()` progress; log any silent cap (top-N, sampling) — never imply full coverage.
+- `pipeline(items, ...stages)` DEFAULT — no barrier: item A stage 3 while B stage 1. Stage gets `(prev, originalItem, index)`; stage throw → item `null`, rest skipped.
+- `parallel([...thunks])` BARRIER — thunks `() => agent(...)`, NOT bare promises. Never rejects; failed thunk → `null`. ONLY when stage needs ALL prior results (dedup/merge, early-exit on zero, cross-compare).
+- `args` global = Workflow `args` input verbatim — real JSON, never stringified.
+- `workflow(nameOr{scriptPath}, args)` = child workflow inline; shares caps/budget/abort; nesting 1 level max.
+- Agents reach session MCP tools via ToolSearch; interactively-authed MCP servers may be absent in headless/cron runs.
+- `log()` progress + any silent cap (top-N, sampling) — never imply full coverage.
 
 ## Multi-day loops ("3 days straight")
 
@@ -34,8 +35,11 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 
 ## Patterns (compose freely)
 
-- Fan-out review: `pipeline(dimensions, find, verifyEach)` — findings verify while other dimensions still search; adversarial verify = 3 refuters, kill on majority.
+- Fan-out review: `pipeline(dimensions, find, verifyEach)` — findings verify while other dimensions still search.
+- Adversarial verify: 3 refuters per finding, kill on majority. Finding can fail multiple ways → distinct lenses (correctness/security/perf/repro) beat identical refuters.
 - Loop-until-dry: spawn finders until 2 consecutive rounds add nothing; dedup vs ALL seen, not vs confirmed.
+- Multi-modal sweep: parallel finders each searching a different way (by-container/content/entity/time) — one angle never finds all.
+- Completeness critic: final agent asks "what's missing?" — findings become next round's work.
 - Migration: discover sites → transform each in own worktree → verify → orchestrator merges serially.
 - Judge panel: N designs from different angles → parallel judges → synthesize winner, graft runner-up ideas.
 

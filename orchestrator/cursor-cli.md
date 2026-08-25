@@ -1,4 +1,4 @@
-# Cursor CLI (RETIRED — never dispatch; kept for possible return)
+# Cursor CLI (RETIRED — never dispatch)
 
 Shared contract: `SKILL.md` § CLI Worker Mechanics.
 
