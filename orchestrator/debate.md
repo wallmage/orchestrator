@@ -9,21 +9,21 @@ The orchestrator authors spec + implementation plans, dispatches adversarial rev
 | <1h, easily reversible | 0 | — |
 | 1-2h | 1 | 30 min max |
 | 2-5h | 2 | 60 min max |
-| >5h OR very messy / irreversible | 3 | can be hours |
+| >5h OR very messy / irreversible | 3 (2 while K3 inactive) | can be hours |
 
 Only debate with an adversarial reviewer for “Big Jobs” sizing 1h+. Escalate one tier if a round agrees suspiciously fast.
 
 ## Adversarial Reviewer Committee
 
 * Same prompt for every reviewer: `adversarial-reviewer.md`, read by path.
-* Fixed order: 1 reviewer = always grok 4.6 xhigh; 2 reviewers = + gpt-5.6-sol xhigh; 3 reviewers = + K3 via CodeBuddy (GLM 5.3 stands in when WorkBuddy quota is low; K3 preferred when the target involves design or visuals).
-* Never substitute a second harness of the same model (Cursor grok is not independent of GBC grok).
+* Fixed order: 1 reviewer = always grok 4.6 xhigh; 2 reviewers = always grok 4.6 xhigh and gpt-5.6-sol xhigh; 3 reviewers = all.
+* Kimi K3 INACTIVE (sub expired) — committee caps at 2 until it returns. Never substitute a second harness of the same model (Cursor grok is not independent of GBC grok).
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|
 | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `grok-cli.md` |
 | Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
-| CodeBuddy CLI Kimi K3 (GLM 5.3 stand-in) | read-only mode | CLI file TBD — get mechanics from user before first dispatch |
+| Cursor CLI `kimi-k3-max` — INACTIVE (sub expired) | `--mode ask` | `cursor-cli.md` |
 
 ## Drafting (orchestrator)
 

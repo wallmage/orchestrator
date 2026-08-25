@@ -9,25 +9,27 @@ A single orchestrator agent (highest intelligence and cost) receives the tasks o
 
 ## Model Roster & Routing
 
-Routing: ~90% of implementation → Opus (default: free, best precision). Speed matters → Cursor-Grok, then Scout. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout, conclusions only. Hours-long jobs, huge diffs/context → Grok Build (500k ctx). Claude-side fan-out, fleets, multi-day loops → Opus via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Opus effort high; still stuck → Sol (scarce, sparingly). Mechanical zero-judgment batch → Scout or Luna (interchangeable). Design → Opus first; K3 second opinion only. Debate 3rd/4th seat → K3 (GLM 5.3 when WorkBuddy quota low).
+Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest), then Worker 1. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker. Design → UI/UX Designer. Kimi K3 INACTIVE (sub expired) — never dispatch; Cursor CLI carries NO third-party models now.
 
-BANNED: Sonnet 5 (Opus is free and far better); Haiku 4.5; Terra (dominated by Sol on the same scarce quota); DeepSeek V4 Pro & Flash (no niche — beaten by free models on every axis).
+BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intel | Notes |
 | --- | --- | --- | --- | --- |
 | **Fable 5** (this session) | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never a pipeline worker; outsource whenever possible. |
-| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 1 (default) + UI/UX Designer | Free (20x sub) | High | Best coding precision on the roster + best design. `effort:'high'` for hardest ~10% and design. Also fleets/fan-out/multi-day loops. § Dispatch Mechanics + `workflows.md` |
-| Cursor CLI `cursor-grok-4.6-high-fast` | Worker 2 (speed) | Free | Medium | Fastest near-frontier (~2.5× Opus; `-medium-fast` when raw speed beats quality). 256k ctx — short/quick jobs, not hours-long. Harness a bit sloppy — never a reviewer. Read `cursor-cli.md` first |
-| Grok Build CLI `grok-4.6 --effort high` | Worker 3 (long/big ctx) | Free | Medium+ | 500k ctx, most careful cheap harness — long-running jobs, big context. xhigh doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
+| Cursor CLI `cursor-grok-4.6-high-fast` | Worker 1 (default) | ~Free | Medium | FAST (2nd only to Worker 4; `-medium-fast` when raw speed beats quality). 256k ctx — short/quick jobs, not hours-long. Harness a bit sloppy — never a reviewer. Read `cursor-cli.md` first |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | Medium+ | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Grok Build CLI `grok-4.6 --effort high` | Worker 3 | ~Free | Medium+ | 500k ctx, most careful cheap harness — long-running jobs, big context. Read `grok-cli.md` first |
 | Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Scout | Free | Low–Med | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
-| Codex CLI `gpt-5.6-sol` xhigh | Escalation + adversarial committee seat 2 | Scarce ($20 sub) | High | Cross-family top coder. Hardest ~10% after Opus high fails, sparingly. `-fast` variant when speed helps. Read `codex-cli.md` first |
-| Codex CLI `gpt-5.6-luna` xhigh | Chore Worker | Cheap (~1/10 Sol effective) | Low–Med | Mechanical zero-judgment batch; interchangeable with Scout — pick by which quota is fuller. Read `codex-cli.md` first |
-| CodeBuddy CLI Kimi K3 | Specialist: 2nd designer + debate seat 3/4 | Small quota (~2–3 h/wk) | Medium+ | Slow but big-model judgment; vision (reads screenshots/mockups). Design second opinion after Opus; extra committee seat on key decisions. CLI file TBD — get mechanics from user before first dispatch |
-| CodeBuddy CLI GLM 5.3 | K3 stand-in for debate seats | Half of K3 | Medium | Fast, text-only — no vision, never a designer. Substitute for K3's committee seat when WorkBuddy quota is low. CLI file TBD |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 (default) | Medium | High | § Dispatch Mechanics |
+| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | ~Free | High | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
+| Codex CLI `gpt-5.6-sol` high | Escalated 3 | Scarce (1x sub) | High | Occasional use only. Read `codex-cli.md` first |
+| Codex CLI `gpt-5.6-luna` xhigh | Chore Worker | Low (1x sub) | Low–Med | Mechanical zero-judgment batch only. Read `codex-cli.md` first |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
+| Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | Great designer; on-demand heavyweight | — | High | INACTIVE — sub expired, may return. Never dispatch until reactivated. |
 
 ## Debate and Align on Big Jobs
 
-Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (fixed order per `debate.md`: grok-4.6 xhigh, then + sol xhigh, then + K3 via CodeBuddy (GLM 5.3 when WorkBuddy quota low); no Opus — same family; never two harnesses of the same model; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (fixed order per `debate.md`: grok-4.6 xhigh, then + sol xhigh, then + kimi-k3-max — INACTIVE, so cap 2 for now; no Opus — same family; never two harnesses of the same model; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
 
 ## Reviewers
 
