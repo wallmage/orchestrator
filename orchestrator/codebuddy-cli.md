@@ -17,7 +17,7 @@ grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TM
 Files: log is an NDJSON stream (watcher liveness); resume id = `session_id` (on every line, first in the `"type":"init"` line). Success additionally requires the last `result` line to carry `"is_error":false`.
 
 Flags:
-- `--model <slug>` + `--effort max` on EVERY dispatch. Allowed slugs ONLY: `kimi-k3-2` (Kimi K3) | `glm-5.3` (GLM 5.3); effort ALWAYS `max` for both. Every other listed model (hy3*, minimax*, deepseek*, older kimi/glm) BANNED. Both 1M ctx; max output K3 32k / GLM 48k.
+- `--model <slug>` + `--effort` on EVERY dispatch. Allowed slugs ONLY: `kimi-k3-2` (Kimi K3, effort `max`) | `glm-5.3` (GLM 5.3, effort `max`) | `deepseek-v4-flash` (DeepSeek V4 Flash, effort `max`) | `hy3` (Hunyuan Hy3, effort `high` — free trivia lane, speed over depth). Every other listed model (hy3-x, minimax*, deepseek-v4-pro, older kimi/glm) BANNED. Ctx: K3/GLM/DS-Flash 1M, Hy3 192k. Max output: K3 32k, GLM 48k, DS-Flash 50k, Hy3 64k.
 - `-y` (`--dangerously-skip-permissions`): REQUIRED — without it headless shell/edits are blocked.
 - Analysis-only: `--permission-mode plan` INSTEAD of `-y` — Read/Grep/Glob allowed, Write and Bash denied (no `git diff` via shell; point it at files).
 - Structured answers: `--json-schema '<inline JSON Schema string>'` (inline, not a file — unlike Codex); result line then carries `structured_output` — extract with `jq -r '.structured_output'` instead of `.result`.
