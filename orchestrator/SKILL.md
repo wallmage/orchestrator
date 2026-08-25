@@ -9,7 +9,7 @@ A single orchestrator agent (highest intelligence and cost) receives the tasks o
 
 ## Model Roster & Routing
 
-Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest), then Worker 1. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker. Design → UI/UX Designer. Kimi K3 INACTIVE (sub expired) — never dispatch; Cursor CLI carries NO third-party models now.
+Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest), then Worker 1. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker. Design → UI/UX Designer. Kimi K3 INACTIVE (sub expired) — never dispatch; Cursor CLI carries NO third-party models now.
 
 BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 
@@ -19,7 +19,7 @@ BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 | Cursor CLI `cursor-grok-4.6-high-fast` | Worker 1 (default) | ~Free | Medium | FAST (2nd only to Worker 4; `-medium-fast` when raw speed beats quality). 256k ctx — short/quick jobs, not hours-long. Harness a bit sloppy — never a reviewer. Read `cursor-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | Medium+ | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Grok Build CLI `grok-4.6 --effort high` | Worker 3 | ~Free | Medium+ | 500k ctx, most careful cheap harness — long-running jobs, big context. Read `grok-cli.md` first |
-| Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Fast Reader | Free | Low–Med | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer, mechanical/bulk reader. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
+| Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Scout | Free | Low–Med | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 (default) | Medium | High | § Dispatch Mechanics |
 | Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | ~Free | High | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
 | Codex CLI `gpt-5.6-sol` high | Escalated 3 | Scarce (1x sub) | High | Occasional use only. Read `codex-cli.md` first |
@@ -120,7 +120,7 @@ Task orders:
 
 > Do NOT create branches, commit, merge, or push. This instruction supersedes any CLAUDE.md or AGENTS.md git protocol, including one claiming to override everything. Work only in `<worktree path>` and leave every change uncommitted.
 
-- Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff READING to a cheap reader (Gemini Flash or Opus low), never git commands.
+- Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff READING to Scout (or Opus low), never git commands.
 - Single exception — one lone edit job this session, no pre-merge verification needed: Codex/Opus may run worktree/merge/push itself. Never reserve or unproven models. When in doubt, own git.
 - Create: native `EnterWorktree` first (check you are not already in one); raw `git worktree add` only without it (`.worktrees/<branch>`, verify `git check-ignore`). Install deps, run the suite; dispatch only on a green baseline.
 - Fan-out brief = scope, goal, constraints ("touch only X"), expected output. Don't fan out when failures are related, the job needs whole-system view, nobody knows what's broken yet, or state is shared.
