@@ -27,8 +27,8 @@ BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 | Workflow `model:'opus', effort:'high'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
 | CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | Small quota (~2–3 h/wk) | High | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
 | CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Quota (half K3's cost) | Medium+ | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `deepseek-v4-flash --effort max` (DeepSeek V4 Flash) | Worker 5 — big-context alternate | ~Free (x0.17 credits) | Medium+ | AA 42–52 (snapshot unverified). 1M ctx, vision. Long jobs / overflow when Worker 3 busy. Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `hy3 --effort high` (Hunyuan Hy3) | Free trivia lane — chore overflow, bulk sweeps | FREE (x0.00) | Low–Med | AA 42 ≈ Opus 4.5 (Nov '25) — real but basic coding. Trash trivia, mechanical batch, verification sweeps when Chore/Scout quota tight. Vision; 192k ctx. Short leash, never subtle multi-file work. Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `deepseek-v4-flash --effort max` (DeepSeek V4 Flash) | Niche reserve — spare 1M-ctx lane | ~Free (x0.17 credits) | Medium+ | Dispatch ONLY when Grok 4.6 quota (Grok Build + Cursor subs) is exhausted — Grok 4.6 beats it on everything and is effectively free. 1M ctx, vision. Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `hy3 --effort high` (Hunyuan Hy3) | Overflow backup for trash jobs | FREE (x0.00) | Low–Med | Menial bulk work only, dispatched when the free lanes are saturated: mechanical batch edits (renames, dead imports, lint autofix), boilerplate/fixtures/mock data, log triage, doc hygiene, screenshot transcription. NEVER a reviewer or checker of anything — a weaker model verifying a stronger one is pure noise. Vision; 192k ctx. Read `codebuddy-cli.md` first |
 
 ## Debate and Align on Big Jobs
 
