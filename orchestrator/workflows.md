@@ -1,6 +1,6 @@
 # Dynamic Workflows (Fable orchestrating Opus fleets)
 
-Claude-side only: `Workflow` tool runs JS script spawning Opus agents in-process. No other roster model can join. CLI workers still exist for cross-family review + grok/gemini capacity — Claude fleet, not replacement.
+`Workflow` tool runs JS script spawning Opus agents in-process — Claude-side only, no CLI model can join. CLI workers still exist for cross-family review + grok/gemini capacity — Claude fleet, not replacement.
 
 When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-day loops. Single one-off Opus job = still one-`agent()` Workflow (§ Dispatch Mechanics). Hybrid default: scout the work-list inline first, then Workflow pipelines over it. Big multi-phase work = sequential Workflows, one per phase, Fable judging between — never one giant script.
 
@@ -8,7 +8,7 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 
 - Deterministic control flow at zero Fable cost: loops/conditionals/fan-out run as script, not Fable turns. One script → dozens of agents → one return value. Runs in background, completion notifies; `/workflows` = live progress.
 - Structured returns: `agent(prompt,{schema})` → validated JSON, auto-retry on mismatch. No logs/watcher/pid/jq.
-- Native parallelism: ~16 concurrent (excess queues), 1000/run cap.
+- Native parallelism: ~16 concurrent (excess queues); caps: 1000 agents/run, 4096 items per pipeline/parallel call.
 - Effort per call: `'low'` mechanical, `'medium'` worker tier, `'high'` verify/judge/design (`xhigh|max` exist — hardest judge stages only).
 - Per-agent worktrees: `{isolation:'worktree'}` for parallel file mutations — costly, only when needed; auto-removed if unchanged; orchestrator still merges (§ Worktrees).
 - Recovery: pass script inline (`script` param), never pre-Write — every run persists it (path in tool result) + `journal.jsonl` (each agent's actual return; if missing → `agent-<id>.jsonl` in transcript dir). Iterate: Edit persisted file, re-invoke `{scriptPath}`. Resume: `{scriptPath, resumeFromRunId}` — unchanged `agent()` prefix cached instant, edited/new run live. SAME SESSION ONLY; TaskStop prior run first. Cross-session: journal → author continuation script. Read journal before diagnosing empty result.
@@ -17,12 +17,12 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 ## Script contract
 
 - Plain JS, async body, no TS syntax, no fs/Node APIs (agents touch disk). Banned (break resume): `Date.now()`, `Math.random()`, argless `new Date()` — timestamps via `args`.
-- `export const meta = {name, description, phases?, whenToUse?}` FIRST, pure literal (no vars/calls/spread). `phase('X')` titles match `meta.phases` exactly.
-- `agent(prompt, opts)` → final text, or validated object with `schema`. Dead/skipped agent → `null`; `.filter(Boolean)`. Opts: `label`, `phase` (set explicitly inside pipeline/parallel stages — global `phase()` races), `schema`, `model`, `effort`, `isolation`, `agentType`. Agents return raw data (final text = return value, not user message).
+- `export const meta = {name, description, phases?: [{title, detail?, model?}], whenToUse?}` FIRST, pure literal (no vars/calls/spread). `phase('X')` titles match `meta.phases` exactly; unmatched → own progress group.
+- `agent(prompt, opts)` → final text, or validated object with `schema`. Dead/skipped agent → `null`; `.filter(Boolean)`. Opts: `label`, `phase` (set explicitly inside pipeline/parallel stages — global `phase()` races), `schema`, `model`, `effort`, `isolation`, `agentType` (Agent-registry type, e.g. `'code-reviewer'`; composes with `schema`). Agents return raw data (final text = return value, not user message).
 - `pipeline(items, ...stages)` DEFAULT — no barrier: item A stage 3 while B stage 1. Stage gets `(prev, originalItem, index)`; stage throw → item `null`, rest skipped.
 - `parallel([...thunks])` BARRIER — thunks `() => agent(...)`, NOT bare promises. Never rejects; failed thunk → `null`. ONLY when stage needs ALL prior results (dedup/merge, early-exit on zero, cross-compare).
 - `args` global = Workflow `args` input verbatim — real JSON, never stringified.
-- `workflow(nameOr{scriptPath}, args)` = child workflow inline; shares caps/budget/abort; nesting 1 level max.
+- `workflow(nameOr{scriptPath}, args)` = child workflow inline; shares caps/budget/abort; nesting 1 level max; throws on bad name/path/child syntax — catch. `name` = saved script in `.claude/workflows/` (also invocable top-level: `Workflow({name})`).
 - Agents reach session MCP tools via ToolSearch; interactively-authed MCP servers may be absent in headless/cron runs.
 - `log()` progress + any silent cap (top-N, sampling) — never imply full coverage.
 
@@ -43,4 +43,4 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 - Migration: discover sites → transform each in own worktree → verify → orchestrator merges serially.
 - Judge panel: N designs from different angles → parallel judges → synthesize winner, graft runner-up ideas.
 
-Rules: every mutating agent's prompt carries verbatim no-git paragraph (§ Worktrees). Default ≤15 agents unless user asks bigger. Fable never an `agent()` — orchestrator only.
+Rules: every mutating agent's prompt carries verbatim no-git paragraph (§ Worktrees). Default ≤15 agents unless user asks bigger (`/config` → Dynamic workflow size). Fable never an `agent()` — orchestrator only.
