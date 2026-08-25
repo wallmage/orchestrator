@@ -15,3 +15,5 @@ orchestrator/*
 !orchestrator/debate.md
 !orchestrator/adversarial-reviewer.md
 !orchestrator/judgment-reviewer.md
+!orchestrator/agy-cli.md
+!orchestrator/workflows.md
