@@ -17,7 +17,7 @@ Only debate with an adversarial reviewer for “Big Jobs” sizing 1h+. Escalate
 
 * Same prompt for every reviewer: `adversarial-reviewer.md`, read by path.
 * Fixed order: 1 reviewer = always grok 4.6 xhigh; 2 reviewers = always grok 4.6 xhigh and gpt-5.6-sol xhigh; 3 reviewers = all.
-* Kimi K3 runs via CodeBuddy `kimi-k3-2` max (Cursor sub expired — never via Cursor); GLM 5.3 max stands in for seat 3 when K3 quota is low. Never substitute a second harness of the same model (Cursor grok is not independent of GBC grok).
+* Kimi K3 runs via CodeBuddy `kimi-k3-2` max; GLM 5.3 max stands in for seat 3 when K3 quota is low. Never substitute a second harness of the same model.
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|

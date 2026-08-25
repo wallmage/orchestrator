@@ -9,26 +9,26 @@ A single orchestrator agent (highest intelligence and cost) receives the tasks o
 
 ## Model Roster & Routing
 
-Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest), then Worker 1. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker (Hy3 free overflow). Design → UI/UX Designer (Kimi K3 second opinion). Kimi K3, GLM 5.3, DeepSeek V4 Flash, Hy3 run via CodeBuddy CLI (`codebuddy-cli.md`); Cursor CLI carries NO third-party models now (sub expired) — never dispatch Kimi via Cursor.
+Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest). Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker (Hy3 free overflow). Design → UI/UX Designer (Kimi K3 second opinion). Kimi K3, GLM 5.3, DeepSeek V4 Flash, Hy3 run via CodeBuddy CLI (`codebuddy-cli.md`). Cursor CLI RETIRED — never dispatch anything via Cursor (`cursor-cli.md` kept on disk in case it returns).
 
 BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 
-| Harness & Model | Role | Cost | Intel | Notes |
-| --- | --- | --- | --- | --- |
-| **Fable 5** (this session) | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never a pipeline worker; outsource whenever possible. |
-| Cursor CLI `cursor-grok-4.6-high-fast` | Worker 1 (default) | ~Free | Medium | FAST (2nd only to Worker 4; `-medium-fast` when raw speed beats quality). 256k ctx — short/quick jobs, not hours-long. Harness a bit sloppy — never a reviewer. Read `cursor-cli.md` first |
-| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | Medium+ | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
-| Grok Build CLI `grok-4.6 --effort high` | Worker 3 | ~Free | Medium+ | 500k ctx, most careful cheap harness — long-running jobs, big context. Read `grok-cli.md` first |
-| Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Scout | Free | Low–Med | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 (default) | Medium | High | § Dispatch Mechanics |
-| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | ~Free | High | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
-| Codex CLI `gpt-5.6-sol` high | Escalated 3 | Scarce (1x sub) | High | Occasional use only. Read `codex-cli.md` first |
-| Codex CLI `gpt-5.6-luna` xhigh | Chore Worker | Low (1x sub) | Low–Med | Mechanical zero-judgment batch only. Read `codex-cli.md` first |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
-| CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | Small quota (~2–3 h/wk) | High | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Quota (half K3's cost) | Medium+ | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `deepseek-v4-flash --effort max` (DeepSeek V4 Flash) | Niche reserve — spare 1M-ctx lane | ~Free (x0.17 credits) | Medium+ | Dispatch ONLY when Grok 4.6 quota (Grok Build + Cursor subs) is exhausted — Grok 4.6 beats it on everything and is effectively free. 1M ctx, vision. Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `hy3 --effort high` (Hunyuan Hy3) | Overflow backup for trash jobs | FREE (x0.00) | Low–Med | Menial bulk work only, dispatched when the free lanes are saturated: mechanical batch edits (renames, dead imports, lint autofix), boilerplate/fixtures/mock data, log triage, doc hygiene, screenshot transcription. NEVER a reviewer or checker of anything — a weaker model verifying a stronger one is pure noise. Vision; 192k ctx. Read `codebuddy-cli.md` first |
+| Harness & Model | Role | Cost | Intel | Speed |  | Notes |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Fable 5** (this session) | Orchestrator | Max | Max | 4 |  | Expensive: judgment only, never labor. Never a pipeline worker; outsource whenever possible. |
+| Grok Build CLI `grok-4.6 --effort high` | Worker 1 (default) | ~Free | Medium+ |  |  | Same harness as Worker 3 — short/default jobs land here; hours-long/huge-ctx jobs are Worker 3's lane. 500k ctx. Read `grok-cli.md` first |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | Medium+ | 3 |  | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Grok Build CLI `grok-4.6 --effort high` | Worker 3 | ~Free | Medium+ |  |  | 500k ctx, most careful cheap harness — long-running jobs, big context. Read `grok-cli.md` first |
+| Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Scout | Free | Low–Med | 10 |  | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 (default) | Medium | High | 3 |  | § Dispatch Mechanics |
+| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | ~Free | High |  |  | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
+| Codex CLI `gpt-5.6-sol` high | Escalated 3 | Scarce (1x sub) | High | 3 |  | Occasional use only. Read `codex-cli.md` first |
+| Codex CLI `gpt-5.6-luna` xhigh | Chore Worker | Low (1x sub) | Low–Med | 3 |  | Mechanical zero-judgment batch only. Read `codex-cli.md` first |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | UI/UX Designer | Medium | High | 3 |  | Design and taste. § Dispatch Mechanics |
+| CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | Small quota (~2–3 h/wk) | High | 3 |  | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Quota (half K3's cost) | Medium+ | 5 |  | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `deepseek-v4-flash --effort max` (DeepSeek V4 Flash) | Niche reserve — spare 1M-ctx lane | ~Free (x0.17 credits) | Medium+ | 10 |  | Dispatch ONLY when Grok 4.6 quota (Grok Build sub) is exhausted — Grok 4.6 beats it on everything and is effectively free. 1M ctx, vision. Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `hy3 --effort high` (Hunyuan Hy3) | Overflow backup for trash jobs | FREE (x0.00) | Low–Med | - |  | Menial bulk work only, dispatched when the free lanes are saturated: mechanical batch edits (renames, dead imports, lint autofix), boilerplate/fixtures/mock data, log triage, doc hygiene, screenshot transcription. NEVER a reviewer or checker of anything — a weaker model verifying a stronger one is pure noise. Vision; 192k ctx. Read `codebuddy-cli.md` first |
 
 ## Debate and Align on Big Jobs
 
@@ -50,7 +50,7 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## CLI Worker Mechanics (shared)
 
-Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `cursor-cli.md`, `agy-cli.md`, `codebuddy-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
+Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `agy-cli.md`, `codebuddy-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
 
 Runner shape (every CLI):
 - Bash `run_in_background`, watcher armed in the SAME batch.
