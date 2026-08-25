@@ -1,6 +1,6 @@
 # Dynamic Workflows (Fable orchestrating Opus fleets)
 
-`Workflow` tool runs JS script spawning Opus agents in-process — Claude-side only, no CLI model can join. CLI workers remain for cross-family review + grok/gemini capacity. Gated: explicit opt-in only — "ultracode" (keyword; session-on = standing: workflow every substantive task, solo only trivia), user's own ask, or skill instruction (this skill grants it).
+`Workflow` tool runs JS script spawning Opus agents in-process — no CLI model can join. CLI workers remain for cross-family review + grok/gemini capacity. Gated: explicit opt-in only — "ultracode" (keyword; session-on = standing: workflow every substantive task, solo only trivia), user's own ask, or skill instruction (this skill grants it).
 
 When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-day loops. Single one-off Opus job = still one-`agent()` Workflow (§ Dispatch Mechanics). Hybrid default: scout the work-list inline first, then Workflow pipelines over it. Big multi-phase work = sequential Workflows, one per phase, Fable judging between — never one giant script.
 
@@ -16,10 +16,10 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 
 ## Script contract
 
-- Plain JS, async body, no TS syntax, no fs/Node APIs (agents touch disk). Banned (break resume): `Date.now()`, `Math.random()`, argless `new Date()` — timestamps via `args`; randomness → vary prompt/label by index.
+- Plain JS, async body, no TS syntax, no fs/Node APIs (agents touch disk). Banned (break resume): `Date.now()`, `Math.random()`, argless `new Date()` — timestamps via `args` or stamp after return; randomness → vary prompt/label by index.
 - `export const meta = {name, description, phases?: [{title, detail?, model?}], whenToUse?}` FIRST, pure literal (no vars/calls/spread). `phase('X')` titles match `meta.phases` exactly; unmatched → own progress group.
 - `agent(prompt, opts)` → final text, or validated object with `schema`. Dead/skipped agent → `null`; `.filter(Boolean)`. Opts: `label`, `phase` (set explicitly inside pipeline/parallel stages — global `phase()` races), `schema`, `model`, `effort`, `isolation`, `agentType` (Agent-registry type, e.g. `'code-reviewer'`; composes with `schema`). Agents return raw data (final text = return value, not user message).
-- `pipeline(items, ...stages)` DEFAULT — no barrier: item A stage 3 while B stage 1. Stage gets `(prev, originalItem, index)`; stage throw → item `null`, rest skipped.
+- `pipeline(items, ...stages)` DEFAULT — no barrier: item A stage 3 while B stage 1. Stage gets `(prev, originalItem, index)`; stage throw → item `null`, rest skipped. Plain functions OK as stages — reshape (flatten/map/filter) inline, never via a barrier.
 - `parallel([...thunks])` BARRIER — thunks `() => agent(...)`, NOT bare promises. Never rejects; failed thunk → `null`. ONLY when stage needs ALL prior results (dedup/merge, early-exit on zero, cross-compare).
 - `args` global = Workflow `args` input verbatim — real JSON, never stringified.
 - `workflow(nameOr{scriptPath}, args)` = child workflow inline; shares caps/budget/abort; nesting 1 level max; throws on bad name/path/child syntax — catch. `name` = saved script in `.claude/workflows/` (also invocable top-level: `Workflow({name})`).
@@ -44,4 +44,4 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 - Migration: discover sites → transform each in own worktree → verify → orchestrator merges serially.
 - Judge panel: N designs from different angles → parallel judges → synthesize winner, graft runner-up ideas.
 
-Rules: every mutating agent's prompt carries verbatim no-git paragraph (§ Worktrees). Default ≤15 agents unless user asks bigger (`/config` → Dynamic workflow size). Fable never an `agent()` — omitted `model` inherits Fable, omitted `effort` inherits session: state both every call.
+Rules: every mutating agent's prompt carries verbatim no-git paragraph (§ Worktrees). Default ≤15 agents unless user asks bigger (`/config` → Dynamic workflow size). Scale rigor to the ask: quick check = few finders/single vote; audit = big pool/3–5 votes/synthesis. Fable never an `agent()` — omitted `model` inherits Fable, omitted `effort` inherits session: state both every call.
