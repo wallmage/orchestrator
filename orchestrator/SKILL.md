@@ -1,34 +1,32 @@
 ---
 name: orchestrator
-description: Expensive model orchestrates, cheaper capable models execute. Use when the user says "orchestrate this task" or any job is delegated. Covers model roster, routing, CLI tools, flags, usage for all scenarios.
+description: Expensive model orchestrates, cheaper models execute. Use when the user says "orchestrate this". Model roster, routing, usage.
 ---
 
 ## Optimal Performance, Cost, Speed
 
-A single orchestrator agent (highest intelligence and cost) receives the tasks or ideas from human user, proposes the best design and implementation plan, decomposes it into subtasks, assigns those to worker agents, and later evaluates, synthesizes the results. Workers run their own loops to complete assigned tasks, using tools (code execution, web search etc) and their own skills (superpowers) and can be specialized by task type (e.g., default worker, designer). The routing logic tries to provide adequate performance with lowest cost (overkill is waste). Orchestrator always tries to parallelize if possible: aggressively assign multiple workers (can be homogeneous or heterogeneous) when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully so it’s fully transparent to users. 
+Orchestrator receives tasks from user, proposes best design and implementation plan, decomposes into subtasks, delegate to workers, and later evaluates, synthesizes results. Workers execute various tasks following routing logic: adequate performance with lowest cost. Orchestrator always aggressively assign multiple workers when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully, fully transparent to users. 
 
 ## Model Roster & Routing
 
-Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest). Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker (Hy3 free overflow). Design → UI/UX Designer (Kimi K3 second opinion). Kimi K3, GLM 5.3, DeepSeek V4 Flash, Hy3 run via CodeBuddy CLI (`codebuddy-cli.md`). Cursor CLI RETIRED — never dispatch anything via Cursor (`cursor-cli.md` kept on disk in case it returns).
+Net savings + no degradation = Orchestrator delegates. 90% implementation → Worker. 10% hardest (intricate design, parsing, subtle correctness) → Escalated. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) Mechanical zero-judgment batch → Scout/Chore, conclusions only. Claude-side fan-out, fleets, multi-day loops → Worker 1 via `workflows.md`. Design → UI/UX Designer (Kimi K3 second opinion). 
+
+Quota: two equal subs — Claude Max (shared by Fable + Opus) and SuperGrok (Grok only, else wasted). Target total burn Opus:Grok ≈ 50/50. Grok = frequent: routine single-worker jobs (~80% of dispatches). Opus = rare but heavy: fleets, fan-out, long/hard jobs. Frequency favors Grok; per-job volume evens it out.
 
 BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 
-| Harness & Model | Role | Cost | Intel | Speed |  | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| **Fable 5** (this session) | Orchestrator | Max | Max | 4 |  | Expensive: judgment only, never labor. Never a pipeline worker; outsource whenever possible. |
-| Grok Build CLI `grok-4.6 --effort high` | Worker 1 (default) | ~Free | Medium+ |  |  | `--effort medium` when raw speed beats quality. Same harness as Worker 3 — short/default jobs land here; hours-long/huge-ctx jobs are Worker 3's lane. 500k ctx. Read `grok-cli.md` first |
-| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | Medium+ | 3 |  | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
-| Grok Build CLI `grok-4.6 --effort high` | Worker 3 | ~Free | Medium+ |  |  | 500k ctx, most careful cheap harness — long-running jobs, big context. Read `grok-cli.md` first |
-| Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Scout | Free | Low–Med | 10 |  | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 (default) | Medium | High | 3 |  | § Dispatch Mechanics |
-| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | ~Free | High |  |  | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
-| Codex CLI `gpt-5.6-sol` high | Escalated 3 | Scarce (1x sub) | High | 3 |  | Occasional use only. Read `codex-cli.md` first |
-| Codex CLI `gpt-5.6-luna` xhigh | Chore Worker | Low (1x sub) | Low–Med | 3 |  | Mechanical zero-judgment batch only. Read `codex-cli.md` first |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | UI/UX Designer | Medium | High | 3 |  | Design and taste. § Dispatch Mechanics |
-| CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | Small quota (~2–3 h/wk) | High | 3 |  | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Quota (half K3's cost) | Medium+ | 5 |  | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `deepseek-v4-flash --effort max` (DeepSeek V4 Flash) | Niche reserve — spare 1M-ctx lane | ~Free (x0.17 credits) | Medium+ | 10 |  | Dispatch ONLY when Grok 4.6 quota (Grok Build sub) is exhausted — Grok 4.6 beats it on everything and is effectively free. 1M ctx, vision. Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `hy3 --effort high` (Hunyuan Hy3) | Overflow backup for trash jobs | FREE (x0.00) | Low–Med | - |  | Menial bulk work only, dispatched when the free lanes are saturated: mechanical batch edits (renames, dead imports, lint autofix), boilerplate/fixtures/mock data, log triage, doc hygiene, screenshot transcription. NEVER a reviewer or checker of anything — a weaker model verifying a stronger one is pure noise. Vision; 192k ctx. Read `codebuddy-cli.md` first |
+| Harness & Model | Role | Cost | Intelligence | Notes |
+| --- | --- | --- | --- | --- |
+| Fable 5 | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never pipeline worker. |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 1 - Default | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Grok Build CLI `grok-4.6 --effort medium` | Worker 2 | Low | 59 | `--effort medium` when raw speed beats quality. Same harness as Worker 3 — short/default jobs land here; hours-long/huge-ctx jobs are Worker 3's lane. 500k ctx. Read `grok-cli.md` first |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | § Dispatch Mechanics |
+| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | Low | 61 | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
+| Antigravity CLI `agy` `gemini-3.7-flash --effort medium` (Gemini 3.7 Flash) | Scout/Chore 1 - Default | Low | 53 | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first. Menial bulk work only, dispatched when the free lanes are saturated: mechanical batch edits (renames, dead imports, lint autofix), boilerplate/fixtures/mock data, log triage, doc hygiene, screenshot transcription. NEVER a reviewer or checker of anything — a weaker model verifying a stronger one is pure noise. Vision; 192k ctx. Read `codebuddy-cli.md` first |
+| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout/Chore 2 | Low | 52 |  |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Front-End Designer | Low | 61 | Design and taste. § Dispatch Mechanics |
+| CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | High | 60 | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Medium | 60 | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
 
 ## Debate and Align on Big Jobs
 
