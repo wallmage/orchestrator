@@ -16,7 +16,7 @@ BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 | Harness & Model | Role | Cost | Intel | Speed |  | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | **Fable 5** (this session) | Orchestrator | Max | Max | 4 |  | Expensive: judgment only, never labor. Never a pipeline worker; outsource whenever possible. |
-| Grok Build CLI `grok-4.6 --effort high` | Worker 1 (default) | ~Free | Medium+ |  |  | Same harness as Worker 3 — short/default jobs land here; hours-long/huge-ctx jobs are Worker 3's lane. 500k ctx. Read `grok-cli.md` first |
+| Grok Build CLI `grok-4.6 --effort high` | Worker 1 (default) | ~Free | Medium+ |  |  | `--effort medium` when raw speed beats quality. Same harness as Worker 3 — short/default jobs land here; hours-long/huge-ctx jobs are Worker 3's lane. 500k ctx. Read `grok-cli.md` first |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | Medium+ | 3 |  | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Grok Build CLI `grok-4.6 --effort high` | Worker 3 | ~Free | Medium+ |  |  | 500k ctx, most careful cheap harness — long-running jobs, big context. Read `grok-cli.md` first |
 | Antigravity CLI `agy` `gemini-3.7-flash --effort high` (Gemini 3.7 Flash) | Worker 4 / Scout | Free | Low–Med | 10 |  | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first |
