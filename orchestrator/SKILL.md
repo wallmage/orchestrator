@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Multi-model division of labor — strongest/expensive model as orchestrator, cheaper yet capable models as worker. Use when the user says "orchestrate this task" or starts any delegated job. Defines the model routing and cost/intelligence roster, CLI tools, flags, and usage for all scenarios.
+description: Expensive model orchestrates, cheaper capable models execute. Use when the user says "orchestrate this task" or any job is delegated. Covers model roster, routing, CLI tools, flags, usage for all scenarios.
 ---
 
 ## Optimal Performance, Cost, Speed
