@@ -9,7 +9,7 @@ A single orchestrator agent (highest intelligence and cost) receives the tasks o
 
 ## Model Roster & Routing
 
-Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest), then Worker 1. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker. Design → UI/UX Designer. Kimi K3 INACTIVE (sub expired) — never dispatch; Cursor CLI carries NO third-party models now.
+Routing: ~90% of implementation → Workers 1–4 (default 1). Speed matters → Worker 4 (fastest), then Worker 1. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) → Scout (Worker 4), conclusions only. Hours-long jobs, huge diffs/context → Worker 3 (500k ctx). Claude-side fan-out, fleets, multi-day loops → Worker 2 via `workflows.md`. Hardest ~10% (intricate design, parsing, subtle correctness) → Escalated 1→2→3 in order (3 sparingly — small sub). Mechanical zero-judgment batch → Chore Worker. Design → UI/UX Designer (Kimi K3 second opinion). Kimi K3 + GLM 5.3 run via CodeBuddy CLI, effort ALWAYS max (`codebuddy-cli.md`); Cursor CLI carries NO third-party models now (sub expired) — never dispatch Kimi via Cursor.
 
 BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 
@@ -25,11 +25,12 @@ BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
 | Codex CLI `gpt-5.6-sol` high | Escalated 3 | Scarce (1x sub) | High | Occasional use only. Read `codex-cli.md` first |
 | Codex CLI `gpt-5.6-luna` xhigh | Chore Worker | Low (1x sub) | Low–Med | Mechanical zero-judgment batch only. Read `codex-cli.md` first |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | UI/UX Designer | Medium | High | Design and taste. § Dispatch Mechanics |
-| Cursor CLI `kimi-k3-high` / `kimi-k3-max` (Kimi K3) | Great designer; on-demand heavyweight | — | High | INACTIVE — sub expired, may return. Never dispatch until reactivated. |
+| CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | Small quota (~2–3 h/wk) | High | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
+| CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Quota (half K3's cost) | Medium+ | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
 
 ## Debate and Align on Big Jobs
 
-Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (fixed order per `debate.md`: grok-4.6 xhigh, then + sol xhigh, then + kimi-k3-max — INACTIVE, so cap 2 for now; no Opus — same family; never two harnesses of the same model; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (fixed order per `debate.md`: grok-4.6 xhigh, then + sol xhigh, then + Kimi K3 max via CodeBuddy (GLM 5.3 max when K3 quota low); no Opus — same family; never two harnesses of the same model; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
 
 ## Reviewers
 
@@ -47,7 +48,7 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## CLI Worker Mechanics (shared)
 
-Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `cursor-cli.md`, `agy-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
+Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `cursor-cli.md`, `agy-cli.md`, `codebuddy-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
 
 Runner shape (every CLI):
 - Bash `run_in_background`, watcher armed in the SAME batch.

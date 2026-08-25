@@ -11,6 +11,7 @@ orchestrator/*
 !orchestrator/codex-cli.md
 !orchestrator/grok-cli.md
 !orchestrator/cursor-cli.md
+!orchestrator/codebuddy-cli.md
 !orchestrator/debate.md
 !orchestrator/adversarial-reviewer.md
 !orchestrator/judgment-reviewer.md
