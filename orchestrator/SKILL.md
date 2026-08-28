@@ -185,7 +185,7 @@ Route:
 - Small crew but no cross-talk needed → still Workflow: 3 isolated agents beat 3 chatting ones (cheaper, deterministic, no coordination overhead).
 - Depth not breadth — ONE thread grinding until done-criteria met (days OK) → `/goal <criteria>`: session Stop hook, agent CANNOT end turn until condition holds, auto-clears on success (`/goal clear` = abort early). Criteria must be verifiable/runnable; fights laziness. Breadth too big for one path → Workflow.
 
-## Debate and Align on Big Jobs
+## Debate on Big Jobs
 
 Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (fixed order per `debate.md`: grok-4.6 xhigh, then + sol xhigh, then + Kimi K3 max via CodeBuddy (GLM 5.3 max when K3 quota low); no Opus — same family; never two harnesses of the same model; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
 
@@ -201,15 +201,13 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## Best Among Workers
 
-N-version competition for mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost. Announce activation in chat.
+N-version competition for mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost.
 
-- Seats = all rostered Workers.
-- Composes with § Debate: debated spec pins the decomposition, then seats compete the execution.
-- Smallest swappable granularity: spec splits to the finest pieces whose interfaces (files, signatures, data shapes) it can pin — 200, 20, or two halves. Unpinnable → whole job = one piece, one winner.
-- Identical envelope per seat: own worktree, same starting commit, unaware of each other. Wait for the slowest.
-- Pass 1 — Scout triage, single parallel fan-out (up to 10 scouts split the components), conclusions only. Per component: defective piece → reject + reason; dominated (strictly worse than a rival) → drop; all equivalent → settle as first seat's. Returns contested list: component → surviving candidates + reasons.
-- Pass 2 — Fable judges contested components ONLY, against spec; artifact, not author; tie → first seat. Output = assembly list.
-- Assembly: default worker, fresh worktree, executes the assembly list (mechanical copy + glue — interfaces pinned). This combination never ran as a whole → full suite + judgment review pre-merge (§ Reviewers).
+- § Debate: debated spec pins the decomposition with smallest swappable granularity: spec splits to the finest pieces whose interfaces (files, signatures, data shapes) it can pin — 20, or two halves. Unpinnable → whole job = one piece, one winner. 
+- Identical envelope dispatch to ALL rostered Workers: own worktree, unaware of each other. Wait for the slowest.
+- Pass 1 — Scout triage, single parallel fan-out (up to 5 scouts split the components), conclusions only. Per component: defective piece → reject + reason; dominated (strictly worse than a rival) → drop; all equivalent → settle as first seat's. Return contested list: component → surviving candidates + reasons.
+- Pass 2 — Orchestrator judges contested components ONLY. Output = assembly list.
+- Assembly: default worker, fresh worktree, executes the assembly list = component → winning worktree path; worker fetches code from disk, list carries paths never code. This combination never ran as a whole → full suite + judgment review pre-merge (§ Reviewers).
 - Suite red 3× = interfaces not truly pinned → redo picks one level coarser; floor whole-job winner.
 - Announce in chat: divergence count, per-component winners.
 
