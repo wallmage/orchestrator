@@ -201,18 +201,17 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## Best Among Workers
 
-N-version competition for the ~5% mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost. Self-triggered on criteria — no approval, never silent: announce at dispatch (seats, granularity) in chat. NEVER deterministic/mechanical jobs (duplicates = pure waste). Composes with § Debate: debate the spec, then compete the execution.
+N-version competition for mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost. Announce at dispatch in chat: seats, granularity.
 
-- Seats = different families ONLY (same family → correlated errors). Start 2: Grok medium + Opus medium (Workflow). Proven useful → scale: 3rd Codex `gpt-5.6-luna` high, 4th CodeBuddy `kimi-k3-2` max. Cap 4.
-- Smallest pinnable granularity: spec splits to the finest components whose interfaces (files, signatures, data shapes) it CAN pin — 200, 20, or just two halves; pinned = swappable, same pipeline at any depth. Floor = 1: whole-job winner + graft loser's superior isolated pieces.
-- Identical envelope to every seat: own worktree, same starting commit, unaware of each other. Wait for the slowest.
-- Pick per component:
-  1. Acceptance checks first — failing candidate disqualified unjudged.
-  2. Equivalent candidates (Scout may triage sameness) → take default worker's; judgment spent ONLY on real divergences (most converge — expect a handful judged, not 20).
-  3. Divergent → orchestrator judges against spec. Artifact, not author; tie → default worker.
-- Assembly: fresh worktree; grafting mechanical → delegable. Hybrid = NEW artifact never tested whole → full suite + judgment review pre-merge (§ Reviewers).
-- 3 failed assemblies = interfaces never truly pinned → coarsen granularity, worst case whole-job winner.
-- After each run: one-turn chat dump — divergence count, per-component winners. No files; session logs are the archive, Scout mines stats on demand.
+- Seats — dispatch ALL listed (user edits list): Grok `grok-4.6` medium | Workflow Opus medium.
+- Composes with § Debate: debated spec pins the decomposition, then seats compete the execution.
+- Smallest swappable granularity: spec splits to the finest pieces whose interfaces (files, signatures, data shapes) it can pin — 200, 20, or two halves. Unpinnable → whole job = one piece, one winner.
+- Identical envelope per seat: own worktree, same starting commit, unaware of each other. Wait for the slowest.
+- Pass 1 — Scout triage, single parallel fan-out (up to 10 scouts split the components), conclusions only. Per component: defective piece → reject + reason; dominated (strictly worse than a rival) → drop; all equivalent → settle as first seat's. Returns contested list: component → surviving candidates + reasons.
+- Pass 2 — Fable judges contested components ONLY, against spec; artifact, not author; tie → first seat. Output = assembly list.
+- Assembly: default worker, fresh worktree, executes the assembly list (mechanical copy + glue — interfaces pinned). This combination never ran as a whole → full suite + judgment review pre-merge (§ Reviewers).
+- Suite red 3× = interfaces not truly pinned → redo picks one level coarser; floor whole-job winner.
+- Announce in chat: divergence count, per-component winners.
 
 ## Handoff Ledger
 
