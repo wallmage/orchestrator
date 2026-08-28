@@ -21,7 +21,7 @@ Only debate with an adversarial reviewer for “Big Jobs” sizing 1h+. Escalate
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|
-| Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `grok-cli.md` |
+| Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `SKILL.md` § Grok CLI |
 | Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
 | CodeBuddy CLI `kimi-k3-2 --effort max` (`glm-5.3 --effort max` when quota low) | `--permission-mode plan` | `codebuddy-cli.md` |
 

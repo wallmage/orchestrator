@@ -1,11 +1,11 @@
 # Codex CLI
 
-Shared contract: `SKILL.md` § CLI Worker Mechanics.
+Shared contract: `SKILL.md` § CLI Workers.
 
 Runner:
 
 ```sh
-exec </dev/null                   # live stdin pipe freezes codex exec
+exec </dev/null
 echo $$ > <TMP_PATH>/<job>.pid
 cd <PROJECT ROOT>                 # never a worktree — session cwd files the Codex app's project list
 codex exec --json -o <TMP_PATH>/<job>.final.txt -m <model> -c model_reasoning_effort=<effort> \
@@ -17,12 +17,12 @@ Files: `-o` writes `.final.txt` directly. Resume id = `thread_id` in log. Log `i
 
 Flags:
 - `-m` + `-c model_reasoning_effort=` EVERY dispatch (config default `gpt-5.6-luna` xhigh — never rely on it).
-- Models: `gpt-5.6-sol` | `gpt-5.6-luna` only (bare `gpt-5.6` invalid). Effort `low|medium|high|xhigh` only; `max`/`ultra` exist but BANNED.
+- Models: `gpt-5.6-sol` | `gpt-5.6-luna` only (bare `gpt-5.6` invalid). Effort `low|medium|high|xhigh` only.
 - `-s read-only` = analysis-only (`read-only|workspace-write|danger-full-access`).
 - `--output-schema <file>`: JSON Schema file fixing answer shape; `-o` then holds JSON. Every property needs explicit `type`; `uniqueItems` unsupported.
 - `-C <dir>` BANNED — always `cd` to project root.
 - Worktree edits: path in prompt ("Work in `<path>`") + `--add-dir <dir>` to make writable.
-- Rare: `-i <img>` image; `--skip-git-repo-check` outside git repo; `--ephemeral` skips session persistence (no resume).
+- Rare: `-i <img>` attaches an image.
 
 Prompts:
 - Parent thread fans out 3 parallel subagents (max 4 workers); remind explicitly.

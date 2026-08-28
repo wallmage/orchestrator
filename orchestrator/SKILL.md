@@ -1,32 +1,164 @@
 ---
 name: orchestrator
-description: Expensive model orchestrates, cheaper models execute. Use when the user says "orchestrate this". Model roster, routing, usage.
+description: Expensive model orchestrates, cheaper models execute. Use when the user says "orchestrate this". Model roster, routing.
 ---
 
 ## Optimal Performance, Cost, Speed
 
-Orchestrator receives tasks from user, proposes best design and implementation plan, decomposes into subtasks, delegate to workers, and later evaluates, synthesizes results. Workers execute various tasks following routing logic: adequate performance with lowest cost. Orchestrator always aggressively assign multiple workers when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully, fully transparent to users. 
+Orchestrator receives tasks from user, proposes best implementation plan, decomposes into subtasks, delegate to workers, and evaluates, synthesizes results. Routing logic: adequate performance with lowest cost. Orchestrator always aggressively assigns multiple workers when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully, transparent to user. 
+
+## Delegate vs Inline
+
+Delegate overhead ≈ minimal 3 orchestrator turns (dispatch/evaluate job); each turn = full context at orchestrator cache rate, often > $0.1 per turn. Inline = job tokens at orchestrator's premium rate + permanent context bloat.
+
+Decision Gates:
+
+1. **Quality**: need absolute best intelligence (architecture, specs, arbitration, subtle root-cause, expensive-if-wrong)? → inline. Cost irrelevant. Stop.
+2. **Size**: trivia, overhead > savings → inline. Stop.
+3. **Delegate** when: no quality loss, non-trivia job, net savings.
+   - Recon/zero-judgment (wide search, bulk read, research, triage, verification, mechanical batch, boilerplate/fixtures, doc hygiene...) → Scout, conclusions only, no noise into Orchestrator context.
+   - Brute-force parallelism → Workflow: ≥2 parallel agents, multi-phase pipelines, unknown-size discovery, adversarial verify, fleets, needs Claude-side tools.
+   - Everything else → Worker. Several Workers may run concurrently.
+4. **Built-in Agent templates** (claude-code-guide, Explore, Plan, general-purpose…): NEVER call directly — subagent inherits orchestrator's model, max cost. Run gates 1–3, prompt subagent with template.
 
 ## Model Roster & Routing
 
-Net savings + no degradation = Orchestrator delegates. 90% implementation → Worker. 10% hardest (intricate design, parsing, subtle correctness) → Escalated. Recon (wide search, bulk read/summarize, research, log/test triage, verification sweeps) Mechanical zero-judgment batch → Scout/Chore, conclusions only. Claude-side fan-out, fleets, multi-day loops → Worker 1 via `workflows.md`. Design → UI/UX Designer (Kimi K3 second opinion). 
-
-Quota: two equal subs — Claude Max (shared by Fable + Opus) and SuperGrok (Grok only, else wasted). Target total burn Opus:Grok ≈ 50/50. Grok = frequent: routine single-worker jobs (~80% of dispatches). Opus = rare but heavy: fleets, fan-out, long/hard jobs. Frequency favors Grok; per-job volume evens it out.
-
-BANNED: Sonnet 5 (worse value than Opus); Haiku 4.5.
+90% normal implementation → Worker. 10% hard (intricate design, parsing, subtle correctness) → Escalated. Front-End Design → Designer. 
+BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
 | Fable 5 | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never pipeline worker. |
-| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 1 - Default | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
-| Grok Build CLI `grok-4.6 --effort medium` | Worker 2 | Low | 59 | `--effort medium` when raw speed beats quality. Same harness as Worker 3 — short/default jobs land here; hours-long/huge-ctx jobs are Worker 3's lane. 500k ctx. Read `grok-cli.md` first |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | § Dispatch Mechanics |
-| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | Low | 61 | Doubles as default debate/judgment reviewer. Read `grok-cli.md` first |
-| Antigravity CLI `agy` `gemini-3.7-flash --effort medium` (Gemini 3.7 Flash) | Scout/Chore 1 - Default | Low | 53 | FASTEST anywhere (3–5× any frontier fast mode) — lightning implementer + recon: wide code search, bulk read/summarize, web research, log/test triage, verification sweeps. Recon returns conclusions only, never raw content. Half a tier below Workers 1–3. Effort ALWAYS high. Read `agy-cli.md` first. Menial bulk work only, dispatched when the free lanes are saturated: mechanical batch edits (renames, dead imports, lint autofix), boilerplate/fixtures/mock data, log triage, doc hygiene, screenshot transcription. NEVER a reviewer or checker of anything — a weaker model verifying a stronger one is pure noise. Vision; 192k ctx. Read `codebuddy-cli.md` first |
-| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout/Chore 2 | Low | 52 |  |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Front-End Designer | Low | 61 | Design and taste. § Dispatch Mechanics |
-| CodeBuddy CLI `kimi-k3-2 --effort max` (Kimi K3) | Great designer (2nd opinion after Opus); on-demand heavyweight; debate seat 3 | High | 60 | Slow but big-model judgment; vision (reads screenshots/mockups). Read `codebuddy-cli.md` first |
-| CodeBuddy CLI `glm-5.3 --effort max` (GLM 5.3) | K3 stand-in for debate seats | Medium | 60 | Fast, text-only — no vision, never a designer. Substitute when K3 quota low. Read `codebuddy-cli.md` first |
+| Grok Build CLI `grok-4.6 --effort medium` | Worker 1 - Default | Low | 59 | § Grok CLI |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | Opus workflow above. |
+| Grok Build CLI `grok-4.6 --effort xhigh` | Escalated 2 | Low | 61 | § Grok CLI |
+| Antigravity CLI `agy` `gemini-3.7-flash --effort medium` | Scout - Default | Low | 53 | § Antigravity CLI. Lightning fast implementer + recon + menial bulk work. |
+| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout 2 | Low | 52 | Opus workflow above. |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Designer | Low | 61 | Best design and taste. Opus workflow above. |
+| CodeBuddy CLI `kimi-k3-2 --effort max` | Dabate Reviewer 3 | High | 60 | `codebuddy-cli.md` |
+| CodeBuddy CLI `glm-5.3-flash --effort max` | Backup | Low | 57 | ALWAYS max — except workflows: `--effort ultracode` (= high + Dynamic Workflows; parallelism over peak).  `codebuddy-cli.md` |
+| CodeBuddy CLI `hy4-preview --effort max` | Backup | Free |  |  |
+
+## Dispatch Mechanics
+
+Claude-side workers (Opus, never Sonnet):
+- ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design. Multi-agent scripts, budgets, resume, multi-day loops: `workflows.md`.
+- Model AND effort stated every spawn.
+- One worker = still a one-`agent()` Workflow.
+- `Agent` tool BANNED (no effort field) — sole exception: teammate spawns (§ Agent Team).
+
+Task orders:
+- Big jobs: spec in `<project>/docs/orchestration/MM-DD-##.md`; dispatch "Read and execute exactly the contract at <path>".
+- One `ledger.md` per project: user decisions verbatim, task log, standing orders.
+- No report files — report in chat.
+
+### CLI Workers (shared contract)
+
+Grok + agy live below; `codex-cli.md`, `codebuddy-cli.md` hold the rest — read the one you dispatch to, never the others. This is the contract every CLI obeys.
+
+Runner shape (every CLI):
+- Bash `run_in_background`, watcher armed in the SAME batch.
+- `exec </dev/null` first (a live stdin pipe freezes some CLIs), `echo $$ > <TMP_PATH>/<job>.pid`, `cd <PROJECT ROOT>` (never `-C`/`--cwd`-style flags).
+- stdout+stderr → `<TMP_PATH>/<job>.log`; then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n` so EXIT= never lands mid-line); final answer → `<TMP_PATH>/<job>.final.txt`.
+
+Files:
+- `<TMP_PATH>` = this session's temp directory; one `.pid` + `.log` + `.final.txt` per job; OS-cleaned, no manual cleanup.
+- Read `.final.txt`, NEVER the log. Grep the log only for the resume id and `^EXIT=`.
+- Success = `EXIT=0` AND non-empty `.final.txt`.
+
+Flags (every dispatch):
+- Model AND effort stated explicitly; only slugs listed for that CLI.
+- Unattended approval flag on; read-only mode for analysis-only jobs; worktree edits name the path in the prompt (+ the CLI's extra-dir flag if it sandboxes).
+- CLI-native worktree flags BANNED — orchestrator owns worktrees.
+- Structured answers: use the CLI's schema flag when it has one, otherwise demand JSON in the prompt.
+
+Prompts:
+- Every CLI can fan out subagents but won't unless reminded: "Use subagents to make the task faster".
+- **Superpowers:** prepend `[$superpowers:using-superpowers](<path per CLI>)` to every prompt. TDD is enforced as verifiable acceptance checks (failing-tests-first, tests present in the diff), not as trust.
+
+Follow-ups:
+- Resume with the CLI's resume flag + id from the log, same cwd, send only the delta (memory intact).
+- Cancel: `TaskStop` the Bash task; confirm no `EXIT=` was written.
+
+### Grok CLI
+
+Runner:
+
+```sh
+exec </dev/null
+echo $$ > <TMP_PATH>/<job>.pid
+cd <PROJECT ROOT>                 # sessions keyed by cwd — resume must run from same dir
+grok -p "<prompt>" -m grok-4.6 --effort <medium|xhigh> --always-approve \
+  --output-format streaming-messages-json > <TMP_PATH>/<job>.log 2>&1
+printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
+grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.structured_output // .result' > <TMP_PATH>/<job>.final.txt
+```
+
+Files: log = NDJSON (liveness); resume id = first `"session_id"` in log. Signal kills exit 130/143, session saved to last tool call.
+
+Flags:
+- `-m grok-4.6` + `--effort` EVERY dispatch: `medium` = worker, `xhigh` = escalated/reviewer (omitted defaults to `high` — neither lane). Never `grok-4.5`.
+- `--always-approve`: required unattended; deny rules + hooks still apply.
+- `--sandbox read-only` = analysis-only. Default `off` — worktree edits need only path in prompt.
+- `--json-schema '<inline JSON>'` (string, not file) → `structured_output` in result line (runner prefers).
+- `--prompt-file <path>` for long prompts.
+- `--cwd` BANNED — always `cd`. `-w/--worktree` BANNED.
+- `--max-turns <N>` for runaway risk (`stopReason: max_turn_requests`).
+
+Prompts:
+- Fans out via `spawn_subagent` (`general-purpose|explore|plan`, depth 1, parallel, own context); remind explicitly.
+- Superpowers: `~/.grok/installed-plugins/superpowers-5993746a/skills/using-superpowers/SKILL.md`
+
+Follow-ups:
+- Resume: `grok -p "<delta>" -r <session_id> -m grok-4.6 --effort <same> --always-approve --output-format streaming-messages-json` — same cwd, same `--sandbox` (differing refused).
+- Review: normal job + `--sandbox read-only`.
+
+### Antigravity CLI (`agy`)
+
+Runner:
+
+```sh
+exec </dev/null
+echo $$ > <TMP_PATH>/<job>.pid
+cd <PROJECT ROOT>
+agy -p "<prompt>" --model gemini-3.7-flash --effort medium --dangerously-skip-permissions \
+  --output-format stream-json --print-timeout 30m > <TMP_PATH>/<job>.log 2>&1
+printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
+grep -a '"event":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result.structured_output // .result.response' > <TMP_PATH>/<job>.final.txt
+```
+
+Files: log = NDJSON (`step_update` events = liveness); resume id = `conversation_id` in first `init` line. Success also needs last result line `"status":"SUCCESS"`; errors → `"status":"ERROR"` + exit 1.
+
+Flags:
+- `--model gemini-3.7-flash --effort medium` EVERY dispatch — the only model + effort ever used; all other `agy models` BANNED.
+- `--dangerously-skip-permissions`: required unattended.
+- `--mode plan` = analysis-only: blocks all writes; plan docs dumped under `~/.gemini/antigravity-cli/brain/<cid>/` — ignore, read only the reply.
+- `--print-timeout 30m`: default 5m kills longer jobs mid-run — raise EVERY dispatch.
+- `--json-schema '<inline JSON or path>'` → result gains `structured_output` (runner prefers).
+- Worktree edits: `cd` in, or path in prompt + `--add-dir <dir>`. No cwd flag — always `cd`.
+
+Prompts:
+- Fans out via native subagent tools (`define_subagent`/`invoke_subagent`/`manage_subagents`); remind explicitly.
+- Superpowers: `~/.gemini/config/plugins/superpowers/skills/using-superpowers/SKILL.md`
+
+Follow-ups:
+- Resume: `agy -p "<delta>" --conversation <conversation_id> --model gemini-3.7-flash --effort medium --dangerously-skip-permissions --output-format stream-json` — same cwd, memory intact.
+- Review: normal job + `--mode plan`.
+
+## Agent Team vs Workflow
+
+Key question decides: do workers need to TALK to each other mid-job?
+
+**Agent Team = collaboration.** Small crew 2–5, group chat: peer `SendMessage` + shared task list, live debate/handoff/renegotiation — value comes from the discussion. Lead = Orchestrator, Teammates = separate Claude sessions, model chosen per teammate (Opus default). Must-knows (not in tool schemas): spawn = `Agent` tool + `name` param — SOLE exception to the Agent-tool ban; name the model in the spawn prompt (no model param; blocked/unnamed → lead's model; effort NOT settable, inherits lead's). Teammate idle notice carries NO output — results arrive only via SendMessage/task list; teammates forget to mark tasks done, nudge them. Stop = `TaskStop` with teammate name; `SendMessage` to a stopped teammate auto-resumes it with its transcript. In-process teammates (only mode in desktop GUI) can't run background subagents (synchronous OK); only lead approves plans; team auto-cleans at session end; one team/session, no nesting, `/resume` drops in-process teammates.
+
+**Workflow = brute-force parallelism.** Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). Read: `workflows.md`.
+
+Route:
+- Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; reproducibility wanted → Workflow.
+- Team ONLY when ALL hold: few pieces (2–5), deeply interdependent, interfaces uncertain/evolving, live negotiation essential. Examples: rival-hypothesis debugging, cross-layer API negotiation, multi-angle exploration where findings must cross-pollinate mid-flight.
+- Small crew but no cross-talk needed → still Workflow: 3 isolated agents beat 3 chatting ones (cheaper, deterministic, no coordination overhead).
+- Depth not breadth — ONE thread grinding until done-criteria met (days OK) → `/goal <criteria>`: session Stop hook, agent CANNOT end turn until condition holds, auto-clears on success (`/goal clear` = abort early). Criteria must be verifiable/runnable; fights laziness. Breadth too big for one path → Workflow.
 
 ## Debate and Align on Big Jobs
 
@@ -46,33 +178,7 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## Handoff Ledger
 
-## CLI Worker Mechanics (shared)
-
-Per-CLI runner, flags, model slugs, prompts and follow-ups live in `codex-cli.md`, `grok-cli.md`, `agy-cli.md`, `codebuddy-cli.md` — read the one you dispatch to, never the others. This section is the contract they all obey.
-
-Runner shape (every CLI):
-- Bash `run_in_background`, watcher armed in the SAME batch.
-- `exec </dev/null` first (a live stdin pipe freezes some CLIs), `echo $$ > <TMP_PATH>/<job>.pid`, `cd <PROJECT ROOT>` (never `-C`/`--cwd`-style flags).
-- stdout+stderr → `<TMP_PATH>/<job>.log`; then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n` so EXIT= never lands mid-line); final answer → `<TMP_PATH>/<job>.final.txt`.
-
-Files:
-- `<TMP_PATH>` = this session's temp directory; one `.pid` + `.log` + `.final.txt` per job; OS-cleaned, no manual cleanup.
-- Read `.final.txt`, NEVER the log. Grep the log only for the resume id and `^EXIT=`.
-- Success = `EXIT=0` AND non-empty `.final.txt`.
-
-Flags (every dispatch):
-- Model AND effort stated explicitly; only slugs listed in the CLI file.
-- Unattended approval flag on; read-only mode for analysis-only jobs; worktree edits name the path in the prompt (+ the CLI's extra-dir flag if it sandboxes).
-- CLI-native worktree flags BANNED — orchestrator owns worktrees.
-- Structured answers: use the CLI's schema flag when it has one, otherwise demand JSON in the prompt.
-
-Prompts:
-- Every CLI can fan out subagents but won't unless reminded: "Use subagents to make the task faster".
-- **Superpowers:** prepend `[$superpowers:using-superpowers](<path in CLI file>)` to every prompt. TDD is enforced as verifiable acceptance checks (failing-tests-first, tests present in the diff), not as trust.
-
-Follow-ups:
-- Resume with the CLI's resume flag + id from the log, same cwd, send only the delta (memory intact).
-- Cancel: `TaskStop` the Bash task; confirm no `EXIT=` was written.
+State lives on disk
 
 ## Watcher Protocol
 
@@ -98,19 +204,6 @@ Rules:
 - No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
 - `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
 - Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
-
-## Dispatch Mechanics
-
-Claude-side workers (Opus, never Sonnet):
-- ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design. Multi-agent scripts, budgets, resume, multi-day loops: `workflows.md`.
-- Model AND effort stated every spawn.
-- One worker = still a one-`agent()` Workflow.
-- `Agent` tool BANNED (no effort field).
-
-Task orders:
-- Big jobs: spec in `<project>/docs/orchestration/MM-DD-##.md`; dispatch "Read and execute exactly the contract at <path>".
-- One `ledger.md` per project: user decisions verbatim, task log, standing orders.
-- No report files — report in chat.
 
 ## Worktrees, Parallelism & Git
 
