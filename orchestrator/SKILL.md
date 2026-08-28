@@ -201,9 +201,9 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## Best Among Workers
 
-N-version competition for mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost. Announce at dispatch in chat: seats, granularity.
+N-version competition for mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost. Announce activation in chat.
 
-- Seats — dispatch ALL listed (user edits list): Grok `grok-4.6` medium | Workflow Opus medium.
+- Seats = all rostered Workers.
 - Composes with § Debate: debated spec pins the decomposition, then seats compete the execution.
 - Smallest swappable granularity: spec splits to the finest pieces whose interfaces (files, signatures, data shapes) it can pin — 200, 20, or two halves. Unpinnable → whole job = one piece, one winner.
 - Identical envelope per seat: own worktree, same starting commit, unaware of each other. Wait for the slowest.
