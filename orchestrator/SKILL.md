@@ -201,6 +201,18 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 ## Best Among Workers
 
+N-version competition for the ~5% mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost — but user approves each run, never self-authorized. NEVER deterministic/mechanical jobs (duplicates = pure waste). Composes with § Debate: debate the spec, then compete the execution.
+
+- Seats = different families ONLY (same family → correlated errors). Start 2: Grok medium + Opus medium (Workflow). Proven useful → scale: 3rd Codex `gpt-5.6-luna` high, 4th CodeBuddy `kimi-k3-2` max. Cap 4.
+- Spec pins component list + every interface (files, signatures, data shapes) BEFORE dispatch — pinned interfaces = swappable pieces. Can't pin → compete whole-job: pick winner, graft loser's superior isolated pieces.
+- Identical envelope to every seat: own worktree, same starting commit, unaware of each other. Wait for the slowest.
+- Pick per component:
+  1. Acceptance checks first — failing candidate disqualified unjudged.
+  2. Equivalent candidates (Scout may triage sameness) → take default worker's; judgment spent ONLY on real divergences (most converge — expect a handful judged, not 20).
+  3. Divergent → orchestrator judges against spec. Artifact, not author; tie → default worker.
+- Assembly: fresh worktree; grafting mechanical → delegable. Hybrid = NEW artifact never tested whole → full suite + judgment review pre-merge (§ Reviewers).
+- 3 failed assemblies = interfaces never truly pinned → fall back to whole-job winner.
+
 ## Handoff Ledger
 
 State lives on disk
