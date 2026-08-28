@@ -146,6 +146,31 @@ Follow-ups:
 - Resume: `agy -p "<delta>" --conversation <conversation_id> --model gemini-3.7-flash --effort medium --dangerously-skip-permissions --output-format stream-json` — same cwd, memory intact.
 - Review: normal job + `--mode plan`.
 
+### Watcher Protocol
+
+Always arm a watcher in the SAME tool-call batch as the dispatch. Never hand-write one — instantiate `watcher.sh` :
+
+`Monitor(persistent:true, description:"<job> watcher", command:"LOG=<TMP_PATH>/<job>.log JOB=<job> PIDFILE=<TMP_PATH>/<job>.pid OUTFILE=<TMP_PATH>/<job>.final.txt sh ~/.claude/skills/orchestrator/watcher.sh")`
+
+(Windows: `~` → `%USERPROFILE%`.)
+
+Env:
+- `LOG` (required): the job log.
+- `PIDFILE` (always): scopes CPU/socket checks to this job.
+- `OUTFILE` (always).
+- Optional: `JOB`, `MILESTONE_FILE`/`MILESTONE_MSG`, `POLL_SECS`(3), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8).
+
+Each wake message names its condition and carries its own diagnosis — act on it in the same turn; never respond by granting more waiting time.
+
+Rules:
+- Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake.
+- No HEARTBEAT for 5+ min = the watcher itself died — re-arm it.
+- Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
+- On RESOURCE: kill only hung/abandoned child processes; a legitimately heavy job gets its limits raised.
+- No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
+- `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
+- Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
+
 ## Agent Team vs Workflow
 
 Key question decides: do workers need to TALK to each other mid-job?
@@ -179,31 +204,6 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 ## Handoff Ledger
 
 State lives on disk
-
-## Watcher Protocol
-
-Always arm a watcher in the SAME tool-call batch as the dispatch. Never hand-write one — instantiate `watcher.sh` :
-
-`Monitor(persistent:true, description:"<job> watcher", command:"LOG=<TMP_PATH>/<job>.log JOB=<job> PIDFILE=<TMP_PATH>/<job>.pid OUTFILE=<TMP_PATH>/<job>.final.txt sh ~/.claude/skills/orchestrator/watcher.sh")`
-
-(Windows: `~` → `%USERPROFILE%`.)
-
-Env:
-- `LOG` (required): the job log.
-- `PIDFILE` (always): scopes CPU/socket checks to this job.
-- `OUTFILE` (always).
-- Optional: `JOB`, `MILESTONE_FILE`/`MILESTONE_MSG`, `POLL_SECS`(3), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8).
-
-Each wake message names its condition and carries its own diagnosis — act on it in the same turn; never respond by granting more waiting time.
-
-Rules:
-- Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake.
-- No HEARTBEAT for 5+ min = the watcher itself died — re-arm it.
-- Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
-- On RESOURCE: kill only hung/abandoned child processes; a legitimately heavy job gets its limits raised.
-- No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
-- `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
-- Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
 
 ## Worktrees, Parallelism & Git
 

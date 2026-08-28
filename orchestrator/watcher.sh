@@ -72,8 +72,8 @@ while true; do
       echo "ARMED OK [$JOB]: log exists, $(wc -c < "$LOG" | tr -d ' ') bytes"
     fi
 
-    cur_size=$(stat -f %z "$LOG" 2>/dev/null || stat -c %s "$LOG" 2>/dev/null || echo 0)
-    if [ "$cur_size" = "$prev_size" ]; then
+    size=$(stat -f %z "$LOG" 2>/dev/null || stat -c %s "$LOG" 2>/dev/null || echo 0)
+    if [ "$size" = "$prev_size" ]; then
       W=$(tail -c 2000 "$LOG" 2>/dev/null | grep -aE "$WAIT_SIGS" | tail -1)
     else
       W=""
@@ -90,7 +90,8 @@ while true; do
     fi
 
     # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed.
-    if grep -qE '^EXIT=[0-9]+\r?$' "$LOG" 2>/dev/null; then
+    # EXIT= is always appended at EOF, so a tail probe suffices — never scan the whole log per poll.
+    if tail -c 64 "$LOG" 2>/dev/null | grep -qE '^EXIT=[0-9]+\r?$'; then
       TAILTXT=$(tail -c 1200 "$LOG" | tr '\n' ' ')
       SUSPECT=""
       if grep -qE "$HARD_SIGS" "$LOG" 2>/dev/null; then
@@ -108,21 +109,14 @@ while true; do
       exit 0
     fi
 
-    # ERROR: wake only if still in the tail one poll later; scrolled-out = self-healed noise.
-    if grep -qE "$FAIL_SIGS" "$LOG" 2>/dev/null; then
-      if [ "$err_pend" = "1" ]; then
-        if tail -c 4000 "$LOG" | grep -qE "$FAIL_SIGS"; then
-          if [ "$err_announced" = "0" ]; then
-            err_announced=1
-            echo "ERROR [$JOB] (unresolved one poll later): $(grep -aE "$FAIL_SIGS" "$LOG" | tail -1 | cut -c1-300)"
-          fi
-        else
-          err_announced=0   # scrolled out of the tail: episode over
-        fi
-        err_pend=0
-      else
-        err_pend=1
+    # ERROR: wake only if in the tail two consecutive polls; scrolled-out = self-healed noise.
+    # Tail-scoped by design: announcement always required tail presence, so whole-log scans buy nothing.
+    if tail -c 4000 "$LOG" 2>/dev/null | grep -qE "$FAIL_SIGS"; then
+      if [ "$err_pend" = "1" ] && [ "$err_announced" = "0" ]; then
+        err_announced=1
+        echo "ERROR [$JOB] (unresolved one poll later): $(tail -c 4000 "$LOG" | grep -aE "$FAIL_SIGS" | tail -1 | cut -c1-300)"
       fi
+      err_pend=1
     else
       err_pend=0
       err_announced=0
@@ -156,7 +150,6 @@ while true; do
     fi
 
     # STALL: 2 zero-growth polls, then idle CPU confirms. Busy CPU = local work; idle + socket = remote reasoning.
-    size=$(stat -f %z "$LOG" 2>/dev/null || stat -c %s "$LOG" 2>/dev/null || echo 0)
     if [ "$size" = "$prev_size" ]; then
       zero_polls=$((zero_polls+1))
       if [ "$zero_polls" -ge 2 ]; then

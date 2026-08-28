@@ -11,8 +11,10 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 - Native parallelism: ~16 concurrent (excess queues); caps: 1000 agents/run, 4096 items per pipeline/parallel call.
 - Effort per call: `'low'` mechanical, `'medium'` worker tier, `'high'` verify/judge/design (`xhigh|max` exist — hardest judge stages only).
 - Per-agent worktrees: `{isolation:'worktree'}` for parallel file mutations — costly, only when needed; auto-removed if unchanged; orchestrator still merges (§ Worktrees).
-- Recovery: pass script inline (`script` param), never pre-Write — every run persists it (path in tool result) + `journal.jsonl` (each agent's actual return; if missing → `agent-<id>.jsonl` in transcript dir). Iterate: Edit persisted file, re-invoke `{scriptPath}`. Resume: `{scriptPath, resumeFromRunId}` — unchanged `agent()` prefix cached instant, edited/new run live. SAME SESSION ONLY; TaskStop prior run first. Cross-session: journal → author continuation script. Read journal before diagnosing empty result.
-- Budget: user "+500k" directive → `budget.total`; guard `while (budget.total && budget.remaining() > 50_000)` (unset → Infinity → runs to agent cap). Hard ceiling — `agent()` throws past it. Pool shared with main loop. Static sizing: fleet ≈ `total/100k`.
+- Recovery: pass script inline (`script` param), never pre-Write — every run persists it (path in tool result) + `journal.jsonl` (each agent's actual return; if missing → `agent-<id>.jsonl` in transcript dir). Iterate: Edit persisted file, re-invoke `{scriptPath}`. Resume: `{scriptPath, resumeFromRunId}` — unchanged `agent()` prefix cached instant, edited/new run live. SAME SESSION ONLY; TaskStop prior run first. Cross-session: journal → author continuation script. Read journal before diagnosing empty result. Replay = start order: cache stops at first UNFINISHED agent; all started after it re-run even if completed → many small agents preserve far more progress than one long agent.
+- Budget: user "+500k" directive → `budget.total`; guard `while (budget.total && budget.remaining() > 50_000)` (unset → Infinity → runs to agent cap). Hard ceiling — `agent()` throws past it. Pool shared with main loop. Static sizing: fleet ≈ `total/100k`. Big runs: gauge on small slice first (one dir, narrow question) before full fleet.
+- Fan-out cache: siblings sharing model+effort+agentType+tools+schema+cwd share prompt-cache prefix (first agent held ~5s, rest read its cache) — keep fan-out stages HOMOGENEOUS = big savings; mixed opts per stage forfeits it. Subagent cache TTL 5 min default → settings `subagentPromptCacheTtl: '1h'` for long runs.
+- Permissions: workflow agents always run acceptEdits + session allowlist regardless of session mode; unlisted shell/MCP calls prompt MID-RUN — pre-allowlist needed commands before long runs.
 
 ## Script contract
 
@@ -22,7 +24,7 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 - `pipeline(items, ...stages)` DEFAULT — no barrier: item A stage 3 while B stage 1. Stage gets `(prev, originalItem, index)`; stage throw → item `null`, rest skipped. Plain functions OK as stages — reshape (flatten/map/filter) inline, never via a barrier.
 - `parallel([...thunks])` BARRIER — thunks `() => agent(...)`, NOT bare promises. Never rejects; failed thunk → `null`. ONLY when stage needs ALL prior results (dedup/merge, early-exit on zero, cross-compare).
 - `args` global = Workflow `args` input verbatim — real JSON, never stringified.
-- `workflow(nameOr{scriptPath}, args)` = child workflow inline; shares caps/budget/abort; nesting 1 level max; throws on bad name/path/child syntax — catch. `name` = saved script in `.claude/workflows/` (also invocable top-level: `Workflow({name})`).
+- `workflow(nameOr{scriptPath}, args)` = child workflow inline; shares caps/budget/abort; nesting 1 level max; throws on bad name/path/child syntax — catch. `name` = saved script in `.claude/workflows/` (project) or `~/.claude/workflows/` (personal); saved runs as `/<name>` slash command, takes `args`. Save good run: `/workflows` → select → `s`. Bundled: `/deep-research <question>` = multi-angle web research + cross-check + cited report.
 - Agents reach session MCP tools via ToolSearch; interactively-authed MCP servers may be absent in headless/cron runs.
 - `log()` progress + any silent cap (top-N, sampling) — never imply full coverage.
 
@@ -42,6 +44,9 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 - Multi-modal sweep: parallel finders each searching a different way (by-container/content/entity/time) — one angle never finds all.
 - Completeness critic: final agent asks "what's missing?" — findings become next round's work.
 - Migration: discover sites → transform each in own worktree → verify → orchestrator merges serially.
-- Judge panel: N designs from different angles → parallel judges → synthesize winner, graft runner-up ideas.
+- Judge panel: N designs from different angles → parallel judges → synthesize winner, graft runner-up ideas. Tournament variant: pairwise judging bracket → single winner (ranking/sorting at scale).
+- Classify-and-act: classifier agent routes each item to matching specialist prompt.
+- Generate-and-filter: many cheap candidates → rubric filter agent keeps best, discards rest.
+- Fix-until-green: checker → fix failures → re-check; stop on pass or 2 rounds no progress.
 
 Rules: every mutating agent's prompt carries verbatim no-git paragraph (§ Worktrees). Default ≤15 agents unless user asks bigger (`/config` → Dynamic workflow size). Scale rigor to the ask: quick check = few finders/single vote; audit = big pool/3–5 votes/synthesis. Fable never an `agent()` — omitted `model` inherits Fable, omitted `effort` inherits session: state both every call.
