@@ -207,7 +207,7 @@ N-version competition for mission-critical jobs: non-deterministic (10 runs → 
 - Identical envelope dispatch to ALL rostered Workers: own worktree, unaware of each other. Wait for the slowest.
 - Pass 1 — Scout triage, single parallel fan-out (up to 5 scouts split the components), conclusions only. Per component: defective piece → reject + reason; dominated (strictly worse than a rival) → drop; all equivalent → settle as first seat's. Return contested list: component → surviving candidates + reasons.
 - Pass 2 — Orchestrator judges contested components ONLY. Output = assembly list.
-- Assembly: fresh worktree; Fable batch-copies each winner from its worktree path — no reading, no code in context. Glue edits or red suite → default worker (send paths, never code). Combination never ran as a whole → full suite + judgment review pre-merge (§ Reviewers).
+- Assembly: base = first seat's worktree; Fable swaps in each other-seat winner via `cp` from its path — never re-type code from context, output tokens cost, `cp` is free. Glue edits or red suite → default worker (send paths, never code). Combination never ran as a whole → full suite + judgment review pre-merge (§ Reviewers).
 - Suite red 3× = interfaces not truly pinned → redo picks one level coarser; floor whole-job winner.
 - Announce in chat: divergence count, per-component winners.
 
