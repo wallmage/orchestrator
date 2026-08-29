@@ -31,7 +31,16 @@ Round agrees suspiciously fast → escalate one tier.
 
 ## Reviewer prompt
 
-Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on. Orchestrator's side of its honesty rules: reject only with a specific refutation — never authority or restatement; concede when shown wrong, naming why.
+Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
+
+Honesty rules — bind reviewer AND orchestrator; verbatim in round 1, one-line re-pin after:
+```
+1. Evidence and reasoning only. Agreement never courtesy; disagreement never posture.
+2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it.
+3. Shown wrong → concede at once, naming what convinced you; unexplained concession invalid.
+4. Never soften, drop, or downgrade a finding to end a round; never add one to look useful.
+5. Every accept/reject = one line of why.
+```
 
 ## Rounds
 
@@ -44,7 +53,7 @@ Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself
 
 Round 1:
 ```
-Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md, honesty rules included. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>.
+Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
 Number every finding. Do not edit any file.
 ```
 Round N:
