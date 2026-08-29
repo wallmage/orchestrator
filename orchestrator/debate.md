@@ -36,7 +36,7 @@ Same for all: reviewer reads `adversarial-reviewer.md` itself, path in template 
 Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin after:
 ```
 1. Evidence and reasoning only. Agreement never courtesy; disagreement never posture.
-2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it.
+2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it. A rejection marked FINAL closes the item.
 3. Shown wrong → concede at once, naming what convinced you; unexplained concession invalid.
 4. Never soften, drop, or downgrade a finding to end a round; never add one to look useful.
 5. Every accept/reject = one line of why.
@@ -48,7 +48,7 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 1. Round 1: all reviewers on v1.
 2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
 3. Round N: resume each thread with the round-N template.
-4. No round cap. Done = every reviewer PASS on the same version → execute. Stalemate (one item unchanged 3 rounds, both sides holding): orchestrator has final say — rare; convince first, overrule last. Rationale in the decision table, tell that reviewer, continue. Human never pulled into the debate.
+4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of the same finding = FINAL: rationale in the decision table, reviewer told, item closed. Human never enters the debate itself.
 
 ## Templates
 
