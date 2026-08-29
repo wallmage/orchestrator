@@ -203,12 +203,12 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 N-version competition for mission-critical jobs: non-deterministic (10 runs → 10 different results), judgment-on-the-fly, expensive-if-wrong. Quality >> cost.
 
-- § Debate: debated spec pins the decomposition with smallest swappable granularity: spec splits to the finest pieces whose interfaces (files, signatures, data shapes) it can pin — 20, or two halves. Unpinnable → whole job = one piece, one winner. 
+- § Debate: debated spec pins the decomposition with smallest swappable granularity: spec splits to the finest pieces whose interfaces (files, signatures, data shapes) it pins exactly — 20, or two halves. Any doubt about a seam → coarser. Unpinnable → whole job = one piece, one winner.
 - Identical envelope dispatch to ALL rostered Workers: own worktree, unaware of each other. Wait for the slowest.
-- Pass 1 — Scout triage, single parallel fan-out (up to 5 scouts split the components), conclusions only. Per component: defective piece → reject + reason; dominated (strictly worse than a rival) → drop; all equivalent → settle as first seat's. Return contested list: component → surviving candidates + reasons.
-- Pass 2 — Orchestrator judges contested components ONLY. Output = assembly list.
-- Assembly: Fable merges Scout verdicts + his picks into the finalized list — every component → winning worktree path — and hands it to default worker; worker assembles in a fresh worktree from paths, never sent code. Combination never ran as a whole → full suite + judgment review pre-merge (§ Reviewers).
-- Suite red 3× = interfaces not truly pinned → redo picks one level coarser; floor whole-job winner.
+- Pass 1 — Scout triage, parallel fan-out (up to 5 scouts split all components). Per component: defective → reject + reason; dominated (strictly worse than a rival) → drop; equivalent → settle as first seat's. Return surviving candidates + reasons.
+- Pass 2 — Orchestrator judges contested components ONLY. Output = assembly list of winners for each component + worktree.
+- Assembly: Orchestrator passes assembly list to Worker; Worker assembles in fresh worktree from paths, never sent code, runs full suite green. Orchestrator reviews pre-merge.
+- Red suite = a seam leaked → fix the spec's pins, reassemble.
 - Announce in chat: divergence count, per-component winners.
 
 ## Handoff Ledger
