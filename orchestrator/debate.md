@@ -1,6 +1,6 @@
 # Debate and Align on Big Plans
 
-The orchestrator authors spec + implementation plans, dispatches adversarial reviewers, arbitrates. Adversarial reviewers = independent top CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: orchestrator solo ≈6/10 → +1 reviewer ≈8 → +2 ≈9.3. Capped at 3 reviewers max.
+Orchestrator authors spec + plan, dispatches adversarial reviewers, arbitrates. Reviewers = independent top CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: solo ≈6/10, +1 reviewer ≈8, +2 ≈9.3. Cap 3.
 
 ## Tiers
 
@@ -11,13 +11,12 @@ The orchestrator authors spec + implementation plans, dispatches adversarial rev
 | 2-5h | 2 | 60 min max |
 | >5h OR very messy / irreversible | 3 | can be hours |
 
-Only debate with an adversarial reviewer for “Big Jobs” sizing 1h+. Escalate one tier if a round agrees suspiciously fast.
+Round agrees suspiciously fast → escalate one tier.
 
 ## Adversarial Reviewer Committee
 
-* Same prompt for every reviewer: `adversarial-reviewer.md`, read by path.
-* Fixed order: 1 reviewer = always grok 4.6 xhigh; 2 reviewers = always grok 4.6 xhigh and gpt-5.6-sol xhigh; 3 reviewers = all.
-* Kimi K3 runs via CodeBuddy `kimi-k3-2` max; GLM 5.3 max stands in for seat 3 when K3 quota is low. Never substitute a second harness of the same model.
+- Same prompt every reviewer: `adversarial-reviewer.md`, read by path.
+- Fixed order: 1 = grok-4.6 xhigh; 2 = + gpt-5.6-sol xhigh; 3 = + Kimi K3. GLM 5.3 max stands in for seat 3 when K3 quota low. Never two harnesses of the same model.
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|
@@ -27,24 +26,24 @@ Only debate with an adversarial reviewer for “Big Jobs” sizing 1h+. Escalate
 
 ## Drafting (orchestrator)
 
-1. Read once per big job (local files; superpowers is not installed in Claude Code): `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work).
-2. Human first: follow brainstorming fully, thorough Q&A until the human approves the spec, unless the human says not to be bothered. Reviewers only after that.
-3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`; debate to all-PASS. Then plan at `...-plan.md` from the agreed spec; debate to all-PASS.
-4. Each doc carries a version header, changelog, numbered decision table (stable anchors). Only the orchestrator edits.
+1. Read once per big job (local files; superpowers not installed in Claude Code): `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work).
+2. Human first: full brainstorming Q&A until human approves the spec — skipped only if human says don't ask. Reviewers after.
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
+4. Each doc: version header, changelog, numbered decision table (stable anchors). Only the orchestrator edits.
 
 ## Executing the plan
 
-Read once per big job and follow: `.../skills/subagent-driven-development/SKILL.md` (its helper scripts and reviewer template live in that dir). Two overrides: parallel implementers are allowed, one per worktree (SDD says never); pre-merge and final whole-branch review use `judgment-reviewer.md`, and merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
+Read once per big job and follow: `.../skills/subagent-driven-development/SKILL.md` (helper scripts + reviewer template live in that dir). Two overrides: parallel implementers allowed, one per worktree (SDD says never); pre-merge + final whole-branch review use `judgment-reviewer.md`, merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
 
 ## Conversation mechanics
 
-- Reviewer memory = its CLI session; every round resumes it (same cwd) and sends only the delta. Reviewers run in parallel.
-- Each reply lands in `<TMP_PATH>/<reviewer>.r<N>.final.txt`, one file per round. The orchestrator reads that file only.
-- `.log` only when the final is missing/empty, EXIT≠0, or a verdict smells wrong — and never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 lines around hits; ≤10% of the file.
+- Reviewer memory = its CLI session; every round resumes it (same cwd), sends only the delta. Reviewers run in parallel.
+- Each reply lands in `<TMP_PATH>/<reviewer>.r<N>.final.txt`, one file per round. Orchestrator reads that file only.
+- `.log` only when final missing/empty, EXIT≠0, or a verdict smells wrong — never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 around hits; ≤10% of the file.
 
 ## Reviewer prompt
 
-Reviewer is told the path of `adversarial-reviewer.md` (skill dir) and reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
+Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
 Honesty rules (verbatim every round; bind the orchestrator too):
 ```
@@ -58,9 +57,9 @@ Honesty rules (verbatim every round; bind the orchestrator too):
 ## Rounds
 
 1. Round 1: all reviewers in parallel on v1.
-2. The orchestrator rules on every finding on merit. Merge accepted ones → bump version once; never concurrent versions.
+2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
 3. Round N: resume each thread with the round-N template; rejections explained to that reviewer only, one line each.
-4. No round cap. Done only when every reviewer returns PASS on the same version → human go/no-go → execute. Stalemate (one item unchanged 3 rounds, both sides holding): the orchestrator has final say — rare; convince first, overrule last. Record rationale in the decision table, tell that reviewer, continue. Human is never pulled into the debate.
+4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Stalemate (one item unchanged 3 rounds, both sides holding): orchestrator has final say — rare; convince first, overrule last. Rationale in the decision table, tell that reviewer, continue. Human never pulled into the debate.
 
 ## Templates
 
@@ -78,7 +77,7 @@ Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 ## Hard rules
 
 1. Single writer: only the orchestrator edits the docs. Reviewers read-only; their only output is their reply.
-2. Isolation: reviewers never learn others exist; never attribute origin; no shared docs, no cross-rebuttal. Conflicts: the orchestrator rules, records rationale in the decision table; the overruled side gets decision + reason in its own thread.
-3. Pointers, not payloads: reviewers run in the project root and read files themselves. Spikes/experiments go to `<TMP_PATH>`.
-4. Superpowers: the orchestrator reads only the files named in Drafting/Executing; reviewers and executors get the normal `using-superpowers` prefix.
-5. No framework files. `<TMP_PATH>` is transport only, never documentation.
+2. Isolation: reviewers never learn others exist; no origin attribution, shared docs, or cross-rebuttal. Conflicts: orchestrator rules, records rationale in the decision table; overruled side gets decision + reason in its own thread.
+3. Pointers, not payloads: reviewers run in the project root, read files themselves. Spikes/experiments → `<TMP_PATH>`.
+4. Superpowers: orchestrator reads only the files named in Drafting/Executing; reviewers and executors get the normal `using-superpowers` prefix.
+5. No framework files. `<TMP_PATH>` = transport only, never documentation.
