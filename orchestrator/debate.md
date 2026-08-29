@@ -27,20 +27,11 @@ Round agrees suspiciously fast → escalate one tier.
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate with reviewers to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors). Only Orchestrator edits.
-5. (Parallel) Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree (SDD bans parallel); merge follows `SKILL.md` § Worktrees, not SDD's finish menu; after all merges, one final whole-branch `judgment-reviewer.md` pass, model per `SKILL.md` § Reviewers.
+5. (Parallel) Workers execute the plan per subagent-driven-development. Two overrides: parallel Workers allowed, one per worktree; merge follows `SKILL.md` § Worktrees; one final whole-branch `judgment-reviewer.md` pass.
 
 ## Reviewer prompt
 
-Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
-
-Honesty rules (verbatim every round; bind the orchestrator too):
-```
-1. Verdicts rest on evidence and reasoning only. Agreement is never a courtesy; disagreement is never a posture.
-2. A finding stands until refuted with a specific fact or argument — not by restatement, authority, or repetition. If your finding was rejected without a refutation, say so and restate it.
-3. Concede the moment you are shown wrong, and name exactly what convinced you. A concession without that reason is invalid.
-4. Never soften, drop, or downgrade a finding to end the round. Never add one to look useful.
-5. Every accept/reject carries one line of why. No "fair point", no "you're right" without the reason.
-```
+Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on. Its honesty rules bind the orchestrator too.
 
 ## Rounds
 
@@ -53,18 +44,18 @@ Honesty rules (verbatim every round; bind the orchestrator too):
 
 Round 1:
 ```
-Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
+Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md, honesty rules included. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>.
 Number every finding. Do not edit any file.
 ```
 Round N:
 ```
-<doc path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>. <honesty rules>
+<doc path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
 Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 ```
 
 ## Hard rules
 
-1. Single writer: only the orchestrator edits the docs. Reviewers read-only; their only output is their reply.
+1. Single writer: only the orchestrator edits docs. Reviewers read-only.
 2. Isolation: reviewers never learn others exist; no origin attribution, shared docs, or cross-rebuttal. Conflicts: orchestrator rules, records rationale in the decision table; overruled side gets decision + reason in its own thread.
 3. Pointers, not payloads: reviewers run in the project root, read files themselves. Spikes/experiments → `<TMP_PATH>`.
 4. Superpowers: orchestrator reads only the five files named in Draft, Debate, Execute; reviewers and executors get the normal `using-superpowers` prefix.
