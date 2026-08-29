@@ -31,7 +31,7 @@ Round agrees suspiciously fast → escalate one tier.
 
 ## Reviewer prompt
 
-Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on. Its honesty rules bind the orchestrator too.
+Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on. Orchestrator's side of its honesty rules: reject only with a specific refutation — never authority or restatement; concede when shown wrong, naming why.
 
 ## Rounds
 
