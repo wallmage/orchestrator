@@ -1,10 +1,10 @@
 # Debate Big Jobs
 
-Orchestrator drafts spec + plan, dispatches adversarial reviewers, arbitrates. Reviewers = independent top CLI models, read-only, each a private persistent thread, unaware of others. Cost irrelevant.
+Orchestrator drafts spec + plan, dispatches adversarial reviewers, arbitrates. Cost irrelevant.
 
 ## Committee
 
-Same prompt every reviewer: `adversarial-reviewer.md`, read by path. Each tier adds one reviewer.
+Each tier adds one reviewer:
 
 | Job size | Time box to align | Adds reviewer | Read-only flag | Dispatch |
 |---|---|---|---|---|
@@ -23,17 +23,17 @@ Round agrees suspiciously fast → escalate one tier.
 
 ## Draft, Debate, Execute
 
-1. Read all five Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template live in that dir).
+1. Read all five Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
-3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate with reviewers to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors). Only Orchestrator edits.
-5. (Parallel) Workers execute the plan per subagent-driven-development. Two overrides: parallel Workers allowed, one per worktree; merge follows `SKILL.md` § Worktrees; one final whole-branch `judgment-reviewer.md` pass.
+5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees; one final whole-branch `judgment-reviewer.md` pass.
 
 ## Reviewer prompt
 
-Reviewer gets the path of `adversarial-reviewer.md` (skill dir), reads it itself; nobody pastes it. Its `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
+Same for all: reviewer reads `adversarial-reviewer.md` itself, path in template — never pasted. `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
-Honesty rules — bind reviewer AND orchestrator; verbatim in round 1, one-line re-pin after:
+Honesty rules — bind reviewer AND orchestrator; verbatim round 1, one-line re-pin after:
 ```
 1. Evidence and reasoning only. Agreement never courtesy; disagreement never posture.
 2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it.
@@ -44,9 +44,9 @@ Honesty rules — bind reviewer AND orchestrator; verbatim in round 1, one-line 
 
 ## Rounds
 
-1. Round 1: all reviewers in parallel on v1.
+1. Round 1: all reviewers on v1.
 2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
-3. Round N: resume each thread with the round-N template; rejections explained to that reviewer only, one line each.
+3. Round N: resume each thread with the round-N template.
 4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Stalemate (one item unchanged 3 rounds, both sides holding): orchestrator has final say — rare; convince first, overrule last. Rationale in the decision table, tell that reviewer, continue. Human never pulled into the debate.
 
 ## Templates
