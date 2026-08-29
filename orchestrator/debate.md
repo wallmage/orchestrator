@@ -27,7 +27,7 @@ Round agrees suspiciously fast → escalate one tier.
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate with reviewers to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors). Only Orchestrator edits.
-5. Parallel Workers execute the plan per subagent-driven-development — Orchestrator delegates, never implements. 1 Worker when merging is hard; 3–5 when speed gains outweigh merge cost (`SKILL.md` principle). Overrides: parallel Workers allowed, one per worktree (SDD bans parallel because its subagents share one workspace; worktrees remove the conflict); pre-merge + final whole-branch review use `judgment-reviewer.md`, model per `SKILL.md` § Reviewers; merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
+5. (Parallel) Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree (SDD bans parallel); pre-merge + final whole-branch review use `judgment-reviewer.md`, model per `SKILL.md` § Reviewers; merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
 
 ## Reviewer prompt
 
