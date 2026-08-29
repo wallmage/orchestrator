@@ -196,7 +196,7 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 | Reviewer | Question | When | Model |
 |---|---|---|---|
 | SDD `task-reviewer-prompt.md` (superpowers path) | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result, every job | Grok Build CLI `grok-4.6` medium (default) / Codex CLI `gpt-5.6-luna` high |
-| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | pre-merge on non-trivial diffs; final whole-branch | Grok Build CLI `grok-4.6` xhigh `--sandbox read-only` (default); Codex CLI `gpt-5.6-sol` xhigh `-s read-only` sparingly |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, final whole-branch after all merges | Grok Build CLI `grok-4.6` xhigh `--sandbox read-only` (default); Codex CLI `gpt-5.6-sol` xhigh `-s read-only` sparingly |
 | `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate (`debate.md`); final branch on big jobs, different family than judgment | top-tier, per `debate.md` committee |
 
 ## Best Among Workers
