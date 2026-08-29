@@ -1,28 +1,19 @@
 # Debate on Big Jobs
 
-Orchestrator authors spec + plan, dispatches adversarial reviewers, arbitrates. Reviewers = independent top CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: solo ≈6/10, +1 reviewer ≈8, +2 ≈9.3. Cap 3.
+Orchestrator authors spec + plan, dispatches adversarial reviewers, arbitrates. Reviewers = independent top CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Cap 3.
 
-## Tiers
+## Tiers & Committee
 
-| Job size | Reviewers | Time box to align |
-|---|---|---|
-| <1h | 0 | — |
-| 1-2h | 1 | 30 min max |
-| 2-4h | 2 | 60 min max |
-| >4h OR very messy / irreversible | 3 | can be hours |
+Same prompt every reviewer: `adversarial-reviewer.md`, read by path. Seats cumulative — each tier adds one:
+
+| Job size | Time box to align | Adds reviewer | Read-only flag | Dispatch |
+|---|---|---|---|---|
+| <1h | — | none | — | — |
+| 1-2h | 30 min max | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `SKILL.md` § Grok CLI |
+| 2-4h | 60 min max | + Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
+| >4h OR very messy / irreversible | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan` | `codebuddy-cli.md` |
 
 Round agrees suspiciously fast → escalate one tier.
-
-## Adversarial Reviewer Committee
-
-- Same prompt every reviewer: `adversarial-reviewer.md`, read by path.
-- Fixed order: 1 = grok-4.6 xhigh; 2 = + gpt-5.6-sol xhigh; 3 = + Kimi K3.
-
-| Harness | Read-only flag | Dispatch |
-|---|---|---|
-| Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `SKILL.md` § Grok CLI |
-| Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
-| CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan` | `codebuddy-cli.md` |
 
 ## Drafting (Orchestrator)
 

@@ -187,7 +187,7 @@ Route:
 
 ## Debate on Big Jobs
 
-Job >1 h, or irreversible/messy → read `debate.md` FIRST and follow it: spec + plan debated with an adversarial reviewer committee to all-PASS, then execution. Cost irrelevant on big jobs.
+Job >1 h, or irreversible/messy → read `debate.md` FIRST: spec + plan debated with an adversarial reviewer committee to all-PASS, then execution. Cost irrelevant on big jobs.
 
 ## Reviewers
 
