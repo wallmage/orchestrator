@@ -26,8 +26,8 @@ Round agrees suspiciously fast → escalate one tier.
 1. Read all five Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template live in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate with reviewers to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
-4. Each doc: version header, changelog, numbered decision table (stable anchors). Only the orchestrator edits.
-5. Execute the plan per subagent-driven-development. Two overrides: parallel implementers allowed, one per worktree (SDD says never); pre-merge + final whole-branch review use `judgment-reviewer.md`, merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
+4. Each doc: version header, changelog, numbered decision table (stable anchors). Only Orchestrator edits.
+5. Parallel Workers execute the plan per subagent-driven-development — Orchestrator delegates, never implements. 1 Worker when merging is hard; 3–5 when speed gains outweigh merge cost (`SKILL.md` principle). Overrides: parallel Workers allowed, one per worktree (SDD bans parallel because its subagents share one workspace; worktrees remove the conflict); pre-merge + final whole-branch review use `judgment-reviewer.md`, model per `SKILL.md` § Reviewers; merge follows `SKILL.md` § Worktrees, not SDD's finish menu.
 
 ## Reviewer prompt
 
