@@ -207,7 +207,7 @@ N-version competition for mission-critical jobs: non-deterministic (10 runs → 
 - Identical envelope dispatch to ALL rostered Workers: own worktree, unaware of each other. Wait for the slowest.
 - Pass 1 — Scout triage, parallel fan-out (up to 5 scouts split all components). Per component: defective → reject + reason; dominated (strictly worse than a rival) → drop; equivalent → settle as first seat's. Return surviving candidates + reasons.
 - Pass 2 — Orchestrator judges contested components ONLY. Output = assembly list of winners for each component + worktree.
-- Assembly: Orchestrator passes assembly list to Worker; Worker assembles in fresh worktree from paths, never sent code, runs full suite green. Orchestrator reviews pre-merge.
+- Assembly: Orchestrator passes assembly list to Worker; Worker assembles in fresh worktree from paths, never sent code, runs full suite green.
 - Red suite = a seam leaked → fix the spec's pins, reassemble.
 - Announce in chat: divergence count, per-component winners.
 
