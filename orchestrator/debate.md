@@ -1,4 +1,4 @@
-# Debate and Align on Big Plans
+# Debate on Big Jobs
 
 Orchestrator authors spec + plan, dispatches adversarial reviewers, arbitrates. Reviewers = independent top CLI models, read-only, each in a private persistent thread, unaware of each other. Cost irrelevant here. Observed: solo ≈6/10, +1 reviewer ≈8, +2 ≈9.3. Cap 3.
 
@@ -6,29 +6,29 @@ Orchestrator authors spec + plan, dispatches adversarial reviewers, arbitrates. 
 
 | Job size | Reviewers | Time box to align |
 |---|---|---|
-| <1h, easily reversible | 0 | — |
+| <1h | 0 | — |
 | 1-2h | 1 | 30 min max |
-| 2-5h | 2 | 60 min max |
-| >5h OR very messy / irreversible | 3 | can be hours |
+| 2-4h | 2 | 60 min max |
+| >4h OR very messy / irreversible | 3 | can be hours |
 
 Round agrees suspiciously fast → escalate one tier.
 
 ## Adversarial Reviewer Committee
 
 - Same prompt every reviewer: `adversarial-reviewer.md`, read by path.
-- Fixed order: 1 = grok-4.6 xhigh; 2 = + gpt-5.6-sol xhigh; 3 = + Kimi K3. GLM 5.3 max stands in for seat 3 when K3 quota low. Never two harnesses of the same model.
+- Fixed order: 1 = grok-4.6 xhigh; 2 = + gpt-5.6-sol xhigh; 3 = + Kimi K3.
 
 | Harness | Read-only flag | Dispatch |
 |---|---|---|
 | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `SKILL.md` § Grok CLI |
 | Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
-| CodeBuddy CLI `kimi-k3-2 --effort max` (`glm-5.3 --effort max` when quota low) | `--permission-mode plan` | `codebuddy-cli.md` |
+| CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan` | `codebuddy-cli.md` |
 
-## Drafting (orchestrator)
+## Drafting (Orchestrator)
 
-1. Read once per big job (local files; superpowers not installed in Claude Code): `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work).
-2. Human first: full brainstorming Q&A until human approves the spec — skipped only if human says don't ask. Reviewers after.
-3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
+1. Read Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work).
+2. Full brainstorming Q&A with user until spec approval.
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate with reviewers to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors). Only the orchestrator edits.
 
 ## Executing the plan

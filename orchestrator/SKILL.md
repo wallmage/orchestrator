@@ -187,7 +187,7 @@ Route:
 
 ## Debate on Big Jobs
 
-Big jobs (>60 min, or irreversible/messy) earn upfront planning spend; cost irrelevant. The orchestrator reads 4 superpowers skills from the Codex install (one-time), brainstorms with the human first (full Q&A, approval; skipped only if human says "don't ask me"), writes spec, then plan; independent read-only top-tier CLI reviewers (fixed order per `debate.md`: grok-4.6 xhigh, then + sol xhigh, then + Kimi K3 max via CodeBuddy (GLM 5.3 max when K3 quota low); no Opus — same family; never two harnesses of the same model; `adversarial-reviewer.md` each, private persistent threads via resume, unaware of each other, 100% honest) attack every version; the orchestrator arbitrates, no round cap, done only at all-PASS. Solo ≈6/10, +1 ≈8, +2 ≈9.3; committee cap 3. Tiers: <1 h none; 1–2 h 1 (≤30 min); 2–5 h 2 (≤60 min); >5 h / messy / irreversible 3. Execution of the plan = subagent-driven-development by pointer. Read `debate.md` first.
+Job >1 h, or irreversible/messy → read `debate.md` FIRST and follow it: spec + plan debated with an adversarial reviewer committee to all-PASS, then execution. Cost irrelevant on big jobs.
 
 ## Reviewers
 
@@ -207,8 +207,7 @@ N-version competition for mission-critical jobs: non-deterministic, judgment-on-
 - Identical envelope to ALL rostered Workers: own worktree, unaware of each other. Wait for the slowest.
 - Pass 1 — Scout triage, ≤5 parallel scouts split the components. Per component: defective → reject + reason; dominated → drop; equivalent → settle as first seat's. Return contested: candidates + reasons.
 - Pass 2 — Orchestrator judges contested ONLY. Output = assembly list: component → winning worktree path.
-- Assembly: Worker assembles the list in a fresh worktree by path, never sent code; full suite green.
-- Red suite = leaked seam → fix pins, reassemble.
+- Assembly: Worker assembles the list in a fresh worktree by path, never sent code; assembly full suite test green.
 - Announce in chat: divergence count, per-component winners.
 
 ## Handoff Ledger
