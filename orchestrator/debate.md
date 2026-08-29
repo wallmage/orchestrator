@@ -6,10 +6,10 @@ Orchestrator drafts spec + plan, dispatches adversarial reviewers, arbitrates. C
 
 Each tier adds one reviewer:
 
-| Job size | Time box to align | Adds reviewer | Read-only flag | Dispatch |
+| Job size | Time box | Adds reviewer | Read-only flag | Dispatch |
 |---|---|---|---|---|
-| <1h | — | none | — | — |
-| 1-2h | 30 min max | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | `SKILL.md` § Grok CLI |
+| <1h | — | — | — | — |
+| 1-2h | 30 min max | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | § Grok CLI |
 | 2-4h | 60 min max | + Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
 | >4h OR very messy | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan` | `codebuddy-cli.md` |
 
@@ -33,13 +33,14 @@ Round agrees suspiciously fast → escalate one tier.
 
 Same for all: reviewer reads `adversarial-reviewer.md` itself, path in template — never pasted. `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
-Honesty rules — bind reviewer AND orchestrator; verbatim round 1, one-line re-pin after:
+Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin after:
 ```
 1. Evidence and reasoning only. Agreement never courtesy; disagreement never posture.
 2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it.
 3. Shown wrong → concede at once, naming what convinced you; unexplained concession invalid.
 4. Never soften, drop, or downgrade a finding to end a round; never add one to look useful.
 5. Every accept/reject = one line of why.
+6. Re-review the doc itself, not the round message: confirm accepted fixes actually landed before PASS.
 ```
 
 ## Rounds
