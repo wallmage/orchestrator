@@ -48,7 +48,7 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 1. Round 1: all reviewers on v1.
 2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
 3. Round N: resume each thread with the round-N template.
-4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in that reviewer's next message (closes the item), rationale → decision table.
+4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in reviewer's next message (closes the item), rationale → decision table.
 
 ## Templates
 
@@ -65,8 +65,8 @@ Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 
 ## Hard rules
 
-1. Single writer: only Orchestrator edits, Reviewers read-only.
-2. Isolation: reviewers never learn others exist. Conflicts: Orchestrator rules, records rationale in the decision table; overruled side gets decision + reason in its own thread.
-3. Pointers, not payloads: reviewers run in the project root, read files themselves. Spikes/experiments → `<TMP_PATH>`.
+1. Only Orchestrator edits, Reviewers read-only.
+2. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
+3. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
 4. Superpowers: orchestrator reads only the five files named in Draft, Debate, Execute; reviewers and executors get the normal `using-superpowers` prefix.
 5. No framework files. `<TMP_PATH>` = transport only, never documentation.
