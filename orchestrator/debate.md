@@ -18,12 +18,12 @@ Round agrees suspiciously fast → escalate one tier.
 ## Conversation mechanics
 
 - Reviewer memory = its CLI session; every round resumes it (same cwd), sends only the delta. Reviewers run in parallel.
-- Each reply lands in `<TMP_PATH>/<reviewer>.r<N>.final.txt`, one file per round. Orchestrator reads that file only.
+- Each reply lands in `<TMP_PATH>/<reviewer>.r<N>.final.txt`, one file per round. Orchestrator reads it only.
 - `.log` only when final missing/empty, EXIT≠0, or a verdict smells wrong — never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 around hits; ≤10% of the file.
 
 ## Draft, Debate, Execute
 
-1. Read all five Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template in that dir).
+1. Read all 5 Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors).
@@ -48,7 +48,7 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 1. Round 1: all reviewers on v1.
 2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
 3. Round N: resume each thread with the round-N template.
-4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of the same finding = FINAL: rationale in the decision table, reviewer told, item closed.
+4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in that reviewer's next message (closes the item), rationale → decision table.
 
 ## Templates
 
