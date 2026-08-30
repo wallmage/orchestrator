@@ -23,7 +23,7 @@ Round agrees suspiciously fast → escalate one tier.
 
 ## Draft, Debate, Execute
 
-1. Read all 5 Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template in that dir).
+1. Read ONLY 5 Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors).
@@ -68,5 +68,4 @@ Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 1. Only Orchestrator edits, Reviewers read-only.
 2. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
 3. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-4. Superpowers: Orchestrator reads five files ONLY; Workers get the `using-superpowers` prefix; Reviewers never — their prompt file is their whole method.
-5. No framework files. `<TMP_PATH>` = transport only, never documentation.
+4. No framework files. `<TMP_PATH>` = transport only, never documentation.
