@@ -75,7 +75,7 @@ Flags (every dispatch):
 
 Prompts:
 - Every CLI can fan out subagents but won't unless reminded: "Use subagents to make the task faster".
-- **Superpowers:** prepend `[$superpowers:using-superpowers](<path per CLI>)` to every prompt. TDD is enforced as verifiable acceptance checks (failing-tests-first, tests present in the diff), not as trust.
+- **Superpowers:** prepend `[$superpowers:using-superpowers](<path per CLI>)` to every Worker prompt — NEVER to judgment/adversarial reviewers (their prompt file is their whole method; SDD task reviewer keeps its superpowers template). TDD is enforced as verifiable acceptance checks (failing-tests-first, tests present in the diff), not as trust.
 
 Follow-ups:
 - Resume with the CLI's resume flag + id from the log, same cwd, send only the delta (memory intact).

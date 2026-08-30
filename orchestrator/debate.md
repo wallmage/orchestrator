@@ -68,5 +68,5 @@ Re-review v<N>: new or unresolved findings only, same format; PASS if none.
 1. Only Orchestrator edits, Reviewers read-only.
 2. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
 3. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-4. Superpowers: orchestrator reads only the five files named in Draft, Debate, Execute; reviewers and executors get the normal `using-superpowers` prefix.
+4. Superpowers: Orchestrator reads five files ONLY; Workers get the `using-superpowers` prefix; Reviewers never — their prompt file is their whole method.
 5. No framework files. `<TMP_PATH>` = transport only, never documentation.
