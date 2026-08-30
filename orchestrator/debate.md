@@ -9,7 +9,7 @@ Each tier adds one reviewer:
 | Job size | Time box | Adds reviewer | Read-only flag | Dispatch |
 |---|---|---|---|---|
 | <1h | — | — | — | — |
-| 1-2h | 30 min max | Grok Build CLI `grok-4.6 --effort xhigh` | `--sandbox read-only` | § Grok CLI |
+| 1-2h | 30 min max | Cursor CLI `cursor-grok-4.6-xhigh-fast` | `--mode ask` | § Cursor CLI |
 | 2-4h | 60 min max | + Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
 | >4h OR very messy | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan` | `codebuddy-cli.md` |
 
@@ -48,7 +48,7 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 1. Round 1: all reviewers on v1.
 2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
 3. Round N: resume each thread with the round-N template.
-4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of the same finding = FINAL: rationale in the decision table, reviewer told, item closed. Human never enters the debate itself.
+4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of the same finding = FINAL: rationale in the decision table, reviewer told, item closed.
 
 ## Templates
 
