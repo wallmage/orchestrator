@@ -151,7 +151,7 @@ Flags:
 - `--mode plan` = analysis-only: blocks all writes; plan docs dumped under `~/.gemini/antigravity-cli/brain/<cid>/` — ignore, read only the reply.
 - `--print-timeout 30m`: default 5m kills longer jobs mid-run — raise EVERY dispatch.
 - `--json-schema '<inline JSON or path>'` → result gains `structured_output` (runner prefers).
-- Worktree edits: `cd` in, or path in prompt + `--add-dir <dir>`. No cwd flag — always `cd`.
+- cwd TRAP: agy's native search/list tools root at its own workspace (home), IGNORING shell cwd — only shell commands inherit it. Relative-path prompts silently search the wrong tree (confident "no files found", phantom paths). EVERY dispatch: absolute project root in the prompt ("Project root: <abs path> — operate only inside it") + `--add-dir <root>`. Keep the `cd` too.
 
 Prompts:
 - Fans out via native subagent tools (`define_subagent`/`invoke_subagent`/`manage_subagents`); remind explicitly.
