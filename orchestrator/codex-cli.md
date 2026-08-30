@@ -17,7 +17,7 @@ Files: `-o` writes `.final.txt` directly. Resume id = `thread_id` in log. Log `i
 
 Flags:
 - `-m` + `-c model_reasoning_effort=` EVERY dispatch (config default `gpt-5.6-luna` xhigh — never rely on it).
-- Models: `gpt-5.6-sol` | `gpt-5.6-luna` only (bare `gpt-5.6` invalid). Effort `low|medium|high|xhigh` only.
+- Models: `gpt-5.6-sol` | `gpt-5.6-luna` only (bare `gpt-5.6` invalid). Effort — luna: `low|medium|high|xhigh|max`; sol: those + `ultra`. Source of truth: `supported_reasoning_levels` in `~/.codex/models_cache.json` — check there, help text doesn't list them.
 - `-s read-only` = analysis-only (`read-only|workspace-write|danger-full-access`).
 - `--output-schema <file>`: JSON Schema file fixing answer shape; `-o` then holds JSON. Every property needs explicit `type`; `uniqueItems` unsupported.
 - `-C <dir>` BANNED — always `cd` to project root.
