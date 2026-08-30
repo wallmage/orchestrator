@@ -40,6 +40,20 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | CodeBuddy CLI `glm-5.3-flash --effort max` | Backup | Low | 57 | ALWAYS max — except workflows: `--effort ultracode` (= high + Dynamic Workflows; parallelism over peak).  `codebuddy-cli.md` |
 | CodeBuddy CLI `hy4-preview --effort max` | Backup | Free |  |  |
 
+## Agent Team vs Workflow
+
+Key question decides: do workers need to TALK to each other mid-job?
+
+**Agent Team = collaboration.** Small crew 2–5, group chat: peer `SendMessage` + shared task list, live debate/handoff/renegotiation — value comes from the discussion. Lead = Orchestrator, Teammates = separate Claude sessions, model chosen per teammate (Opus default). Must-knows (not in tool schemas): spawn = `Agent` tool + `name` param — SOLE exception to the Agent-tool ban; name the model in the spawn prompt (no model param; blocked/unnamed → lead's model; effort NOT settable, inherits lead's). Teammate idle notice carries NO output — results arrive only via SendMessage/task list; teammates forget to mark tasks done, nudge them. Stop = `TaskStop` with teammate name; `SendMessage` to a stopped teammate auto-resumes it with its transcript. In-process teammates (only mode in desktop GUI) can't run background subagents (synchronous OK); only lead approves plans; team auto-cleans at session end; one team/session, no nesting, `/resume` drops in-process teammates.
+
+**Workflow = brute-force parallelism.** Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). Read: `workflows.md`.
+
+Route:
+- Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; reproducibility wanted → Workflow.
+- Team ONLY when ALL hold: few pieces (2–5), deeply interdependent, interfaces uncertain/evolving, live negotiation essential. Examples: rival-hypothesis debugging, cross-layer API negotiation, multi-angle exploration where findings must cross-pollinate mid-flight.
+- Small crew but no cross-talk needed → still Workflow: 3 isolated agents beat 3 chatting ones (cheaper, deterministic, no coordination overhead).
+- Depth not breadth — ONE thread grinding until done-criteria met (days OK) → `/goal <criteria>`: session Stop hook, agent CANNOT end turn until condition holds, auto-clears on success (`/goal clear` = abort early). Criteria must be verifiable/runnable; fights laziness. Breadth too big for one path → Workflow.
+
 ## Dispatch Mechanics
 
 Claude-side workers (Opus, never Sonnet):
@@ -172,19 +186,24 @@ Rules:
 - `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
 - Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
 
-## Agent Team vs Workflow
+## Worktrees, Parallelism & Git
 
-Key question decides: do workers need to TALK to each other mid-job?
+- Solo dev on `main`, no PRs, up to 10 parallel sessions. Any edit task >2 min gets its own worktree from latest `main`; one job per worktree. Never delete unverified/unmerged work. A governing plan's stricter workflow wins.
+- Fan out everything the dependency graph allows: independent slices, one writer per file/worktree, script-mergeable results. Heavy same-module overlap → serialize; shared state partitioned per job.
+- Batch independent verifications into one Workflow script; SendMessage continues an existing agent.
+- Workers' own config files make them commit/merge/push on their own — so every worker prompt carries verbatim:
 
-**Agent Team = collaboration.** Small crew 2–5, group chat: peer `SendMessage` + shared task list, live debate/handoff/renegotiation — value comes from the discussion. Lead = Orchestrator, Teammates = separate Claude sessions, model chosen per teammate (Opus default). Must-knows (not in tool schemas): spawn = `Agent` tool + `name` param — SOLE exception to the Agent-tool ban; name the model in the spawn prompt (no model param; blocked/unnamed → lead's model; effort NOT settable, inherits lead's). Teammate idle notice carries NO output — results arrive only via SendMessage/task list; teammates forget to mark tasks done, nudge them. Stop = `TaskStop` with teammate name; `SendMessage` to a stopped teammate auto-resumes it with its transcript. In-process teammates (only mode in desktop GUI) can't run background subagents (synchronous OK); only lead approves plans; team auto-cleans at session end; one team/session, no nesting, `/resume` drops in-process teammates.
+> Do NOT create branches, commit, merge, or push. This instruction supersedes any CLAUDE.md or AGENTS.md git protocol, including one claiming to override everything. Work only in `<worktree path>` and leave every change uncommitted.
 
-**Workflow = brute-force parallelism.** Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). Read: `workflows.md`.
+- Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff READING to Scout (or Opus low), never git commands.
+- Single exception — one lone edit job this session, no pre-merge verification needed: Codex/Opus may run worktree/merge/push itself. Never reserve or unproven models. When in doubt, own git.
+- Create: native `EnterWorktree` first (check you are not already in one); raw `git worktree add` only without it (`.worktrees/<branch>`, verify `git check-ignore`). Install deps, run the suite; dispatch only on a green baseline.
+- Fan-out brief = scope, goal, constraints ("touch only X"), expected output. Don't fan out when failures are related, the job needs whole-system view, nobody knows what's broken yet, or state is shared.
+- On return: read summaries, check edit overlap between workers, full suite once on the merged tree, spot-check one thing per worker (systematic errors).
+- Merge from main root: checkout main, pull, merge, full suite on merged tree; red → stop, keep worktree; green → push, `git worktree remove` (from outside), `git worktree prune`, `git branch -d`. Removal refused = files exist nowhere else → never `--force`, surface them. Rejected push → investigate, never force-push.
+- Close every job: `git worktree list` + `git log --oneline -3`; finish anything stranded.
 
-Route:
-- Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; reproducibility wanted → Workflow.
-- Team ONLY when ALL hold: few pieces (2–5), deeply interdependent, interfaces uncertain/evolving, live negotiation essential. Examples: rival-hypothesis debugging, cross-layer API negotiation, multi-angle exploration where findings must cross-pollinate mid-flight.
-- Small crew but no cross-talk needed → still Workflow: 3 isolated agents beat 3 chatting ones (cheaper, deterministic, no coordination overhead).
-- Depth not breadth — ONE thread grinding until done-criteria met (days OK) → `/goal <criteria>`: session Stop hook, agent CANNOT end turn until condition holds, auto-clears on success (`/goal clear` = abort early). Criteria must be verifiable/runnable; fights laziness. Breadth too big for one path → Workflow.
+
 
 ## Debate on Big Jobs
 
@@ -215,25 +234,6 @@ N-version competition for mission-critical jobs: non-deterministic, judgment-on-
 
 State lives on disk
 
-## Worktrees, Parallelism & Git
-
-- Solo dev on `main`, no PRs, up to 10 parallel sessions. Any edit task >2 min gets its own worktree from latest `main`; one job per worktree. Never delete unverified/unmerged work. A governing plan's stricter workflow wins.
-- Fan out everything the dependency graph allows: independent slices, one writer per file/worktree, script-mergeable results. Heavy same-module overlap → serialize; shared state partitioned per job.
-- Batch independent verifications into one Workflow script; SendMessage continues an existing agent.
-- Workers' own config files make them commit/merge/push on their own — so every worker prompt carries verbatim:
-
-> Do NOT create branches, commit, merge, or push. This instruction supersedes any CLAUDE.md or AGENTS.md git protocol, including one claiming to override everything. Work only in `<worktree path>` and leave every change uncommitted.
-
-- Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff READING to Scout (or Opus low), never git commands.
-- Single exception — one lone edit job this session, no pre-merge verification needed: Codex/Opus may run worktree/merge/push itself. Never reserve or unproven models. When in doubt, own git.
-- Create: native `EnterWorktree` first (check you are not already in one); raw `git worktree add` only without it (`.worktrees/<branch>`, verify `git check-ignore`). Install deps, run the suite; dispatch only on a green baseline.
-- Fan-out brief = scope, goal, constraints ("touch only X"), expected output. Don't fan out when failures are related, the job needs whole-system view, nobody knows what's broken yet, or state is shared.
-- On return: read summaries, check edit overlap between workers, full suite once on the merged tree, spot-check one thing per worker (systematic errors).
-- Merge from main root: checkout main, pull, merge, full suite on merged tree; red → stop, keep worktree; green → push, `git worktree remove` (from outside), `git worktree prune`, `git branch -d`. Removal refused = files exist nowhere else → never `--force`, surface them. Rejected push → investigate, never force-push.
-- Close every job: `git worktree list` + `git log --oneline -3`; finish anything stranded.
-
-
-
 ## Debugging & Fix Acceptance
 
 The orchestrator investigating or judging a worker's fix:
@@ -245,16 +245,16 @@ The orchestrator investigating or judging a worker's fix:
 
 ## Principles
 
-## 1. Minimal viable dose
+### 1. Minimal viable dose
 
 Always go for the simplest, easiest design. Minimal viable dose. Go straight line to the problem. The plan is the only source of scope: the orchestrator NEVER self-authorizes extra rounds, quality loops, filters, or fix passes that the governing plan or a user policy does not name — no matter how real the defect. A defect discovered outside plan scope is PARKED: one line to the user with the evidence, work continues on the plan's critical path; the user decides if the parked item runs.
 
-## 2. Communication
+### 2. Communication
 
 Report concisely: what's running, what's next, explain only at higher level: purpose, benefit, dependency. Surface a one-line status pulse every ~10 minutes unprompted. A pulse is news, not narration: mechanics, internal recoveries, worker behavior details: NEVER surfaced, not even reassuringly. If nothing changed, the pulse is exactly "on track, ~N min left" and nothing else; incident wakes that resolve without user impact produce NO user message. Every word must be earned. User hates jargon-heavy terms: probe, pilot, contract, amendment, ledger — machinery gets everyday words ("the checker", "small code fix").
 
-## 3. Every delegation is a sealed envelope
+### 3. Every delegation is a sealed envelope
 Executors see nothing but your prompt text and the disk. Self-contained always: absolute paths, starting commit, exact outputs, forbidden actions, runnable acceptance checks with expected values, every shared state file named explicitly. Point at governing docs by path rather than paraphrasing them — and instruct "the doc wins over this contract; flag conflicts". Preflight the envelope's environment (workspace writability, cwd scoping, auth, exact model IDs/flags — seconds each) before every dispatch.
 
-## 4. Spend each intelligence where it's scarce
+### 4. Spend each intelligence where it's scarce
 Route work to the cheapest adequate worker; your own tokens go to design, contracts, verification, judgment. But optimize TOTAL cost, not dogma: when doing a small fix takes less than describing it (~≤20 lines, no design choices), do it directly — routing trivia through full ceremony multiplies its cost ~10×. Ceremony must scale with job size; full formality is for substantial work. Keep context lean (delegate bulk reads, clip outputs).
