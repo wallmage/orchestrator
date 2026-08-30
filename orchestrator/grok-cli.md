@@ -1,8 +1,4 @@
-# Grok Build CLI — PARKED
-
-No active sub (Super Grok Heavy lapsed). Do NOT dispatch. To reactivate: restore roster/reviewer rows below + move this section back into `SKILL.md` § CLI Workers.
-
-Former roles: Worker 1 default `grok-4.6 --effort medium` (int 59); Escalated 2 `xhigh` (61); SDD reviewer medium; judgment reviewer xhigh `--sandbox read-only`; debate 1-2h tier xhigh read-only.
+# Grok Build CLI
 
 Shared contract: `SKILL.md` § CLI Workers.
 
