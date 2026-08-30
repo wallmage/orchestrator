@@ -1,6 +1,6 @@
 # Dynamic Workflows (Fable orchestrating Opus fleets)
 
-`Workflow` tool runs JS script spawning Opus agents in-process — no CLI model can join. CLI workers remain for cross-family review + grok/gemini capacity. Gated: explicit opt-in only — "ultracode" (keyword; session-on = standing: workflow every substantive task, solo only trivia), user's own ask, or skill instruction (this skill grants it).
+`Workflow` tool runs JS script spawning Opus agents in-process — no CLI model can join. CLI workers remain for cross-family review + grok capacity. Gated: explicit opt-in only — "ultracode" (keyword; session-on = standing: workflow every substantive task, solo only trivia), user's own ask, or skill instruction (this skill grants it).
 
 When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-day loops. Single one-off Opus job = still one-`agent()` Workflow (§ Dispatch Mechanics). Hybrid default: scout the work-list inline first, then Workflow pipelines over it. Big multi-phase work = sequential Workflows, one per phase, Fable judging between — never one giant script.
 

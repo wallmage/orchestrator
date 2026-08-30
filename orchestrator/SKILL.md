@@ -33,11 +33,11 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | Opus workflow above. |
 | Cursor CLI `cursor-grok-4.6-xhigh-fast` | Escalated 2 | Low | 61 | § Cursor CLI |
-| Antigravity CLI `agy` `gemini-3.7-flash --effort medium` | Scout - Default | Low | 53 | § Antigravity CLI. Lightning fast implementer + recon + menial bulk work. |
+| CodeBuddy CLI `glm-5.3-flash --effort low` | Scout - Default | Low | 53 | Lightning fast implementer + recon + menial bulk work. `codebuddy-cli.md` |
 | Workflow `model:'opus', effort:'low'` (Opus 5) | Scout 2 | Low | 52 | Opus workflow above. |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Designer | Low | 61 | Best design and taste. Opus workflow above. |
 | CodeBuddy CLI `kimi-k3-2 --effort max` | Dabate Reviewer 3 | High | 60 | `codebuddy-cli.md` |
-| CodeBuddy CLI `glm-5.3-flash --effort max` | Backup | Low | 57 | ALWAYS max — except workflows: `--effort ultracode` (= high + Dynamic Workflows; parallelism over peak).  `codebuddy-cli.md` |
+| CodeBuddy CLI `glm-5.3-flash --effort max` | Backup | Low | 57 | Max for backup/worker jobs (Scout row above runs low) — except workflows: `--effort ultracode` (= high + Dynamic Workflows; parallelism over peak).  `codebuddy-cli.md` |
 | CodeBuddy CLI `hy4-preview --effort max` | Backup | Free |  |  |
 
 ## Agent Team vs Workflow
@@ -69,7 +69,7 @@ Task orders:
 
 ### CLI Workers (shared contract)
 
-Cursor + agy live below; `codex-cli.md`, `codebuddy-cli.md` hold the rest (`grok-cli.md` = parked, no sub — never dispatch) — read the one you dispatch to, never the others. This is the contract every CLI obeys.
+Cursor lives below; `codex-cli.md`, `codebuddy-cli.md` hold the rest (`grok-cli.md` = parked, no sub — never dispatch) — read the one you dispatch to, never the others. This is the contract every CLI obeys.
 
 Runner shape (every CLI):
 - Bash `run_in_background`, watcher armed in the SAME batch.
@@ -129,39 +129,6 @@ Prompts:
 Follow-ups:
 - Resume: same cmd + `--resume <session_id>` — same cwd. `--continue` = latest.
 - Review: normal job + `--mode ask`.
-
-### Antigravity CLI (`agy`)
-
-Runner:
-
-```sh
-exec </dev/null
-echo $$ > <TMP_PATH>/<job>.pid
-cd <PROJECT ROOT>
-agy -p "<prompt>" --model gemini-3.7-flash --effort medium --dangerously-skip-permissions \
-  --output-format stream-json --print-timeout 30m > <TMP_PATH>/<job>.log 2>&1
-printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
-grep -a '"event":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result.structured_output // .result.response' > <TMP_PATH>/<job>.final.txt
-```
-
-Files: log = NDJSON (`step_update` events = liveness); resume id = `conversation_id` in first `init` line. Success also needs last result line `"status":"SUCCESS"`; errors → `"status":"ERROR"` + exit 1.
-
-Flags:
-- `--model gemini-3.7-flash --effort medium` EVERY dispatch — the only model + effort ever used; all other `agy models` BANNED.
-- `--dangerously-skip-permissions`: required unattended.
-- `--mode plan` = analysis-only: blocks all writes; plan docs dumped under `~/.gemini/antigravity-cli/brain/<cid>/` — ignore, read only the reply.
-- `--print-timeout 30m`: default 5m kills longer jobs mid-run — raise EVERY dispatch.
-- Transient startup crash: `"status":"ERROR"` + `Eligibility check failed` (agy phoning Google at launch, network flake — seconds in, no work done). Not the job's fault: retry the dispatch once before diagnosing anything.
-- `--json-schema '<inline JSON or path>'` → result gains `structured_output` (runner prefers).
-- cwd TRAP: agy's native search/list tools root at its own workspace (home), IGNORING shell cwd — only shell commands inherit it. Relative-path prompts silently search the wrong tree (confident "no files found", phantom paths). EVERY dispatch: absolute project root in the prompt ("Project root: <abs path> — operate only inside it") + `--add-dir <root>`. Keep the `cd` too.
-
-Prompts:
-- Fans out via native subagent tools (`define_subagent`/`invoke_subagent`/`manage_subagents`); remind explicitly.
-- Superpowers: `~/.gemini/config/plugins/superpowers/skills/using-superpowers/SKILL.md`
-
-Follow-ups:
-- Resume: `agy -p "<delta>" --conversation <conversation_id> --model gemini-3.7-flash --effort medium --dangerously-skip-permissions --output-format stream-json` — same cwd, memory intact.
-- Review: normal job + `--mode plan`.
 
 ### Watcher Protocol
 
