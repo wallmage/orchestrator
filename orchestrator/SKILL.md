@@ -33,8 +33,8 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | Opus workflow above. |
 | Cursor CLI `cursor-grok-4.6-xhigh-fast` | Escalated 2 | Low | 61 | § Cursor CLI |
-| CodeBuddy CLI `glm-5.3-flash --effort low` | Scout - Default | Low | 53 | Lightning fast implementer + recon + menial bulk work. `codebuddy-cli.md` |
-| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout 2 | Low | 52 | Opus workflow above. |
+| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout - Default | Low | 52 | In-session: zero dispatch overhead, no watcher/extra orchestrator turns; batch several scout jobs per Workflow. Opus workflow above. |
+| CodeBuddy CLI `glm-5.3-flash --effort low` | Scout 2 | Low | 53 | Lightning fast recon + menial bulk work. `codebuddy-cli.md` |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Designer | Low | 61 | Best design and taste. Opus workflow above. |
 | CodeBuddy CLI `kimi-k3-2 --effort max` | Dabate Reviewer 3 | High | 60 | `codebuddy-cli.md` |
 | CodeBuddy CLI `glm-5.3-flash --effort max` | Backup | Low | 57 | Max for backup/worker jobs (Scout row above runs low) — except workflows: `--effort ultracode` (= high + Dynamic Workflows; parallelism over peak).  `codebuddy-cli.md` |
