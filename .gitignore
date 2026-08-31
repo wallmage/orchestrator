@@ -18,3 +18,4 @@ orchestrator/*
 !orchestrator/workflows.md
 !orchestrator/hooks/
 !orchestrator/hooks/*
+!orchestrator/dispatch.sh
