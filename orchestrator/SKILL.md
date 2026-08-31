@@ -154,6 +154,7 @@ Rules:
 - Kill discipline: NEVER pick kill targets by ppid=1 — jobs backgrounded from `$(...)` command substitution reparent to init while ALIVE. Identify each victim by full command string + workdir; when unsure, don't kill. After killing a wrapper, also check for surviving CLI children (node/codex) still writing to the workdir.
 - No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
 - `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
+- zsh does NOT word-split unquoted `$var`: `kill $PIDS` with a multi-pid string is a silent no-op (2>/dev/null hides the error) — pass pids as explicit args, `${=PIDS}`, or use bash. After ANY kill, verify death with ps before proceeding.
 - Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
 
 ## Worktrees, Parallelism & Git
