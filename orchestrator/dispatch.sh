@@ -10,11 +10,18 @@
 #       itself contain '|'; name and workdir must not. Blank lines ignored.
 # Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name> (compiled into JOBS).
 # TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
-# watcher.sh tunables (POLL_SECS, HEARTBEAT_SECS, ...) pass through to every watcher.
-# Each job gets its own watcher.sh child; all events merge into this Monitor's stream
-# (every line is [name]-tagged). Exits when the last watcher exits.
+#
+# Wake economics (the whole point):
+# - Incidents (DEATH, dead-process STALL, ERROR, LAUNCH FAILURE, WAITING, RESOURCE)
+#   and terminal FINISHED events pass through IMMEDIATELY from per-job watchers.
+# - Routine status is consolidated: per-job heartbeats are silenced (fleet mode) and
+#   the parent emits ONE combined heartbeat per HEARTBEAT_SECS (default 300) listing
+#   every job's state. One wake per interval regardless of fleet size.
+# - When the last job settles its watcher exits; the parent then kills the heartbeat
+#   loop and exits itself. No watcher ever outlives the fleet.
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+HB=${HEARTBEAT_SECS:-300}
 if [ -z "${JOBS:-}" ] && [ -n "${CLI:-}" ]; then
   JOBS="${JOB:-job}|${WD:-}|$CLI"
 fi
@@ -23,6 +30,7 @@ if [ -z "${JOBS:-}" ]; then
   exit 0
 fi
 
+NAMES=""; LOGS=""; WPIDS=""
 OLDIFS=$IFS; IFS='
 '
 for line in $JOBS; do
@@ -31,6 +39,8 @@ for line in $JOBS; do
   name=${line%%|*}; rest=${line#*|}; wd=${rest%%|*}; cmd=${rest#*|}
   if [ -z "$name" ] || [ ! -d "$wd" ] || [ -z "$cmd" ]; then
     echo "LAUNCH FAILURE [$name]: bad job line or missing workdir ($wd)"
+    IFS='
+'
     continue
   fi
   state=${TMP:-$(dirname "$wd")}
@@ -38,10 +48,39 @@ for line in $JOBS; do
   ( cd "$wd" || exit 127; exec </dev/null; sh -c "$cmd" > "$log" 2>&1; printf '\nEXIT=%s\n' $? >> "$log" ) &
   echo $! > "$pidf"
   echo "LAUNCHED [$name]: pid $(cat "$pidf"), log $log"
-  LOG=$log PIDFILE=$pidf OUTFILE=$outf JOB=$name sh "$DIR/watcher.sh" &
+  # Children: incidents immediate, routine status muted — the parent consolidates it.
+  LOG=$log PIDFILE=$pidf OUTFILE=$outf JOB=$name HEARTBEAT_SECS=99999999 sh "$DIR/watcher.sh" &
+  WPIDS="$WPIDS $!"
+  NAMES="$NAMES $name"
+  LOGS="$LOGS $log"
   IFS='
 '
 done
 IFS=$OLDIFS
-wait
-echo "FLEET DONE: all watchers closed"
+[ -n "$WPIDS" ] || { echo "LAUNCH FAILURE [dispatch]: no job started"; exit 0; }
+
+# One combined heartbeat per HB covering every job.
+(
+  while :; do
+    sleep "$HB"
+    line=""
+    set -- $NAMES
+    for log in $LOGS; do
+      name=$1; shift
+      if tail -c 64 "$log" 2>/dev/null | grep -qE '^EXIT=[0-9]+'; then
+        st="done(exit=$(tail -c 64 "$log" | grep -aE '^EXIT=' | tail -1 | cut -d= -f2))"
+      elif [ -f "$log" ]; then
+        st="alive, $(wc -c < "$log" | tr -d ' ')B"
+      else
+        st="no log"
+      fi
+      line="$line$name: $st | "
+    done
+    echo "HEARTBEAT [fleet]: ${line%??}"
+  done
+) &
+HBPID=$!
+
+for p in $WPIDS; do wait "$p"; done
+kill "$HBPID" 2>/dev/null
+echo "FLEET DONE: all jobs settled, watcher closing"
