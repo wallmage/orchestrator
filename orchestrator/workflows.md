@@ -8,7 +8,8 @@ When: ≥2 parallel Claude agents, multi-phase pipelines, budget sweeps, multi-d
 
 - Deterministic control flow at zero Fable cost: loops/conditionals/fan-out run as script, not Fable turns. One script → dozens of agents → one return value. Runs in background, completion notifies; `/workflows` = live progress.
 - Structured returns: `agent(prompt,{schema})` → validated JSON, auto-retry on mismatch. No logs/watcher/pid/jq.
-- Native parallelism: ~16 concurrent (excess queues); caps: 1000 agents/run, 4096 items per pipeline/parallel call.
+- Native parallelism: excess queues; caps: 1000 agents/run, 4096 items per pipeline/parallel call.
+- HARD CAP (user rule): <10 concurrent subagents across ALL running workflows. Structure scripts so peak concurrency ≤9 (lanes/batches). >10 ONLY with the user's explicit per-run approval, reasoning stated first.
 - Effort per call: `'low'` mechanical, `'medium'` worker tier, `'high'` verify/judge/design (`xhigh|max` exist — hardest judge stages only).
 - Per-agent worktrees: `{isolation:'worktree'}` for parallel file mutations — costly, only when needed; auto-removed if unchanged; orchestrator still merges (§ Worktrees).
 - Recovery: pass script inline (`script` param), never pre-Write — every run persists it (path in tool result) + `journal.jsonl` (each agent's actual return; if missing → `agent-<id>.jsonl` in transcript dir). Iterate: Edit persisted file, re-invoke `{scriptPath}`. Resume: `{scriptPath, resumeFromRunId}` — unchanged `agent()` prefix cached instant, edited/new run live. SAME SESSION ONLY; TaskStop prior run first. Cross-session: journal → author continuation script. Read journal before diagnosing empty result. Replay = start order: cache stops at first UNFINISHED agent; all started after it re-run even if completed → many small agents preserve far more progress than one long agent.

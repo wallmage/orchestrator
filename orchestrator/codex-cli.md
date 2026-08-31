@@ -15,6 +15,8 @@ printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
 
 Files: `-o` writes `.final.txt` directly. Resume id = `thread_id` in log. Log `item.type":"error"` can be benign warnings ("Under-development features enabled") — failure = `"type":"turn.failed"` or `EXIT≠0`, nothing else.
 
+Quota exhaustion: instant (~10s) `turn.failed` + "You've hit your usage limit ... try again at <time>". Retrying before that time is pointless — discard the run, reschedule every codex job for after the stated reset.
+
 Flags:
 - `-m` + `-c model_reasoning_effort=` EVERY dispatch (config default `gpt-5.6-luna` xhigh — never rely on it).
 - Models: `gpt-5.6-sol` | `gpt-5.6-luna` only (bare `gpt-5.6` invalid). Effort — luna: `low|medium|high|xhigh|max`; sol: those + `ultra`. Source of truth: `supported_reasoning_levels` in `~/.codex/models_cache.json` — check there, help text doesn't list them.

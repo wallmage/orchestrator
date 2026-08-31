@@ -151,6 +151,7 @@ Rules:
 - No HEARTBEAT for 5+ min = the watcher itself died — re-arm it.
 - Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
 - On RESOURCE: kill only hung/abandoned child processes; a legitimately heavy job gets its limits raised.
+- Kill discipline: NEVER pick kill targets by ppid=1 — jobs backgrounded from `$(...)` command substitution reparent to init while ALIVE. Identify each victim by full command string + workdir; when unsure, don't kill. After killing a wrapper, also check for surviving CLI children (node/codex) still writing to the workdir.
 - No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
 - `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
 - Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
