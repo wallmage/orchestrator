@@ -147,6 +147,7 @@ Env:
 Each wake message names its condition and carries its own diagnosis — act on it in the same turn; never respond by granting more waiting time.
 
 Rules:
+- NEVER hand-roll `tail -F | awk '/DONE/{exit}'` monitors — if the job dies without printing the magic line, the watcher hangs forever and litters the task panel. Always use watcher.sh (process-aware, self-terminating), or guard any custom monitor with a pid-liveness loop: `while kill -0 $JOB_PID; do ...; done` so watcher death follows job death. After a watched job completes, confirm its watcher exited; TaskStop leftovers immediately.
 - Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake.
 - No HEARTBEAT for 5+ min = the watcher itself died — re-arm it.
 - Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
