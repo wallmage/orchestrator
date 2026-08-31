@@ -113,7 +113,7 @@ grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TM
 Files: log = NDJSON (liveness); resume id = first `"session_id"` in log. Success also needs last result line `"is_error":false`.
 
 Flags:
-- `--model <slug>` EVERY dispatch; effort + fast baked into slug. Allowed ONLY: `cursor-grok-4.6-medium-fast` = worker | `cursor-grok-4.6-xhigh-fast` = escalated/reviewer; `kimi-k3-high` | `kimi-k3-max` backups. Never non-fast grok, `auto`, others. Re-check: `cursor-agent --list-models`.
+- `--model <slug>` EVERY dispatch; effort + fast baked into slug. Grok 4.6 fast ladder all live: `cursor-grok-4.6-{low,medium,high,xhigh}-fast` — lanes: `medium-fast` = worker | `xhigh-fast` = escalated/reviewer; `kimi-k3-high` | `kimi-k3-max` backups. Never non-fast grok, `auto`, others. Re-check: `cursor-agent --list-models`.
 - `--force`: REQUIRED — else headless shell/edits blocked. Deny rules in `~/.cursor/cli-config.json` still win.
 - `--trust`: skip workspace-trust prompt. `--approve-mcps` only if job needs MCP servers.
 - `--mode ask` = analysis-only (read-only); `--mode plan` = plan-only.
