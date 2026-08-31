@@ -72,7 +72,7 @@ Task orders:
 Cursor lives below; `codex-cli.md`, `codebuddy-cli.md` hold the rest (`grok-cli.md` = parked, no sub — never dispatch) — read the one you dispatch to, never the others. This is the contract every CLI obeys.
 
 Runner shape (every CLI):
-- Bash `run_in_background`, watcher armed in the SAME batch.
+- Bash `run_in_background`, watcher armed in the SAME batch. Enforced by a PreToolUse hook (`hooks/require_watcher.sh`): an unwatched CLI launch is BLOCKED; prefix the command `WATCHED=1` only together with its same-batch watcher Monitor — the prefix is your attestation, never a bypass.
 - `exec </dev/null` first (a live stdin pipe freezes some CLIs), `echo $$ > <TMP_PATH>/<job>.pid`, `cd <PROJECT ROOT>` (never `-C`/`--cwd`-style flags).
 - stdout+stderr → `<TMP_PATH>/<job>.log`; then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n` so EXIT= never lands mid-line); final answer → `<TMP_PATH>/<job>.final.txt`.
 - Runner/helper scripts: POSIX sh only — macOS `/bin/bash` = 3.2 (no `declare -A`, no `${var,,}`); bash-4isms die at launch.
