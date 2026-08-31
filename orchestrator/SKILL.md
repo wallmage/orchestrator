@@ -72,7 +72,7 @@ Task orders:
 Cursor lives below; `codex-cli.md`, `codebuddy-cli.md` hold the rest (`grok-cli.md` = parked, no sub — never dispatch) — read the one you dispatch to, never the others. This is the contract every CLI obeys.
 
 Runner shape (every CLI):
-- ONE Monitor call launches AND watches the whole fleet — never separate steps: `Monitor(persistent:true, description:"<fleet>", command:"TMP=<state dir> JOBS='<name>|<workdir>|<full CLI cmd>\n<name>|<workdir>|<full CLI cmd>' sh ~/.claude/skills/orchestrator/dispatch.sh")`. One job or ten, same single call: dispatch.sh launches each worker detached (log/pid/EXIT= handled), emits a launch receipt per job, runs one watcher per job, merges every event into the one stream, exits when the last worker settles. Single-job shorthand: `CLI=… WD=… JOB=…`. Never launch a CLI worker with plain Bash.
+- ONE Monitor call launches AND watches the whole fleet via `dispatch.sh` — never plain Bash, never a separate watcher step. Full mechanism: § Fleet Dispatch & Watcher Protocol.
 - `exec </dev/null` first (a live stdin pipe freezes some CLIs), `echo $$ > <TMP_PATH>/<job>.pid`, `cd <PROJECT ROOT>` (never `-C`/`--cwd`-style flags).
 - stdout+stderr → `<TMP_PATH>/<job>.log`; then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n` so EXIT= never lands mid-line); final answer → `<TMP_PATH>/<job>.final.txt`.
 - Runner/helper scripts: POSIX sh only — macOS `/bin/bash` = 3.2 (no `declare -A`, no `${var,,}`); bash-4isms die at launch.
@@ -130,26 +130,29 @@ Follow-ups:
 - Resume: same cmd + `--resume <session_id>` — same cwd. `--continue` = latest.
 - Review: normal job + `--mode ask`.
 
-### Watcher Protocol
+### Fleet Dispatch & Watcher Protocol
 
-Always arm a watcher in the SAME tool-call batch as the dispatch. Never hand-write one — instantiate `watcher.sh` :
+CLI workers are launched and watched by ONE Monitor call — `dispatch.sh` is the only launch path (never plain Bash, never a separate watcher step):
 
-`Monitor(persistent:true, description:"<job> watcher", command:"LOG=<TMP_PATH>/<job>.log JOB=<job> PIDFILE=<TMP_PATH>/<job>.pid OUTFILE=<TMP_PATH>/<job>.final.txt sh ~/.claude/skills/orchestrator/watcher.sh")`
+`Monitor(persistent:true, description:"<fleet>", command:"TMP=<state dir> JOBS='<name>|<workdir>|<full CLI command>\n<name2>|<workdir2>|<full CLI command2>' sh ~/.claude/skills/orchestrator/dispatch.sh")`
 
 (Windows: `~` → `%USERPROFILE%`.)
 
-Env:
-- `LOG` (required): the job log.
-- `PIDFILE` (always): scopes CPU/socket checks to this job.
-- `OUTFILE` (always).
-- Optional: `JOB`, `MILESTONE_FILE`/`MILESTONE_MSG`, `POLL_SECS`(3), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8).
+Mechanism — same single call for 1 or 20 combos across any mix of CLIs:
+- `JOBS`: one job per line, `name|workdir|command` — split on the first two `|` only, so the command may contain `|`; name/workdir may not. Single-job shorthand: `CLI=… WD=… JOB=…` instead of JOBS.
+- Per job, dispatch.sh: launches the command detached with cwd=workdir (`exec </dev/null`, stdout+stderr → `<TMP>/<name>.log`, `EXIT=n` appended, pid → `<name>.pid`), emits `LAUNCHED [<name>]`, and starts one `watcher.sh` child scoped to that job.
+- Wake economics: incidents (DEATH, dead-process STALL, ERROR, WAITING, LAUNCH FAILURE, RESOURCE) and each job's FINISHED pass through IMMEDIATELY; all routine status is consolidated into ONE `HEARTBEAT [fleet]` per `HEARTBEAT_SECS` (default 300) listing every job's state — one wake per interval regardless of fleet size (per-job heartbeats are muted internally).
+- Self-cleanup: when a job settles its watcher exits; when the last one settles the fleet prints `FLEET DONE` and exits itself. A missing `FLEET DONE` after all jobs report done = kill the Monitor task.
+- Tunables pass through to every watcher: `POLL_SECS`(3), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8), `MILESTONE_FILE`/`MILESTONE_MSG`.
+- Read `<TMP>/<name>.final.txt` for results (per the CLI contract); the fleet stream is for liveness, not output.
+- Bare `watcher.sh` via its own Monitor (`LOG=… PIDFILE=… OUTFILE=… JOB=…`) remains ONLY for adopting an already-running job you did not launch through dispatch.sh (e.g., after a session restart).
 
 Each wake message names its condition and carries its own diagnosis — act on it in the same turn; never respond by granting more waiting time.
 
 Rules:
 - NEVER hand-roll `tail -F | awk '/DONE/{exit}'` monitors — if the job dies without printing the magic line, the watcher hangs forever and litters the task panel. Always use watcher.sh (process-aware, self-terminating), or guard any custom monitor with a pid-liveness loop: `while kill -0 $JOB_PID; do ...; done` so watcher death follows job death. After a watched job completes, confirm its watcher exited; TaskStop leftovers immediately.
-- Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake.
-- No HEARTBEAT for 5+ min = the watcher itself died — re-arm it.
+- Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake. Re-arm = bare watcher.sh Monitor on that one job, not a fleet relaunch. A dead-process alarm on a job whose CLI forks (pid file points at an exited wrapper) is a SCOPE bug: repoint the pid file at the live process (identify by command+workdir) and re-arm — don't kill the job.
+- No fleet HEARTBEAT for 5+ min while jobs are unfinished = the fleet watcher itself died — re-adopt each unfinished job with a bare watcher.sh Monitor.
 - Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
 - On RESOURCE: kill only hung/abandoned child processes; a legitimately heavy job gets its limits raised.
 - Kill discipline: NEVER pick kill targets by ppid=1 — jobs backgrounded from `$(...)` command substitution reparent to init while ALIVE. Identify each victim by full command string + workdir; when unsure, don't kill. After killing a wrapper, also check for surviving CLI children (node/codex) still writing to the workdir.
