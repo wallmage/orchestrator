@@ -159,6 +159,12 @@ while true; do
             stall_announced=1
             echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s at $size bytes and NO live process in scope (${PIDFILE:+pidfile }${PIDFILE:-$CPU_PATTERN}) — likely dead. Last: $(tail -1 "$LOG" | cut -c1-200)"
           fi
+          # Job tree is dead and log is frozen: nothing left to watch. Exit so the
+          # watcher never outlives its job (only when scope is explicit via PIDFILE).
+          if [ -n "${PIDFILE:-}" ]; then
+            echo "WATCH ENDED [$JOB]: job process tree gone, log frozen — watcher closing with it."
+            exit 0
+          fi
         elif [ "$stall_cpu_ref" = "-1" ]; then
           stall_cpu_ref=$cpu_now
         else
