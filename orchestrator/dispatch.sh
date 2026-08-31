@@ -1,26 +1,47 @@
 #!/bin/sh
-# One-call CLI dispatch: launches the worker AND becomes its watcher.
-# Instantiate via a single Monitor call — no separate Bash launch, nothing to forget:
-#   Monitor(persistent:true, description:"<job>", command:
-#     "CLI='<full CLI command with prompt>' WD=<workdir> JOB=<job> TMP=<state dir> \
-#      sh ~/.claude/skills/orchestrator/dispatch.sh")
-# Env: CLI (required, full command; run with cwd=WD), WD (required, must exist),
-#      JOB (label), TMP (state dir for log/pid/final; default WD's parent)
-# Everything watcher.sh accepts passes through (POLL_SECS, HEARTBEAT_SECS, ...).
-# The first emitted event is the launch receipt; then watcher semantics take over.
+# Fleet dispatch: ONE Monitor call launches 1..N CLI workers AND watches them all.
+# No separate watcher step exists — launching and watching are the same action.
+#
+#   Monitor(persistent:true, description:"<fleet>", command:
+#     "TMP=<state dir> JOBS='<name>|<workdir>|<full CLI command>
+#      <name>|<workdir>|<full CLI command>' sh ~/.claude/skills/orchestrator/dispatch.sh")
+#
+# JOBS: one job per line, fields split on the FIRST TWO '|' only — the command may
+#       itself contain '|'; name and workdir must not. Blank lines ignored.
+# Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name> (compiled into JOBS).
+# TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
+# watcher.sh tunables (POLL_SECS, HEARTBEAT_SECS, ...) pass through to every watcher.
+# Each job gets its own watcher.sh child; all events merge into this Monitor's stream
+# (every line is [name]-tagged). Exits when the last watcher exits.
 
-JOB=${JOB:-job}
-if [ -z "${CLI:-}" ] || [ -z "${WD:-}" ] || [ ! -d "${WD:-}" ]; then
-  echo "LAUNCH FAILURE [$JOB]: CLI and an existing WD are required (WD=${WD:-unset})"
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -z "${JOBS:-}" ] && [ -n "${CLI:-}" ]; then
+  JOBS="${JOB:-job}|${WD:-}|$CLI"
+fi
+if [ -z "${JOBS:-}" ]; then
+  echo "LAUNCH FAILURE [dispatch]: set JOBS='name|workdir|command' (one per line) or CLI/WD/JOB"
   exit 0
 fi
-TMP=${TMP:-$(dirname "$WD")}
-LOG=${LOG:-$TMP/$JOB.log}
-PIDFILE=${PIDFILE:-$TMP/$JOB.pid}
-OUTFILE=${OUTFILE:-$TMP/$JOB.final.txt}
-export LOG PIDFILE OUTFILE JOB
 
-( cd "$WD" || exit 127; exec </dev/null; sh -c "$CLI" > "$LOG" 2>&1; printf '\nEXIT=%s\n' $? >> "$LOG" ) &
-echo $! > "$PIDFILE"
-echo "LAUNCHED [$JOB]: pid $(cat "$PIDFILE"), log $LOG"
-exec sh "$(dirname "$0")/watcher.sh"
+OLDIFS=$IFS; IFS='
+'
+for line in $JOBS; do
+  IFS=$OLDIFS
+  [ -n "$line" ] || continue
+  name=${line%%|*}; rest=${line#*|}; wd=${rest%%|*}; cmd=${rest#*|}
+  if [ -z "$name" ] || [ ! -d "$wd" ] || [ -z "$cmd" ]; then
+    echo "LAUNCH FAILURE [$name]: bad job line or missing workdir ($wd)"
+    continue
+  fi
+  state=${TMP:-$(dirname "$wd")}
+  log="$state/$name.log"; pidf="$state/$name.pid"; outf="$state/$name.final.txt"
+  ( cd "$wd" || exit 127; exec </dev/null; sh -c "$cmd" > "$log" 2>&1; printf '\nEXIT=%s\n' $? >> "$log" ) &
+  echo $! > "$pidf"
+  echo "LAUNCHED [$name]: pid $(cat "$pidf"), log $log"
+  LOG=$log PIDFILE=$pidf OUTFILE=$outf JOB=$name sh "$DIR/watcher.sh" &
+  IFS='
+'
+done
+IFS=$OLDIFS
+wait
+echo "FLEET DONE: all watchers closed"

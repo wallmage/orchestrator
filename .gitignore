@@ -16,6 +16,4 @@ orchestrator/*
 !orchestrator/adversarial-reviewer.md
 !orchestrator/judgment-reviewer.md
 !orchestrator/workflows.md
-!orchestrator/hooks/
-!orchestrator/hooks/*
 !orchestrator/dispatch.sh

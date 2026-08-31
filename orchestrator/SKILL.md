@@ -72,7 +72,7 @@ Task orders:
 Cursor lives below; `codex-cli.md`, `codebuddy-cli.md` hold the rest (`grok-cli.md` = parked, no sub — never dispatch) — read the one you dispatch to, never the others. This is the contract every CLI obeys.
 
 Runner shape (every CLI):
-- ONE call launches AND watches — never two: `Monitor(persistent:true, description:"<job>", command:"CLI='<full CLI cmd>' WD=<workdir> JOB=<job> sh ~/.claude/skills/orchestrator/dispatch.sh")`. dispatch.sh starts the worker detached (log/pid/EXIT= handled), emits a launch receipt, then becomes the watcher. Raw Bash CLI launches are BLOCKED by a PreToolUse hook (`hooks/require_watcher.sh`); `WATCHED=1` + same-batch Monitor is the legacy escape hatch, not the norm.
+- ONE Monitor call launches AND watches the whole fleet — never separate steps: `Monitor(persistent:true, description:"<fleet>", command:"TMP=<state dir> JOBS='<name>|<workdir>|<full CLI cmd>\n<name>|<workdir>|<full CLI cmd>' sh ~/.claude/skills/orchestrator/dispatch.sh")`. One job or ten, same single call: dispatch.sh launches each worker detached (log/pid/EXIT= handled), emits a launch receipt per job, runs one watcher per job, merges every event into the one stream, exits when the last worker settles. Single-job shorthand: `CLI=… WD=… JOB=…`. Never launch a CLI worker with plain Bash.
 - `exec </dev/null` first (a live stdin pipe freezes some CLIs), `echo $$ > <TMP_PATH>/<job>.pid`, `cd <PROJECT ROOT>` (never `-C`/`--cwd`-style flags).
 - stdout+stderr → `<TMP_PATH>/<job>.log`; then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n` so EXIT= never lands mid-line); final answer → `<TMP_PATH>/<job>.final.txt`.
 - Runner/helper scripts: POSIX sh only — macOS `/bin/bash` = 3.2 (no `declare -A`, no `${var,,}`); bash-4isms die at launch.
