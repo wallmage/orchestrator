@@ -46,6 +46,7 @@ cpu_secs() {
 seen_log=0; missing_polls=0; prev_size=-1; zero_polls=0; stall_cpu_ref=-1
 err_pend=0; ms_done=0; rw_done=0; armed_ts=0; last_hb=0; last_res=0; wait_pend=0
 remote_announced=0; stall_announced=0; err_announced=0; res_announced=0; wait_announced=0
+last_remote=0; last_idle_stall=0
 
 while true; do
   now=$(date +%s)
@@ -173,13 +174,14 @@ while true; do
           if [ "$delta" -le "$CPU_IDLE_MAX" ]; then
             socks=$({ [ -n "$PIDS" ] && lsof -i -a -p "$PIDS"; } 2>/dev/null | tail -n +2 | wc -l | tr -d ' ')
             if [ "$socks" -gt 0 ]; then
-              # Announce once per quiet spell; heartbeat covers aliveness after that.
-              if [ "$remote_announced" = "0" ]; then
+              # Routine status, not an incident: at most once per HB across ALL quiet
+              # spells (stream-json logs freeze briefly every turn — per-spell flags spam).
+              if [ "$remote_announced" = "0" ] && [ $((now - last_remote)) -ge "$HB" ]; then
                 echo "REMOTE-THINKING [$JOB]: log frozen $((zero_polls*POLL))s, local CPU idle, $socks open sockets to the model service — waiting on data-center reasoning. Last: $(tail -1 "$LOG" | cut -c1-200)"
-                remote_announced=1
+                remote_announced=1; last_remote=$now; last_hb=$now
               fi
-            elif [ "$stall_announced" = "0" ]; then
-              stall_announced=1
+            elif [ "$stall_announced" = "0" ] && [ $((now - last_idle_stall)) -ge "$HB" ]; then
+              stall_announced=1; last_idle_stall=$now
               echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s at $size bytes, cputime +${delta}s/poll (idle), 0 open sockets. Last: $(tail -1 "$LOG" | cut -c1-200)"
             fi
           fi
