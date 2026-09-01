@@ -28,7 +28,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
-| Fable 5 | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never pipeline worker. |
+| Fable 5.1 | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never pipeline worker. |
 | Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 1 - Default | Low | 59 | § Cursor CLI |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | Opus workflow above. |
