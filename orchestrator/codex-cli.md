@@ -32,5 +32,6 @@ Prompts:
 
 Follow-ups:
 - Resume: `codex exec resume <thread_id> --json -o <f> -m <same model> -c model_reasoning_effort=<same> "<delta>"` — without `-m` silently falls back to config model. Takes no `-C`/`-s`; inherits shell cwd (session lookup cwd-filtered; `--all` lifts). Accepts `--output-schema`.
+- Resume replays the whole thread (0.4–0.9M input/round observed), cheap only while cached — cap a thread at 3 rounds, then fresh session + pointer to the prior verdict file.
 - Fork: `codex exec fork <thread_id> --json -o <f> -m <model> "<delta>"` — branch, original untouched.
 - Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f>` (optional `-m`, `--title`, `--output-schema`).

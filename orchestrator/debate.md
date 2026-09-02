@@ -18,7 +18,7 @@ Round agrees suspiciously fast → escalate one tier.
 ## Conversation mechanics
 
 - Reviewer memory = its CLI session; every round resumes it (same cwd), sends only the delta. Reviewers run in parallel.
-- Each reply lands in `<TMP_PATH>/<reviewer>.r<N>.final.txt`, one file per round. Orchestrator reads it only.
+- Dispatch each round with `QUIET=1`; act at FLEET DONE; read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call. Orchestrator reads finals only.
 - `.log` only when final missing/empty, EXIT≠0, or a verdict smells wrong — never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 around hits; ≤10% of the file.
 
 ## Draft, Debate, Execute
@@ -43,12 +43,18 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 6. Re-review the doc itself, not the round message: confirm accepted fixes actually landed before PASS.
 ```
 
-## Rounds
+## Rounds — hard cap 3, any committee size
 
-1. Round 1: all reviewers on v1.
-2. Orchestrator rules on every finding on merit. Merge accepted → bump version once; never concurrent versions.
-3. Round N: resume each thread with the round-N template.
-4. No round cap. Done = every reviewer PASS on the same version → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in reviewer's next message (closes the item), rationale → decision table.
+Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 shippable), r2 15 (8), r3 11 (2), r4–r7 ≤1 each — every one a regression of the previous fix; past r3 the doc grows legal text and quality falls.
+
+1. Round 1 — discovery: all reviewers on v1. Rule on every finding on merit. Merge accepted → bump version once; never concurrent versions.
+2. Round 2 — verify landed + regressions: resume each thread with the round-N template. Accept only findings passing the Ship test; park the rest (decision table, no edit).
+3. Round 3 — only if round 2 accepted ≥1 Ship-test finding. Its Ship-test findings are fixed without re-review. Done.
+4. Round 2+ still finding Ship-test holes in ORIGINAL text (not regressions) = under-designed → back to brainstorm, never round 4.
+5. Done = a round with zero Ship-test findings, or round-3 fixes applied → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in reviewer's next message (closes the item), rationale → decision table.
+
+Ship test (gate from round 2): a normal user would hit it — wrong output, lost/overwritten data, a mode that cannot run, a documented promise that is false. Wording, hygiene, cross-doc consistency, ≥3-unusual-step edge cases → park.
+Edit budget: accepted fix ≤1 sentence; needs more → park. Executable target → one real run per round beats a reviewer (they reason statically).
 
 ## Templates
 

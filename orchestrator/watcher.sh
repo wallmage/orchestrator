@@ -2,6 +2,7 @@
 # Canonical watcher — instantiate via Monitor with env vars; never hand-write one.
 # Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS
 #      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX MAX_PROCS MAX_RSS_GB
+#      QUIET=1 mutes ARMED OK, REMOTE-THINKING, RIGHT-WORK CHECK, clean FINISHED (fleet consolidates them)
 # Each alarm fires once per episode; it re-arms only after its condition clears.
 # Wake semantics documented in SKILL.md §3.
 
@@ -14,7 +15,7 @@ CPU_PATTERN=${CPU_PATTERN:-codex exec}
 CPU_IDLE_MAX=${CPU_IDLE_MAX:-2}
 
 FAIL_SIGS='"type":"turn.failed"|^EXIT=[1-9]|usage limit|quota|rate limit|Task failed|Cancelled|Blocked by workspace|^Traceback|只允许写入|权限阻止|沙箱拒绝|未修改任何文件'
-HARD_SIGS='"type":"turn.failed"|^EXIT=[1-9]'
+HARD_SIGS='"type":"turn.failed"|^EXIT=[1-9]|"is_error":true'
 WAIT_SIGS='\[y/[nN]\][[:space:]]*$|\(y/N\)[[:space:]]*$|press enter[[:space:]]*$|^[[:space:]]*(Allow|Approve|Continue)\?[[:space:]]*$|waiting for (your )?input[[:space:]]*$|requires approval[[:space:]]*$|permission prompt[[:space:]]*$|等待输入[[:space:]]*$'
 
 PIDS=""
@@ -70,7 +71,7 @@ while true; do
   else
     if [ "$seen_log" = "0" ]; then
       seen_log=1; armed_ts=$now; last_hb=$now
-      echo "ARMED OK [$JOB]: log exists, $(wc -c < "$LOG" | tr -d ' ') bytes"
+      [ "${QUIET:-0}" = 1 ] || echo "ARMED OK [$JOB]: log exists, $(wc -c < "$LOG" | tr -d ' ') bytes"
     fi
 
     size=$(stat -f %z "$LOG" 2>/dev/null || stat -c %s "$LOG" 2>/dev/null || echo 0)
@@ -90,6 +91,8 @@ while true; do
       wait_announced=0
     fi
 
+    # NDJSON logs embed file contents the CLI read: only structural failures count there.
+    ERR_SIGS=$FAIL_SIGS; [ "$(head -c1 "$LOG" 2>/dev/null)" = "{" ] && ERR_SIGS=$HARD_SIGS
     # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed.
     # EXIT= is always appended at EOF, so a tail probe suffices — never scan the whole log per poll.
     if tail -c 64 "$LOG" 2>/dev/null | grep -qE '^EXIT=[0-9]+\r?$'; then
@@ -97,25 +100,25 @@ while true; do
       SUSPECT=""
       if grep -qE "$HARD_SIGS" "$LOG" 2>/dev/null; then
         SUSPECT="match: $(grep -aE "$HARD_SIGS" "$LOG" | tail -1 | cut -c1-200)"
-      elif tail -c 4000 "$LOG" | grep -qE "$FAIL_SIGS"; then
-        SUSPECT="match: $(tail -c 4000 "$LOG" | grep -aE "$FAIL_SIGS" | tail -1 | cut -c1-200)"
+      elif tail -c 4000 "$LOG" | grep -qE "$ERR_SIGS"; then
+        SUSPECT="match: $(tail -c 4000 "$LOG" | grep -aE "$ERR_SIGS" | tail -1 | cut -c1-200)"
       elif [ -n "${OUTFILE:-}" ] && [ ! -s "${OUTFILE:-}" ]; then
         SUSPECT="EXIT ok but OUTFILE missing/empty: $OUTFILE"
       fi
       if [ -n "$SUSPECT" ]; then
         echo "FINISHED-SUSPECT [$JOB]: $SUSPECT | tail: ...$(printf '%s' "$TAILTXT" | tail -c 400)"
       else
-        echo "FINISHED [$JOB]: ...$(printf '%s' "$TAILTXT" | tail -c 700)"
+        [ "${QUIET:-0}" = 1 ] || echo "FINISHED [$JOB]: ...$(printf '%s' "$TAILTXT" | tail -c 700)"
       fi
       exit 0
     fi
 
     # ERROR: wake only if in the tail two consecutive polls; scrolled-out = self-healed noise.
     # Tail-scoped by design: announcement always required tail presence, so whole-log scans buy nothing.
-    if tail -c 4000 "$LOG" 2>/dev/null | grep -qE "$FAIL_SIGS"; then
+    if tail -c 4000 "$LOG" 2>/dev/null | grep -qE "$ERR_SIGS"; then
       if [ "$err_pend" = "1" ] && [ "$err_announced" = "0" ]; then
         err_announced=1
-        echo "ERROR [$JOB] (unresolved one poll later): $(tail -c 4000 "$LOG" | grep -aE "$FAIL_SIGS" | tail -1 | cut -c1-300)"
+        echo "ERROR [$JOB] (unresolved one poll later): $(tail -c 4000 "$LOG" | grep -aE "$ERR_SIGS" | tail -1 | cut -c1-300)"
       fi
       err_pend=1
     else
@@ -146,7 +149,7 @@ while true; do
     fi
 
     if [ "$rw_done" = "0" ] && [ $((now - armed_ts)) -ge 180 ]; then
-      echo "RIGHT-WORK CHECK [$JOB]: 3 min in — last: $(tail -1 "$LOG" | cut -c1-200)"
+      [ "${QUIET:-0}" = 1 ] || echo "RIGHT-WORK CHECK [$JOB]: 3 min in — last: $(tail -1 "$LOG" | cut -c1-200)"
       rw_done=1
     fi
 
@@ -177,7 +180,7 @@ while true; do
               # Routine status, not an incident: at most once per HB across ALL quiet
               # spells (stream-json logs freeze briefly every turn — per-spell flags spam).
               if [ "$remote_announced" = "0" ] && [ $((now - last_remote)) -ge "$HB" ]; then
-                echo "REMOTE-THINKING [$JOB]: log frozen $((zero_polls*POLL))s, local CPU idle, $socks open sockets to the model service — waiting on data-center reasoning. Last: $(tail -1 "$LOG" | cut -c1-200)"
+                [ "${QUIET:-0}" = 1 ] || echo "REMOTE-THINKING [$JOB]: log frozen $((zero_polls*POLL))s, local CPU idle, $socks open sockets to the model service — waiting on data-center reasoning. Last: $(tail -1 "$LOG" | cut -c1-200)"
                 remote_announced=1; last_remote=$now; last_hb=$now
               fi
             elif [ "$stall_announced" = "0" ] && [ $((now - last_idle_stall)) -ge "$HB" ]; then
