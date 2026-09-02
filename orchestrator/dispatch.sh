@@ -90,7 +90,7 @@ IFS=$OLDIFS
 HBPID=$!
 
 for p in $WPIDS; do wait "$p"; done
-kill "$HBPID" 2>/dev/null
+pkill -P "$HBPID" 2>/dev/null; kill "$HBPID" 2>/dev/null
 line=""; set -- $NAMES
-for log in $LOGS; do name=$1; shift; f=$(wc -c < "${log%.log}.final.txt" 2>/dev/null | tr -d ' '); line="$line$name exit=$(grep -aE '^EXIT=' "$log" | tail -1 | cut -d= -f2) final=${f:-0}B | "; done
+for log in $LOGS; do name=$1; shift; f=$([ -f "${log%.log}.final.txt" ] && wc -c < "${log%.log}.final.txt" | tr -d ' '); line="$line$name exit=$(grep -aE '^EXIT=' "$log" | tail -1 | cut -d= -f2) final=${f:-0}B | "; done
 echo "FLEET DONE: ${line%??}"
