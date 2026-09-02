@@ -11,7 +11,7 @@
 # Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name> (compiled into JOBS).
 # TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
 # QUIET (default 1): per-job ARMED OK / REMOTE-THINKING / RIGHT-WORK CHECK / clean FINISHED never wake;
-#   one WORK CHECK [fleet] at 3 min; HEARTBEAT every 1800s; FLEET DONE lists exit + final size per job.
+#   one WORK CHECK [fleet] at WORK_SECS (180); HEARTBEAT every 1800s; FLEET DONE lists exit + final size per job.
 #   Liveness without wakes: watcher dies early → FLEET ABORTED; job ends but watcher hangs → WATCHER STUCK.
 #   QUIET=0 restores per-job chatter and a 300s heartbeat.
 #
@@ -65,16 +65,13 @@ IFS=$OLDIFS
 NAMES=${NAMES# }; LOGS=${LOGS# }; WPIDS=${WPIDS# }
 [ -n "$WPIDS" ] || { echo "LAUNCH FAILURE [dispatch]: no job started"; exit 0; }
 
-# One combined heartbeat per HB covering every job.
+# One heartbeat subshell: first pass at WORK_SECS (3 min) = proof of work; then every HB.
+# Each pass also catches a watcher that outlived its finished job.
 (
-  if [ "$QUIET" = 1 ]; then
-    sleep 180; line=""; set -- $NAMES
-    for log in $LOGS; do name=$1; shift; line="$line$name: $(tail -1 "$log" 2>/dev/null | cut -c1-120) | "; done
-    echo "WORK CHECK [fleet]: ${line%??}"
-  fi
+  n=0
   while :; do
-    sleep "$HB"
-    line=""; i=0
+    if [ "$n" = 0 ]; then sleep "${WORK_SECS:-180}"; else sleep "$HB"; fi
+    n=$((n+1)); line=""; work=""; i=0
     for log in $LOGS; do
       i=$((i+1)); name=$(echo "$NAMES" | cut -d' ' -f$i); wp=$(echo "$WPIDS" | cut -d' ' -f$i)
       if tail -c 64 "$log" 2>/dev/null | grep -qE '^EXIT=[0-9]+'; then
@@ -85,9 +82,9 @@ NAMES=${NAMES# }; LOGS=${LOGS# }; WPIDS=${WPIDS# }
       else
         st="no log"
       fi
-      line="$line$name: $st | "
+      line="$line$name: $st | "; work="$work$name: $(tail -1 "$log" 2>/dev/null | cut -c1-120) | "
     done
-    echo "HEARTBEAT [fleet]: ${line%??}"
+    if [ "$n" = 1 ] && [ "$QUIET" = 1 ]; then echo "WORK CHECK [fleet]: ${work%??}"; else echo "HEARTBEAT [fleet]: ${line%??}"; fi
   done
 ) &
 HBPID=$!
