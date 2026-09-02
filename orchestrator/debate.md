@@ -11,7 +11,7 @@ Each tier adds one reviewer:
 | <1h | — | — | — | — |
 | 1-2h | 30 min max | Cursor CLI `cursor-grok-4.6-xhigh-fast` | `--mode ask` | § Cursor CLI |
 | 2-4h | 60 min max | + Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
-| >4h | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan` | `codebuddy-cli.md` |
+| >4h | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan`, `WD=$HOME` (else template unreadable) | `codebuddy-cli.md` |
 
 Round agrees suspiciously fast → escalate one tier.
 
