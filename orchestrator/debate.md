@@ -18,7 +18,7 @@ Round agrees suspiciously fast → escalate one tier.
 ## Conversation mechanics
 
 - Reviewer memory = its CLI session; every round resumes it (same cwd), sends only the delta. Reviewers run in parallel.
-- Dispatch each round with `QUIET=1`; act at FLEET DONE; read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call. Orchestrator reads finals only.
+- Dispatch each round with `BATCH=1` (only FLEET DONE wakes); then read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call — the one place results are batched. Orchestrator reads finals only.
 - `.log` only when final missing/empty, EXIT≠0, or a verdict smells wrong — never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 around hits; ≤10% of the file.
 
 ## Draft, Debate, Execute
@@ -50,7 +50,7 @@ Orchestrator is the judge. Verify each claim in the target first (open the file,
 - P1 runs, but a major problem
 - P2 minor, but the user notices
 - P3 the user never notices: wording, hygiene, doc consistency, far edge cases → reject on sight
-Only verified P0–P2 get fixed.
+Only verified P0–P2 get fixed. The same scale sits in `adversarial-reviewer.md` / `judgment-reviewer.md`, so reviewers label and self-filter.
 
 ## Rounds — hard cap 3, any committee size
 
@@ -67,7 +67,7 @@ Executable target → one real run per round beats a reviewer (they reason stati
 Round 1:
 ```
 Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
-Report only what a user would notice (P0–P2): broken, major, or visibly wrong. Skip wording, hygiene, doc consistency, far edge cases. Number every finding. Do not edit any file.
+Number every finding. Do not edit any file.
 ```
 Round N:
 ```

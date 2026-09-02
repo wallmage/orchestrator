@@ -2,7 +2,7 @@
 # Canonical watcher — instantiate via Monitor with env vars; never hand-write one.
 # Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS
 #      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX MAX_PROCS MAX_RSS_GB
-#      QUIET=1 mutes ARMED OK, REMOTE-THINKING, RIGHT-WORK CHECK, clean FINISHED (fleet consolidates them)
+#      QUIET=1 mutes ARMED OK, REMOTE-THINKING, RIGHT-WORK CHECK; BATCH=1 also mutes clean FINISHED (debate rounds)
 #      STALL_SECS (1200): log frozen this long even with open sockets → STALL incident (remote hang)
 # Each alarm fires once per episode; it re-arms only after its condition clears.
 # Wake semantics documented in SKILL.md §3.
@@ -109,7 +109,7 @@ while true; do
       if [ -n "$SUSPECT" ]; then
         echo "FINISHED-SUSPECT [$JOB]: $SUSPECT | tail: ...$(printf '%s' "$TAILTXT" | tail -c 400)"
       else
-        [ "${QUIET:-0}" = 1 ] || echo "FINISHED [$JOB]: ...$(printf '%s' "$TAILTXT" | tail -c 700)"
+        [ "${BATCH:-0}" = 1 ] || echo "FINISHED [$JOB]: ...$(printf '%s' "$TAILTXT" | tail -c 700)"
       fi
       exit 0
     fi

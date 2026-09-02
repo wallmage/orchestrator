@@ -47,6 +47,14 @@ Unconfirmed after reasonable investigation → omit from findings; mention only 
 
 Severity = impact and likelihood, not amount of code.
 
+## Triage — report P0–P2 only
+
+- P0 doesn't work: crash, data lost/overwritten, main feature broken, purpose not met
+- P1 runs, but a major problem
+- P2 minor, but the user notices
+- P3 the user never notices — wording, hygiene, doc consistency, far edge cases: never report
+Label each finding P0/P1/P2. The orchestrator re-verifies and may relabel.
+
 ## Output
 
 Findings first, ordered by severity:

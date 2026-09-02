@@ -10,8 +10,9 @@
 #       itself contain '|'; name and workdir must not. Blank lines ignored.
 # Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name> (compiled into JOBS).
 # TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
-# QUIET (default 1): per-job ARMED OK / REMOTE-THINKING / RIGHT-WORK CHECK / clean FINISHED never wake;
-#   one WORK CHECK [fleet] at WORK_SECS (180); HEARTBEAT every 1800s; FLEET DONE lists exit + final size per job.
+# QUIET (default 1): per-job ARMED OK / REMOTE-THINKING / RIGHT-WORK CHECK never wake; each job's FINISHED still does;
+#   one WORK CHECK [fleet] at WORK_SECS (180); ONE HEARTBEAT [fleet] per 900s covering every job; FLEET DONE lists exit + final size per job.
+# BATCH=1 (debate rounds only): clean per-job FINISHED muted too — only FLEET DONE speaks.
 #   Liveness without wakes: watcher dies early → FLEET ABORTED; job ends but watcher hangs → WATCHER STUCK.
 #   QUIET=0 restores per-job chatter and a 300s heartbeat.
 #
@@ -26,7 +27,8 @@
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 QUIET=${QUIET:-1}; export QUIET
-HB=${HEARTBEAT_SECS:-$([ "$QUIET" = 1 ] && echo 1800 || echo 300)}
+BATCH=${BATCH:-0}; export BATCH
+HB=${HEARTBEAT_SECS:-$([ "$QUIET" = 1 ] && echo 900 || echo 300)}
 if [ -z "${JOBS:-}" ] && [ -n "${CLI:-}" ]; then
   JOBS="${JOB:-job}|${WD:-}|$CLI"
 fi
