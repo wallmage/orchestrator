@@ -48,13 +48,17 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 shippable), r2 15 (8), r3 11 (2), r4–r7 ≤1 each — every one a regression of the previous fix; past r3 the doc grows legal text and quality falls.
 
 1. Round 1 — discovery: all reviewers on v1. Rule on every finding on merit. Merge accepted → bump version once; never concurrent versions.
-2. Round 2 — verify landed + regressions: resume each thread with the round-N template. Accept only findings passing the Ship test; park the rest (decision table, no edit).
-3. Round 3 — only if round 2 accepted ≥1 Ship-test finding. Its Ship-test findings are fixed without re-review. Done.
-4. Round 2+ still finding Ship-test holes in ORIGINAL text (not regressions) = under-designed → back to brainstorm, never round 4.
-5. Done = a round with zero Ship-test findings, or round-3 fixes applied → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in reviewer's next message (closes the item), rationale → decision table.
+2. Round 2 — resume each thread with the round-N template on v2. Reviewers do two things: confirm each accepted fix is really in the file, and report new problems (mostly ones the v2 edits created). Orchestrator triages every report: P0–P2 → fix; P3 → log in the decision table, no edit.
+3. Round 3 — runs only if round 2 fixed something. Same two jobs on v3. P0–P2 reports get fixed; nobody reviews those fixes. Stop.
+4. Round 2+ still finding P0–P2 holes in text that round 1 already saw = under-designed → back to brainstorm, never round 4.
+5. Done = a round with zero P0–P2 reports, or round-3 fixes applied → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in reviewer's next message (closes the item), rationale → decision table.
 
-Ship test (gate from round 2): a normal user would hit it — wrong output, lost/overwritten data, a mode that cannot run, a documented promise that is false. Wording, hygiene, cross-doc consistency, ≥3-unusual-step edge cases → park.
-Edit budget: accepted fix ≤1 sentence; needs more → park. Executable target → one real run per round beats a reviewer (they reason statically).
+Triage (orchestrator assigns, reviewer labels ignored):
+- P0 data lost or overwritten
+- P1 wrong output, or a documented mode/command cannot run
+- P2 a documented promise is false
+- P3 wording, hygiene, cross-doc consistency, edge cases needing ≥3 unusual steps
+Round 1 fixes everything worth fixing; rounds 2–3 fix P0–P2 only. Executable target → one real run per round beats a reviewer (they reason statically).
 
 ## Templates
 

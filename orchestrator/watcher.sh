@@ -102,7 +102,7 @@ while true; do
         SUSPECT="match: $(grep -aE "$HARD_SIGS" "$LOG" | tail -1 | cut -c1-200)"
       elif tail -c 4000 "$LOG" | grep -qE "$ERR_SIGS"; then
         SUSPECT="match: $(tail -c 4000 "$LOG" | grep -aE "$ERR_SIGS" | tail -1 | cut -c1-200)"
-      elif [ -n "${OUTFILE:-}" ] && [ ! -s "${OUTFILE:-}" ]; then
+      elif [ -n "${OUTFILE:-}" ] && [ "$(tr -d '[:space:]' < "${OUTFILE:-}" 2>/dev/null | wc -c | tr -d ' ')" = 0 ]; then
         SUSPECT="EXIT ok but OUTFILE missing/empty: $OUTFILE"
       fi
       if [ -n "$SUSPECT" ]; then
