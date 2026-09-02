@@ -43,34 +43,36 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 6. Re-review the doc itself, not the round message: confirm accepted fixes actually landed before PASS.
 ```
 
+## Triage — every round, every claim
+
+Orchestrator is the judge. Verify each claim in the target first (open the file, trace the path, run it when runnable); reviewer severity labels ignored; a claim that cannot be shown true = rejected. Expect half to fail verification — cheaper than fixing phantoms.
+- P0 doesn't work: crash, data lost/overwritten, main feature broken, purpose not met
+- P1 runs, but a major problem
+- P2 minor, but the user notices
+- P3 the user never notices: wording, hygiene, doc consistency, far edge cases → reject on sight
+Only verified P0–P2 get fixed.
+
 ## Rounds — hard cap 3, any committee size
 
-Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 shippable), r2 15 (8), r3 11 (2), r4–r7 ≤1 each — every one a regression of the previous fix; past r3 the doc grows legal text and quality falls.
+Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 real), r2 15 (8), r3 11 (2), r4–r7 ≤1 each — all regressions of the previous fix.
 
-1. Round 1 — discovery: all reviewers on v1. Rule on every finding on merit. Merge accepted → bump version once; never concurrent versions.
-2. Round 2 — resume each thread with the round-N template on v2. Reviewers do two things: confirm each accepted fix is really in the file, and report new problems (mostly ones the v2 edits created). Orchestrator triages every report: P0–P2 → fix; P3 → log in the decision table, no edit.
-3. Round 3 — runs only if round 2 fixed something. Same two jobs on v3. P0–P2 reports get fixed; nobody reviews those fixes. Stop.
-4. Round 2+ still finding P0–P2 holes in text that round 1 already saw = under-designed → back to brainstorm, never round 4.
-5. Done = a round with zero P0–P2 reports, or round-3 fixes applied → human go/no-go → execute. Second rejection of same finding = FINAL: stamp FINAL in reviewer's next message (closes the item), rationale → decision table.
-
-Triage (orchestrator assigns, reviewer labels ignored):
-- P0 data lost or overwritten
-- P1 wrong output, or a documented mode/command cannot run
-- P2 a documented promise is false
-- P3 wording, hygiene, cross-doc consistency, edge cases needing ≥3 unusual steps
-Round 1 fixes everything worth fixing; rounds 2–3 fix P0–P2 only. Executable target → one real run per round beats a reviewer (they reason statically).
+1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
+2. Round 2 — resume each thread with the round-N template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3.
+3. Round 3 — only if round 2 changed anything: recheck v3, fix P0–P2, nobody reviews those fixes. Stop.
+Done = a round with nothing to fix, or round 3 → human go/no-go → execute. Second rejection of the same finding = FINAL: stamp FINAL in the next message, rationale → decision table.
+Executable target → one real run per round beats a reviewer (they reason statically).
 
 ## Templates
 
 Round 1:
 ```
 Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
-Number every finding. Do not edit any file.
+Report only what a user would notice (P0–P2): broken, major, or visibly wrong. Skip wording, hygiene, doc consistency, far edge cases. Number every finding. Do not edit any file.
 ```
 Round N:
 ```
 <doc path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
-Re-review v<N>: new or unresolved findings only, same format; PASS if none.
+Re-review v<N>: confirm fixes landed; new P0–P2 only, same format; PASS if none.
 ```
 
 ## Hard rules

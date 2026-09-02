@@ -10,9 +10,10 @@
 #       itself contain '|'; name and workdir must not. Blank lines ignored.
 # Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name> (compiled into JOBS).
 # TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
-# QUIET=1: per-job ARMED OK / REMOTE-THINKING / RIGHT-WORK CHECK / clean FINISHED muted;
-#          one WORK CHECK [fleet] at 3 min; FLEET DONE lists exit + final size per job.
-#          Use when nothing can happen until every job lands (debate rounds, N-version, batch verify).
+# QUIET (default 1): per-job ARMED OK / REMOTE-THINKING / RIGHT-WORK CHECK / clean FINISHED never wake;
+#   one WORK CHECK [fleet] at 3 min; HEARTBEAT every 1800s; FLEET DONE lists exit + final size per job.
+#   Liveness without wakes: watcher dies early → FLEET ABORTED; job ends but watcher hangs → WATCHER STUCK.
+#   QUIET=0 restores per-job chatter and a 300s heartbeat.
 #
 # Wake economics (the whole point):
 # - Incidents (DEATH, dead-process STALL, ERROR, LAUNCH FAILURE, WAITING, RESOURCE)
@@ -24,7 +25,8 @@
 #   loop and exits itself. No watcher ever outlives the fleet.
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-HB=${HEARTBEAT_SECS:-300}
+QUIET=${QUIET:-1}; export QUIET
+HB=${HEARTBEAT_SECS:-$([ "$QUIET" = 1 ] && echo 1800 || echo 300)}
 if [ -z "${JOBS:-}" ] && [ -n "${CLI:-}" ]; then
   JOBS="${JOB:-job}|${WD:-}|$CLI"
 fi
@@ -60,23 +62,24 @@ for line in $JOBS; do
 '
 done
 IFS=$OLDIFS
+NAMES=${NAMES# }; LOGS=${LOGS# }; WPIDS=${WPIDS# }
 [ -n "$WPIDS" ] || { echo "LAUNCH FAILURE [dispatch]: no job started"; exit 0; }
 
 # One combined heartbeat per HB covering every job.
 (
-  if [ "${QUIET:-0}" = 1 ]; then
+  if [ "$QUIET" = 1 ]; then
     sleep 180; line=""; set -- $NAMES
     for log in $LOGS; do name=$1; shift; line="$line$name: $(tail -1 "$log" 2>/dev/null | cut -c1-120) | "; done
     echo "WORK CHECK [fleet]: ${line%??}"
   fi
   while :; do
     sleep "$HB"
-    line=""
-    set -- $NAMES
+    line=""; i=0
     for log in $LOGS; do
-      name=$1; shift
+      i=$((i+1)); name=$(echo "$NAMES" | cut -d' ' -f$i); wp=$(echo "$WPIDS" | cut -d' ' -f$i)
       if tail -c 64 "$log" 2>/dev/null | grep -qE '^EXIT=[0-9]+'; then
         st="done(exit=$(tail -c 64 "$log" | grep -aE '^EXIT=' | tail -1 | cut -d= -f2))"
+        kill -0 "$wp" 2>/dev/null && echo "WATCHER STUCK [$name]: job wrote EXIT but its watcher never reported — read $log tail, kill watcher pid $wp"
       elif [ -f "$log" ]; then
         st="alive, $(wc -c < "$log" | tr -d ' ')B"
       else
@@ -91,6 +94,6 @@ HBPID=$!
 
 for p in $WPIDS; do wait "$p"; done
 pkill -P "$HBPID" 2>/dev/null; kill "$HBPID" 2>/dev/null
-line=""; set -- $NAMES
-for log in $LOGS; do name=$1; shift; f=$([ -f "${log%.log}.final.txt" ] && wc -c < "${log%.log}.final.txt" | tr -d ' '); line="$line$name exit=$(grep -aE '^EXIT=' "$log" | tail -1 | cut -d= -f2) final=${f:-0}B | "; done
-echo "FLEET DONE: ${line%??}"
+line=""; abort=""; set -- $NAMES
+for log in $LOGS; do name=$1; shift; f=$([ -f "${log%.log}.final.txt" ] && wc -c < "${log%.log}.final.txt" | tr -d ' '); ex=$(grep -aE '^EXIT=' "$log" | tail -1 | cut -d= -f2); [ -n "$ex" ] || abort="$abort $name"; line="$line$name exit=${ex:-NONE} final=${f:-0}B | "; done
+if [ -n "$abort" ]; then echo "FLEET ABORTED (watcher died before job ended:$abort): ${line%??}"; else echo "FLEET DONE: ${line%??}"; fi

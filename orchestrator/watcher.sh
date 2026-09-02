@@ -3,6 +3,7 @@
 # Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS
 #      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX MAX_PROCS MAX_RSS_GB
 #      QUIET=1 mutes ARMED OK, REMOTE-THINKING, RIGHT-WORK CHECK, clean FINISHED (fleet consolidates them)
+#      STALL_SECS (1200): log frozen this long even with open sockets → STALL incident (remote hang)
 # Each alarm fires once per episode; it re-arms only after its condition clears.
 # Wake semantics documented in SKILL.md §3.
 
@@ -182,6 +183,10 @@ while true; do
               if [ "$remote_announced" = "0" ] && [ $((now - last_remote)) -ge "$HB" ]; then
                 [ "${QUIET:-0}" = 1 ] || echo "REMOTE-THINKING [$JOB]: log frozen $((zero_polls*POLL))s, local CPU idle, $socks open sockets to the model service — waiting on data-center reasoning. Last: $(tail -1 "$LOG" | cut -c1-200)"
                 remote_announced=1; last_remote=$now; last_hb=$now
+              fi
+              if [ $((zero_polls*POLL)) -ge "${STALL_SECS:-1200}" ] && [ "$stall_announced" = "0" ]; then
+                stall_announced=1
+                echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s with $socks open sockets — remote hang? Last: $(tail -1 "$LOG" | cut -c1-200)"
               fi
             elif [ "$stall_announced" = "0" ] && [ $((now - last_idle_stall)) -ge "$HB" ]; then
               stall_announced=1; last_idle_stall=$now
