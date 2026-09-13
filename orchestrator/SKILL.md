@@ -41,7 +41,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 ## Dispatch Mechanics
 
 Claude-side workers (Opus, never Sonnet):
-- ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design.
+- ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: '<per roster row>', label: '...'})`.
 - Model AND effort stated every spawn.
 - HARD CAP: 15 subagents total per task, summed across every Workflow run and batch. More ONLY with the user's explicit approval, reasoning stated first.
 - One worker = still a one-`agent()` Workflow.
