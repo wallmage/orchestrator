@@ -1,5 +1,4 @@
-# Deny by default: publish the functional skill files only; internal working
-# documents, plans, sync tooling, and tests never leave this machine.
+# Allowlist: only the skill files are published.
 *
 !.gitignore
 !LICENSE
@@ -10,7 +9,6 @@ orchestrator/*
 !orchestrator/watcher.sh
 !orchestrator/codex-cli.md
 !orchestrator/grok-cli.md
-!orchestrator/cursor-cli.md
 !orchestrator/codebuddy-cli.md
 !orchestrator/debate.md
 !orchestrator/adversarial-reviewer.md

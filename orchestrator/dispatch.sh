@@ -1,29 +1,14 @@
 #!/bin/sh
-# Fleet dispatch: ONE Monitor call launches 1..N CLI workers AND watches them all.
-# No separate watcher step exists — launching and watching are the same action.
+# Fleet dispatch: ONE Monitor call launches 1..N CLI jobs AND watches them all.
 #
 #   Monitor(persistent:true, description:"<fleet>", command:
 #     "TMP=<state dir> JOBS='<name>|<workdir>|<full CLI command>
 #      <name>|<workdir>|<full CLI command>' sh ~/.claude/skills/orchestrator/dispatch.sh")
 #
-# JOBS: one job per line, fields split on the FIRST TWO '|' only — the command may
-#       itself contain '|'; name and workdir must not. Blank lines ignored.
-# Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name> (compiled into JOBS).
+# JOBS: one job per line, split on the FIRST TWO '|' only (command may contain '|'; name/workdir may not). Blank lines ignored.
+# Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name>.
 # TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
-# QUIET (default 1): per-job ARMED OK / REMOTE-THINKING / RIGHT-WORK CHECK never wake; each job's FINISHED still does;
-#   one WORK CHECK [fleet] at WORK_SECS (180); ONE HEARTBEAT [fleet] per 900s covering every job; FLEET DONE lists exit + final size per job.
-# BATCH=1 (debate rounds only): clean per-job FINISHED muted too — only FLEET DONE speaks.
-#   Liveness without wakes: watcher dies early → FLEET ABORTED; job ends but watcher hangs → WATCHER STUCK.
-#   QUIET=0 restores per-job chatter and a 300s heartbeat.
-#
-# Wake economics (the whole point):
-# - Incidents (DEATH, dead-process STALL, ERROR, LAUNCH FAILURE, WAITING, RESOURCE)
-#   and terminal FINISHED events pass through IMMEDIATELY from per-job watchers.
-# - Routine status is consolidated: per-job heartbeats are silenced (fleet mode) and
-#   the parent emits ONE combined heartbeat per HEARTBEAT_SECS (default 300) listing
-#   every job's state. One wake per interval regardless of fleet size.
-# - When the last job settles its watcher exits; the parent then kills the heartbeat
-#   loop and exits itself. No watcher ever outlives the fleet.
+# QUIET (default 1), BATCH, WORK_SECS (180), HEARTBEAT_SECS (900; 300 when QUIET=0): wake semantics in SKILL.md § Fleet Dispatch & Watcher Protocol.
 
 DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 QUIET=${QUIET:-1}; export QUIET

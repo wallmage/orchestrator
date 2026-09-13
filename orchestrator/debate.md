@@ -6,34 +6,31 @@ Orchestrator drafts spec + plan, dispatches adversarial reviewers, arbitrates. C
 
 Each tier adds one reviewer:
 
-| Job size | Time box | Adds reviewer | Read-only flag | Dispatch |
-|---|---|---|---|---|
-| <1h | — | — | — | — |
-| 1-2h | 30 min max | Cursor CLI `cursor-grok-4.6-xhigh-fast` | `--mode ask` | § Cursor CLI |
-| 2-4h | 60 min max | + Codex CLI `gpt-6-astra` xhigh | `-s read-only` | `codex-cli.md` |
-| >4h | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` (expensive — last seat only) | `--permission-mode plan`, `WD=$HOME` (else template unreadable) | `codebuddy-cli.md` |
+| Job size | Time box | Adds reviewer (roster slugs, read-only mode) |
+|---|---|---|
+| <1h | — | — |
+| 1-2h | 30 min max | Debate Reviewer 1 |
+| 2-4h | 60 min max | + Debate Reviewer 2 |
+| >4h | can be hours | + Debate Reviewer 3 (expensive — last seat only) |
 
-Seats = top model per vendor, cost order: Grok (near free) → Astra (high but OK) → K3 (very expensive). Anthropic's seat is Fable = the judge, never a reviewer.
-
-Round agrees suspiciously fast → escalate one tier.
+One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate one tier.
 
 ## Conversation mechanics
 
-- Reviewer memory = its CLI session; every round resumes it (same cwd), sends only the delta. Reviewers run in parallel.
-- Dispatch each round with `BATCH=1` (only FLEET DONE wakes); then read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call — the one place results are batched. Orchestrator reads finals only.
-- `.log` only when final missing/empty, EXIT≠0, or a verdict smells wrong — never whole: `grep -n` the anchor/finding/`error`, `tail -n 100`, `sed -n` ±50 around hits; ≤10% of the file.
+- Each round resumes each reviewer's CLI session (same cwd) with the delta only; reviewers run in parallel.
+- At FLEET DONE read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call.
 
 ## Draft, Debate, Execute
 
-1. Read ONLY 5 Superpowers skills once: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/` → `brainstorming/SKILL.md` (spec), `writing-plans/SKILL.md` (plan), `receiving-code-review/SKILL.md` (arbitration), `verification-before-completion/SKILL.md` (accepting work), `subagent-driven-development/SKILL.md` (execution; helper scripts + reviewer template in that dir).
+1. Read only these 5 Superpowers skills, once, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors).
-5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees; one final whole-branch `judgment-reviewer.md` pass.
+5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees.
 
 ## Reviewer prompt
 
-Same for all: reviewer reads `adversarial-reviewer.md` itself, path in template — never pasted. `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
+`NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
 Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin after:
 ```
@@ -47,16 +44,16 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 
 ## Triage — every round, every claim
 
-Orchestrator is the judge. Verify each claim in the target first (open the file, trace the path, run it when runnable); reviewer severity labels ignored; a claim that cannot be shown true = rejected. Expect half to fail verification — cheaper than fixing phantoms.
+Orchestrator is the judge. Verify each claim in the target first (open the file, trace the path, run it when runnable); reviewer severity labels ignored; a claim that cannot be shown true = rejected. Expect half to fail verification.
 - P0 doesn't work: crash, data lost/overwritten, main feature broken, purpose not met
 - P1 runs, but a major problem
 - P2 minor, but the user notices
 - P3 the user never notices: wording, hygiene, doc consistency, far edge cases → reject on sight
-Only verified P0–P2 get fixed. The same scale sits in `adversarial-reviewer.md` / `judgment-reviewer.md`, so reviewers label and self-filter.
+Only verified P0–P2 get fixed.
 
 ## Rounds — hard cap 3, any committee size
 
-Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 real), r2 15 (8), r3 11 (2), r4–r7 ≤1 each — all regressions of the previous fix.
+Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 real), r2 15 (8), r3 11 (2), r4–r7 ≤1 each, all regressions of the previous fix.
 
 1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — resume each thread with the round-N template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3.
@@ -79,7 +76,6 @@ Re-review v<N>: confirm fixes landed; new P0–P2 only, same format; PASS if non
 
 ## Hard rules
 
-1. Only Orchestrator edits, Reviewers read-only.
-2. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
-3. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-4. No framework files. `<TMP_PATH>` = transport only, never documentation.
+1. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
+2. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
+3. No framework files. `<TMP_PATH>` = transport only, never documentation.

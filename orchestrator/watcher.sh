@@ -1,11 +1,8 @@
 #!/bin/sh
-# Canonical watcher — instantiate via Monitor with env vars; never hand-write one.
-# Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS
-#      HEARTBEAT_SECS CPU_PATTERN CPU_IDLE_MAX MAX_PROCS MAX_RSS_GB
-#      QUIET=1 mutes ARMED OK, REMOTE-THINKING, RIGHT-WORK CHECK; BATCH=1 also mutes clean FINISHED (debate rounds)
-#      STALL_SECS (1200): log frozen this long even with open sockets → STALL incident (remote hang)
+# Canonical watcher — instantiate via Monitor with env vars.
+# Env: LOG (required); JOB PIDFILE OUTFILE MILESTONE_FILE MILESTONE_MSG POLL_SECS HEARTBEAT_SECS STALL_SECS
+#      CPU_PATTERN CPU_IDLE_MAX MAX_PROCS MAX_RSS_GB QUIET BATCH — semantics: SKILL.md § Fleet Dispatch & Watcher Protocol.
 # Each alarm fires once per episode; it re-arms only after its condition clears.
-# Wake semantics documented in SKILL.md §3.
 
 JOB=${JOB:-job}
 POLL=${POLL_SECS:-3}
@@ -94,8 +91,7 @@ while true; do
 
     # NDJSON logs embed file contents the CLI read: only structural failures count there.
     ERR_SIGS=$FAIL_SIGS; [ "$(head -c1 "$LOG" 2>/dev/null)" = "{" ] && ERR_SIGS=$HARD_SIGS
-    # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed.
-    # EXIT= is always appended at EOF, so a tail probe suffices — never scan the whole log per poll.
+    # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed; EXIT= sits at EOF, so tail-probe.
     if tail -c 64 "$LOG" 2>/dev/null | grep -qE '^EXIT=[0-9]+\r?$'; then
       TAILTXT=$(tail -c 1200 "$LOG" | tr '\n' ' ')
       SUSPECT=""
@@ -115,7 +111,6 @@ while true; do
     fi
 
     # ERROR: wake only if in the tail two consecutive polls; scrolled-out = self-healed noise.
-    # Tail-scoped by design: announcement always required tail presence, so whole-log scans buy nothing.
     if tail -c 4000 "$LOG" 2>/dev/null | grep -qE "$ERR_SIGS"; then
       if [ "$err_pend" = "1" ] && [ "$err_announced" = "0" ]; then
         err_announced=1
