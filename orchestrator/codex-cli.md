@@ -1,4 +1,5 @@
 # Codex CLI
+<!-- cli: codex :: update: codex update :: help: codex exec --help; codex exec resume --help; codex exec review --help :: models: jq -r '.[].slug' ~/.codex/models_cache.json :: changelog: gh release list -R openai/codex --exclude-pre-releases -L 30 --json tagName -q '.[].tagName' | grep '^rust-v' | while read t; do [ "$t" = "rust-v${OLD##* }" ] && break; echo "## $t"; gh release view "$t" -R openai/codex --json body -q .body | grep -E '^- ' | grep -viE '^- #[0-9]'; done -->
 
 Shared contract: `SKILL.md` § CLI Workers.
 
