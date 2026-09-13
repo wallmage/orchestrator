@@ -48,3 +48,4 @@ grep -Hn '<!-- cli:' "$DIR"/*.md | while IFS= read -r line; do
   done
   [ -n "$chlog" ] && [ "$OLD" != "$NEW" ] && { echo "CHANGELOG:"; OLD="$OLD" NEW="$NEW" sh -c "$chlog" 2>&1 | head -80; }
 done
+exit 0
