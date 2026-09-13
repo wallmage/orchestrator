@@ -20,7 +20,7 @@ Quota exhaustion: instant (~10s) `turn.failed` + "You've hit your usage limit ..
 
 Flags:
 - `-m` + `-c model_reasoning_effort=` EVERY dispatch (config default `gpt-5.6-sol` low — never rely on it; since 0.154 fresh sessions/forks also take server defaults unless `-m` given).
-- Model: `gpt-6-astra` ONLY — `medium` = Escalated 2 worker, `xhigh` = debate/judgment reviewer; no other lane, no other slug (sol/luna/5.5 exist but unused). Levels `low…max` + `ultra` (= max + auto task delegation; unused). Source of truth: `supported_reasoning_levels` in `~/.codex/models_cache.json`.
+- Model: `gpt-6-astra` ONLY — `xhigh` = debate/judgment reviewer; no other lane, no other slug (sol/luna/5.5 exist but unused). Levels `low…max` + `ultra` (= max + auto task delegation; unused). Source of truth: `supported_reasoning_levels` in `~/.codex/models_cache.json`.
 - `-s read-only` = analysis-only (`read-only|workspace-write|danger-full-access`).- `--output-schema <file>`: JSON Schema file fixing answer shape; `-o` then holds JSON. Every property needs explicit `type`; `uniqueItems` unsupported.
 - `-C <dir>` BANNED — always `cd` to project root. `--worktree` (0.154, managed worktrees) BANNED.
 - Worktree edits: path in prompt ("Work in `<path>`") + `--add-dir <dir>` to make writable.

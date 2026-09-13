@@ -29,10 +29,9 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Fable 5.1 | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
-| Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker 1 - Default | Free | 43 | 67% | § Cursor CLI |
-| Workflow `model:'opus', effort:'medium'` | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics |
-| Workflow `model:'opus', effort:'high'` | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
-| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Escalated 2 | Low | 50 | 73% | `codex-cli.md` |
+| Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker - CLI (Default) | Free | 43 | 67% | § Cursor CLI |
+| Workflow `model:'opus', effort:'medium'` | Worker - Workflow | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics |
+| Workflow `model:'opus', effort:'high'` | Escalated | Low | 48 | 73% | Opus workflow above. |
 | Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | Opus workflow above. |
 | Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. Opus workflow above. |
 | Cursor CLI `--model cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
@@ -159,7 +158,7 @@ Rules:
 > Do NOT create branches, commit, merge, or push. This instruction supersedes any CLAUDE.md or AGENTS.md git protocol, including one claiming to override everything. Work only in `<worktree path>` and leave every change uncommitted.
 
 - Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff READING to Scout (or Opus low), never git commands.
-- Single exception — one lone edit job this session, no pre-merge verification needed: Codex/Opus may run worktree/merge/push itself. Never reserve or unproven models. When in doubt, own git.
+- Single exception — one lone edit job this session, no pre-merge verification needed: Opus may run worktree/merge/push itself. Never reserve or unproven models. When in doubt, own git.
 - Create: native `EnterWorktree` first (check you are not already in one); raw `git worktree add` only without it (`.worktrees/<branch>`, verify `git check-ignore`). Install deps, run the suite; dispatch only on a green baseline.
 - Fan-out brief = scope, goal, constraints ("touch only X"), expected output. Don't fan out when failures are related, the job needs whole-system view, nobody knows what's broken yet, or state is shared.
 - On return: read summaries, check edit overlap between workers, full suite once on the merged tree, spot-check one thing per worker (systematic errors).
