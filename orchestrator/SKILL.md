@@ -1,15 +1,15 @@
 ---
 name: orchestrator
-description: Expensive model orchestrates, cheaper models execute. Use when the user says "orchestrate this". Model roster, routing.
+description: Expensive model orchestrates, cheaper models execute. Use when "orchestrate this". Model roster, routing.
 ---
 
-## Optimal Performance, Cost, Speed
+## Performance, Cost, Speed
 
 Orchestrator receives tasks from user, proposes best implementation plan, decomposes into subtasks, delegate to workers, and evaluates, synthesizes results. Routing logic: adequate performance with lowest cost. Orchestrator always aggressively assigns multiple workers when parallelzation speed gains outweight merge cost. Orchestrator creates/merges/deletes worktrees dynamically and solves conflicts beautifully, transparent to user. 
 
 ## Delegate vs Inline
 
-Delegate overhead ≈ minimal 3 orchestrator turns (dispatch/evaluate job); each turn = full context at orchestrator cache rate, often > $0.1 per turn. Inline = job tokens at orchestrator's premium rate + permanent context bloat.
+Delegate overhead ≈ minimal 3 orchestrator turns (dispatch/evaluate); each turn = full context at orchestrator cache rate, $0.1 per turn. Inline = job tokens at orchestrator's premium rate + permanent context bloat.
 
 Decision Gates:
 
@@ -23,23 +23,21 @@ Decision Gates:
 
 ## Model Roster & Routing
 
-90% normal implementation → Worker. 10% hard (intricate design, parsing, subtle correctness) → Escalated. Front-End Design → Designer. 
+90% normal implementation → Worker. 10% hard (intricate design, subtle correctness) → Escalated. Front-End Design → Designer. 
 BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Fable 5.1 xhigh | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
-| Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 1 - Default | Low | 43 | 67% | § Cursor CLI |
+| Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 1 - Default | Free | 43 | 67% | § Cursor CLI |
 | Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
 | Codex CLI `gpt-6-astra` medium | Escalated 2 | Low | 50 | 73% | `codex-cli.md` |
-| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout - Default | Low | 40 | 58% | In-session: zero dispatch overhead, no watcher/extra orchestrator turns; batch several scout jobs per Workflow. Opus workflow above. |
-| Workflow `model:'opus', effort:'xhigh'` (Opus 5) | Designer | Low | 50 | 73% | Best design and taste. Opus workflow above. |
-| Cursor CLI `cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Low | - | - | Cheapest top-tier seat, always first. § Cursor CLI |
+| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout | Low | 40 | 58% | Opus workflow above. |
+| Workflow `model:'opus', effort:'xhigh'` (Opus 5) | Designer | Low | 50 | 73% | Best design taste. Opus workflow above. |
+| Cursor CLI `cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
 | Codex CLI `gpt-6-astra` xhigh | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
-| CodeBuddy CLI `kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | Rare, expensive — last seat only. `codebuddy-cli.md` |
-
-Debate committee = one top model per vendor: Anthropic seat is Fable (the orchestrator/judge), so reviewers are the three above in cost order. Benchmarks: Intelligence = Artificial Analysis; DeepSWE saturates near 73–74 for anything post-July (flash tiers tie flagships) — use it as a floor for agentic reliability, not a ranking.
+| CodeBuddy CLI `kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
 
 ## Agent Team vs Workflow
 
