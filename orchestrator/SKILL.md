@@ -30,7 +30,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | --- | --- | --- | --- | --- | --- |
 | Fable 5.1 | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
 | Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker - CLI (Default) | Free | 43 | 67% | § Cursor CLI |
-| Workflow `model:'opus', effort:'medium'` | Worker - Workflow | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics |
+| Workflow `model:'opus', effort:'medium'` | Worker - Workflow | Low | 45 | 69% | § Dispatch Mechanics |
 | Workflow `model:'opus', effort:'high'` | Escalated | Low | 48 | 73% | Opus workflow above. |
 | Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | Opus workflow above. |
 | Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. Opus workflow above. |
