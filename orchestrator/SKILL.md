@@ -39,19 +39,12 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=xhigh` | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
 | CodeBuddy CLI `--model kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
 
-## Workflow
-
-Brute-force parallelism. Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). HARD CAP: 15 subagents total per task, summed across every Workflow run and batch. More ONLY with the user's explicit approval, reasoning stated first.
-
-Route:
-- Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; multi-round cross-pollination (round N+1 prompts carry round N findings); reproducibility wanted → Workflow.
-- Depth not breadth — ONE thread grinding until done-criteria met (days OK) → `/goal <criteria>`: session Stop hook, agent CANNOT end turn until condition holds, auto-clears on success (`/goal clear` = abort early). Criteria must be verifiable/runnable; fights laziness. Breadth too big for one path → Workflow.
-
 ## Dispatch Mechanics
 
 Claude-side workers (Opus, never Sonnet):
 - ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design.
 - Model AND effort stated every spawn.
+- HARD CAP: 15 subagents total per task, summed across every Workflow run and batch. More ONLY with the user's explicit approval, reasoning stated first.
 - One worker = still a one-`agent()` Workflow.
 - `Agent` tool BANNED (no effort field).
 
