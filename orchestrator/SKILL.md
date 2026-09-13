@@ -41,7 +41,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 ## Workflow
 
-Brute-force parallelism. Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). HARD CAP: ≤10 subagents per Workflow run, total — and ≤10 running at once across all workflows. Overrides the built-in 15-agent guideline and the CPU-derived concurrency ceiling. More ONLY with the user's explicit per-run approval, reasoning stated first.
+Brute-force parallelism. Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). HARD CAP: ≤10 subagents per Workflow run. More ONLY with the user's explicit per-run approval, reasoning stated first.
 
 Route:
 - Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; multi-round cross-pollination (round N+1 prompts carry round N findings); reproducibility wanted → Workflow.
