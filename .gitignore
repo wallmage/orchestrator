@@ -15,7 +15,6 @@ orchestrator/*
 !orchestrator/debate.md
 !orchestrator/adversarial-reviewer.md
 !orchestrator/judgment-reviewer.md
-!orchestrator/workflows.md
 !orchestrator/dispatch.sh
 !orchestrator/update-clis.sh
 !orchestrator/sync-rules.sh

@@ -30,7 +30,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | --- | --- | --- | --- | --- | --- |
 | Fable 5.1 | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
 | Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker 1 - Default | Free | 43 | 67% | § Cursor CLI |
-| Workflow `model:'opus', effort:'medium'` | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Workflow `model:'opus', effort:'medium'` | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics |
 | Workflow `model:'opus', effort:'high'` | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Escalated 2 | Low | 50 | 73% | `codex-cli.md` |
 | Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | Opus workflow above. |
@@ -41,7 +41,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 ## Workflow
 
-Brute-force parallelism. Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). Read: `workflows.md`.
+Brute-force parallelism. Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). HARD CAP: ≤10 subagents per Workflow run, total — and ≤10 running at once across all workflows. Overrides the built-in 15-agent guideline and the CPU-derived concurrency ceiling. More ONLY with the user's explicit per-run approval, reasoning stated first.
 
 Route:
 - Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; multi-round cross-pollination (round N+1 prompts carry round N findings); reproducibility wanted → Workflow.
@@ -50,7 +50,7 @@ Route:
 ## Dispatch Mechanics
 
 Claude-side workers (Opus, never Sonnet):
-- ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design. Multi-agent scripts, budgets, resume, multi-day loops: `workflows.md`.
+- ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design.
 - Model AND effort stated every spawn.
 - One worker = still a one-`agent()` Workflow.
 - `Agent` tool BANNED (no effort field).
