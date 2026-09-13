@@ -40,7 +40,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 ## Dispatch Mechanics
 
-Claude-side workers (Opus, never Sonnet):
+Workflow subagents (Opus, never Sonnet):
 - ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: '<per roster row>', label: '...'})`.
 - Model AND effort stated every spawn.
 - HARD CAP: 15 subagents total per task, summed across every Workflow run and batch. More ONLY with the user's explicit approval, reasoning stated first.
@@ -52,7 +52,7 @@ Task orders:
 - One `ledger.md` per project: user decisions verbatim, task log, standing orders.
 - No report files — report in chat.
 
-### CLI Workers (shared contract)
+### CLI Jobs (shared contract)
 
 Cursor lives below; `codex-cli.md`, `codebuddy-cli.md` hold the rest (`grok-cli.md` = parked, no sub — never dispatch) — read the one you dispatch to, never the others. This is the contract every CLI obeys.
 
