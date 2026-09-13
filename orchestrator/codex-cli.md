@@ -18,11 +18,10 @@ Files: `-o` writes `.final.txt` directly. Resume id = `thread_id` in log. Log `i
 Quota exhaustion: instant (~10s) `turn.failed` + "You've hit your usage limit ... try again at <time>". Retrying before that time is pointless — discard the run, reschedule every codex job for after the stated reset.
 
 Flags:
-- `-m` + `-c model_reasoning_effort=` EVERY dispatch (config default `gpt-5.6-luna` xhigh — never rely on it).
-- Models: `gpt-5.6-sol` | `gpt-5.6-luna` only (bare `gpt-5.6` invalid). Effort — luna: `low|medium|high|xhigh|max`; sol: those + `ultra`. Source of truth: `supported_reasoning_levels` in `~/.codex/models_cache.json` — check there, help text doesn't list them.
-- `-s read-only` = analysis-only (`read-only|workspace-write|danger-full-access`).
-- `--output-schema <file>`: JSON Schema file fixing answer shape; `-o` then holds JSON. Every property needs explicit `type`; `uniqueItems` unsupported.
-- `-C <dir>` BANNED — always `cd` to project root.
+- `-m` + `-c model_reasoning_effort=` EVERY dispatch (config default `gpt-5.6-sol` low — never rely on it; since 0.154 fresh sessions/forks also take server defaults unless `-m` given).
+- Model: `gpt-6-astra` ONLY — `medium` = Escalated 2 worker, `xhigh` = debate/judgment reviewer; no other lane, no other slug (sol/luna/5.5 exist but unused). Levels `low…max` + `ultra` (= max + auto task delegation; unused). Source of truth: `supported_reasoning_levels` in `~/.codex/models_cache.json`.
+- `-s read-only` = analysis-only (`read-only|workspace-write|danger-full-access`).- `--output-schema <file>`: JSON Schema file fixing answer shape; `-o` then holds JSON. Every property needs explicit `type`; `uniqueItems` unsupported.
+- `-C <dir>` BANNED — always `cd` to project root. `--worktree` (0.154, managed worktrees) BANNED.
 - Worktree edits: path in prompt ("Work in `<path>`") + `--add-dir <dir>` to make writable.
 - Rare: `-i <img>` attaches an image.
 
@@ -31,6 +30,6 @@ Prompts:
 - Superpowers: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/using-superpowers/SKILL.md` (bump version # if plugin changes).
 
 Follow-ups:
-- Resume: `codex exec resume <thread_id> --json -o <f> -m <same model> -c model_reasoning_effort=<same> "<delta>"` — without `-m` silently falls back to config model. Takes no `-C`/`-s`; inherits shell cwd (session lookup cwd-filtered; `--all` lifts). Accepts `--output-schema`.
+- Resume: `codex exec resume <thread_id> --json -o <f> -m <same model> -c model_reasoning_effort=<same> "<delta>"` — without `-m` silently falls back to config model. Takes no `-C`/`-s`; restores the thread's saved cwd (session lookup cwd-filtered; `--all` lifts). Accepts `--output-schema`.
 - Fork: `codex exec fork <thread_id> --json -o <f> -m <model> "<delta>"` — branch, original untouched.
 - Review: `codex exec review --uncommitted|--base <ref>|--commit <sha> --json -o <f>` (optional `-m`, `--title`, `--output-schema`).

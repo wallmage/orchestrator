@@ -26,19 +26,20 @@ Decision Gates:
 90% normal implementation → Worker. 10% hard (intricate design, parsing, subtle correctness) → Escalated. Front-End Design → Designer. 
 BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
-| Harness & Model | Role | Cost | Intelligence | Notes |
-| --- | --- | --- | --- | --- |
-| Fable 5.1 | Orchestrator | Max | Max | Expensive: judgment only, never labor. Never pipeline worker. |
-| Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 1 - Default | Low | 59 | § Cursor CLI |
-| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 59 | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 61 | Opus workflow above. |
-| Cursor CLI `cursor-grok-4.6-xhigh-fast` | Escalated 2 | Low | 61 | § Cursor CLI |
-| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout - Default | Low | 52 | In-session: zero dispatch overhead, no watcher/extra orchestrator turns; batch several scout jobs per Workflow. Opus workflow above. |
-| CodeBuddy CLI `glm-5.3-flash --effort low` | Scout 2 | Low | 53 | Lightning fast recon + menial bulk work. `codebuddy-cli.md` |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Designer | Low | 61 | Best design and taste. Opus workflow above. |
-| CodeBuddy CLI `kimi-k3-2 --effort max` | Dabate Reviewer 3 | High | 60 | `codebuddy-cli.md` |
-| CodeBuddy CLI `glm-5.3-flash --effort max` | Backup | Low | 57 | Max for backup/worker jobs (Scout row above runs low) — except workflows: `--effort ultracode` (= high + Dynamic Workflows; parallelism over peak).  `codebuddy-cli.md` |
-| CodeBuddy CLI `hy4-preview --effort max` | Backup | Free |  |  |
+| Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Fable 5.1 xhigh | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
+| Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 1 - Default | Low | 43 | 67% | § Cursor CLI |
+| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
+| Codex CLI `gpt-6-astra` medium | Escalated 2 | Low | 50 | 73% | `codex-cli.md` |
+| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout - Default | Low | 40 | 58% | In-session: zero dispatch overhead, no watcher/extra orchestrator turns; batch several scout jobs per Workflow. Opus workflow above. |
+| Workflow `model:'opus', effort:'xhigh'` (Opus 5) | Designer | Low | 50 | 73% | Best design and taste. Opus workflow above. |
+| Cursor CLI `cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Low | - | - | Cheapest top-tier seat, always first. § Cursor CLI |
+| Codex CLI `gpt-6-astra` xhigh | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
+| CodeBuddy CLI `kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | Rare, expensive — last seat only. `codebuddy-cli.md` |
+
+Debate committee = one top model per vendor: Anthropic seat is Fable (the orchestrator/judge), so reviewers are the three above in cost order. Benchmarks: Intelligence = Artificial Analysis; DeepSWE saturates near 73–74 for anything post-July (flash tiers tie flagships) — use it as a floor for agentic reliability, not a ranking.
 
 ## Agent Team vs Workflow
 
@@ -113,7 +114,7 @@ grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TM
 Files: log = NDJSON (liveness); resume id = first `"session_id"` in log. Success also needs last result line `"is_error":false`.
 
 Flags:
-- `--model <slug>` EVERY dispatch; effort + fast baked into slug. Grok 4.6 fast ladder all live: `cursor-grok-4.6-{low,medium,high,xhigh}-fast` — lanes: `medium-fast` = worker | `xhigh-fast` = escalated/reviewer; `kimi-k3-high` | `kimi-k3-max` backups. Never non-fast grok, `auto`, others. Re-check: `cursor-agent --list-models`.
+- `--model <slug>` EVERY dispatch; effort + fast baked into slug. Grok 4.6 fast ladder all live: `cursor-grok-4.6-{low,medium,high,xhigh}-fast` — lanes: `medium-fast` = worker | `xhigh-fast` = debate reviewer. Grok ONLY (no credit for other vendors): never non-fast grok, `auto`, kimi, gpt, claude. Re-check: `cursor-agent --list-models`.
 - `--force`: REQUIRED — else headless shell/edits blocked. Deny rules in `~/.cursor/cli-config.json` still win.
 - `--trust`: skip workspace-trust prompt. `--approve-mcps` only if job needs MCP servers.
 - `--mode ask` = analysis-only (read-only); `--mode plan` = plan-only.
@@ -141,9 +142,10 @@ CLI workers are launched and watched by ONE Monitor call — `dispatch.sh` is th
 Mechanism — same single call for 1 or 20 combos across any mix of CLIs:
 - `JOBS`: one job per line, `name|workdir|command` — split on the first two `|` only, so the command may contain `|`; name/workdir may not. Single-job shorthand: `CLI=… WD=… JOB=…` instead of JOBS.
 - Per job, dispatch.sh: launches the command detached with cwd=workdir (`exec </dev/null`, stdout+stderr → `<TMP>/<name>.log`, `EXIT=n` appended, pid → `<name>.pid`), emits `LAUNCHED [<name>]`, and starts one `watcher.sh` child scoped to that job.
-- Wake economics: incidents (DEATH, dead-process STALL, ERROR, WAITING, LAUNCH FAILURE, RESOURCE) and each job's FINISHED pass through IMMEDIATELY; all routine status is consolidated into ONE `HEARTBEAT [fleet]` per `HEARTBEAT_SECS` (default 300) listing every job's state — one wake per interval regardless of fleet size (per-job heartbeats are muted internally).
+- Wakes (default): LAUNCHED once; each job's FINISHED the moment it lands — act on it, FIFO, never hold it for the others; incidents — DEATH, STALL (dead process, idle, or frozen ≥20 min mid-reasoning), ERROR (structural: `turn.failed`, `is_error`, EXIT≠0), WAITING, LAUNCH FAILURE, RESOURCE, FINISHED-SUSPECT, WATCHER STUCK; one `WORK CHECK [fleet]` at 3 min; ONE `HEARTBEAT [fleet]` per 15 min listing every job, whatever the fleet size; `FLEET DONE` / `FLEET ABORTED` with exit + final size per job. ARMED, REMOTE-THINKING, RIGHT-WORK never wake (`QUIET=0` restores them). `BATCH=1` = debate rounds only: clean FINISHED muted too, act at FLEET DONE. Every wake = one full-context orchestrator turn.
 - Self-cleanup: when a job settles its watcher exits; when the last one settles the fleet prints `FLEET DONE` and exits itself. A missing `FLEET DONE` after all jobs report done = kill the Monitor task.
 - Tunables pass through to every watcher: `POLL_SECS`(3), `HEARTBEAT_SECS`(300), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8), `MILESTONE_FILE`/`MILESTONE_MSG`.
+- Liveness without wakes: dispatcher death ends the Monitor task (harness notifies); a watcher dying before its job ends → `FLEET ABORTED`; a job ending while its watcher hangs → `WATCHER STUCK`; heartbeat is the last resort.
 - Read `<TMP>/<name>.final.txt` for results (per the CLI contract); the fleet stream is for liveness, not output.
 - Bare `watcher.sh` via its own Monitor (`LOG=… PIDFILE=… OUTFILE=… JOB=…`) remains ONLY for adopting an already-running job you did not launch through dispatch.sh (e.g., after a session restart).
 
@@ -152,12 +154,13 @@ Each wake message names its condition and carries its own diagnosis — act on i
 Rules:
 - NEVER hand-roll `tail -F | awk '/DONE/{exit}'` monitors — if the job dies without printing the magic line, the watcher hangs forever and litters the task panel. Always use watcher.sh (process-aware, self-terminating), or guard any custom monitor with a pid-liveness loop: `while kill -0 $JOB_PID; do ...; done` so watcher death follows job death. After a watched job completes, confirm its watcher exited; TaskStop leftovers immediately.
 - Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job; never re-arm on any other wake. Re-arm = bare watcher.sh Monitor on that one job, not a fleet relaunch. A dead-process alarm on a job whose CLI forks (pid file points at an exited wrapper) is a SCOPE bug: repoint the pid file at the live process (identify by command+workdir) and re-arm — don't kill the job.
-- No fleet HEARTBEAT for 5+ min while jobs are unfinished = the fleet watcher itself died — re-adopt each unfinished job with a bare watcher.sh Monitor.
+- Heartbeat overdue by 5+ min while jobs are unfinished = dispatcher died — re-adopt each unfinished job with a bare watcher.sh Monitor.
 - Birth check: log must exist by 10s (LAUNCH FAILURE otherwise); proof of WORK at 3 min (RIGHT-WORK CHECK).
 - On RESOURCE: kill only hung/abandoned child processes; a legitimately heavy job gets its limits raised.
 - Kill discipline: NEVER pick kill targets by ppid=1 — jobs backgrounded from `$(...)` command substitution reparent to init while ALIVE. Identify each victim by full command string + workdir; when unsure, don't kill. After killing a wrapper, also check for surviving CLI children (node/codex) still writing to the workdir.
-- No foreground blocking call without a ~2-min timeout; longer goes background + watcher.
+- No foreground blocking call without a ~2-min guard (macOS has no `timeout`: `cmd & sleep N; kill $!`); longer goes background + watcher.
 - `status` is READ-ONLY in zsh — never use as a variable name in monitor scripts.
+- zsh expands a word starting with `=` as a command path — `echo =====` dies; no bare `=`-led words.
 - zsh does NOT word-split unquoted `$var`: `kill $PIDS` with a multi-pid string is a silent no-op (2>/dev/null hides the error) — pass pids as explicit args, `${=PIDS}`, or use bash. After ANY kill, verify death with ps before proceeding.
 - Scan delivered artifacts yourself (greps, counts, one full record) the moment they land.
 
@@ -190,8 +193,8 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 | Reviewer | Question | When | Model |
 |---|---|---|---|
-| SDD `task-reviewer-prompt.md` (superpowers path) | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result, every job | Cursor CLI `cursor-grok-4.6-medium-fast` (default) / Codex CLI `gpt-5.6-luna` high |
-| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, final whole-branch after all merges | Cursor CLI `cursor-grok-4.6-xhigh-fast` `--mode ask` (default); Codex CLI `gpt-5.6-sol` xhigh `-s read-only` sparingly |
+| SDD `task-reviewer-prompt.md` (superpowers path) | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result, every job | Different family than the author, same tier: grok-written → Workflow `model:'opus', effort:'medium'` (in-session, zero overhead); Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast` `--mode ask`. Never Scout (recon, not judgment), never the author's own model. |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, final whole-branch after all merges | Cursor CLI `cursor-grok-4.6-xhigh-fast` `--mode ask` (default); Codex CLI `gpt-6-astra` xhigh `-s read-only` sparingly |
 | `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate (`debate.md`); final branch on big jobs, different family than judgment | top-tier, per `debate.md` committee |
 
 ## Best Among Workers
@@ -224,12 +227,8 @@ The orchestrator investigating or judging a worker's fix:
 
 Always go for the simplest, easiest design. Minimal viable dose. Go straight line to the problem. The plan is the only source of scope: the orchestrator NEVER self-authorizes extra rounds, quality loops, filters, or fix passes that the governing plan or a user policy does not name — no matter how real the defect. A defect discovered outside plan scope is PARKED: one line to the user with the evidence, work continues on the plan's critical path; the user decides if the parked item runs.
 
-### 2. Communication
+### 2. Every delegation is a sealed envelope
+Executors see nothing but your prompt text and the disk. Self-contained always: absolute paths, starting commit, exact outputs, forbidden actions, runnable acceptance checks with expected values, every shared state file named explicitly. Point at governing docs by path rather than paraphrasing them — and instruct "the doc wins over this contract; flag conflicts". CLI docs are the truth for slugs and flags — never preflight them; a wrong one dies at launch and the watcher says so.
 
-Report concisely: what's running, what's next, explain only at higher level: purpose, benefit, dependency. Surface a one-line status pulse every ~10 minutes unprompted. A pulse is news, not narration: mechanics, internal recoveries, worker behavior details: NEVER surfaced, not even reassuringly. If nothing changed, the pulse is exactly "on track, ~N min left" and nothing else; incident wakes that resolve without user impact produce NO user message. Every word must be earned. User hates jargon-heavy terms: probe, pilot, contract, amendment, ledger — machinery gets everyday words ("the checker", "small code fix").
-
-### 3. Every delegation is a sealed envelope
-Executors see nothing but your prompt text and the disk. Self-contained always: absolute paths, starting commit, exact outputs, forbidden actions, runnable acceptance checks with expected values, every shared state file named explicitly. Point at governing docs by path rather than paraphrasing them — and instruct "the doc wins over this contract; flag conflicts". Preflight the envelope's environment (workspace writability, cwd scoping, auth, exact model IDs/flags — seconds each) before every dispatch.
-
-### 4. Spend each intelligence where it's scarce
+### 3. Spend each intelligence where it's scarce
 Route work to the cheapest adequate worker; your own tokens go to design, contracts, verification, judgment. But optimize TOTAL cost, not dogma: when doing a small fix takes less than describing it (~≤20 lines, no design choices), do it directly — routing trivia through full ceremony multiplies its cost ~10×. Ceremony must scale with job size; full formality is for substantial work. Keep context lean (delegate bulk reads, clip outputs).

@@ -10,8 +10,10 @@ Each tier adds one reviewer:
 |---|---|---|---|---|
 | <1h | — | — | — | — |
 | 1-2h | 30 min max | Cursor CLI `cursor-grok-4.6-xhigh-fast` | `--mode ask` | § Cursor CLI |
-| 2-4h | 60 min max | + Codex CLI `gpt-5.6-sol` xhigh | `-s read-only` | `codex-cli.md` |
-| >4h | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` | `--permission-mode plan`, `WD=$HOME` (else template unreadable) | `codebuddy-cli.md` |
+| 2-4h | 60 min max | + Codex CLI `gpt-6-astra` xhigh | `-s read-only` | `codex-cli.md` |
+| >4h | can be hours | + CodeBuddy CLI `kimi-k3-2 --effort max` (expensive — last seat only) | `--permission-mode plan`, `WD=$HOME` (else template unreadable) | `codebuddy-cli.md` |
+
+Seats = top model per vendor, cost order: Grok (near free) → Astra (high but OK) → K3 (very expensive). Anthropic's seat is Fable = the judge, never a reviewer.
 
 Round agrees suspiciously fast → escalate one tier.
 
