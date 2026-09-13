@@ -17,3 +17,7 @@ orchestrator/*
 !orchestrator/judgment-reviewer.md
 !orchestrator/workflows.md
 !orchestrator/dispatch.sh
+!orchestrator/update-clis.sh
+!orchestrator/update-clis.md
+!update-clis/
+!update-clis/SKILL.md
