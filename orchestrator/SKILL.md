@@ -28,16 +28,16 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Fable 5.1 xhigh | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
-| Cursor CLI `cursor-grok-4.6-medium-fast` | Worker 1 - Default | Free | 43 | 67% | § Cursor CLI |
-| Workflow `model:'opus', effort:'medium'` (Opus 5) | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
-| Workflow `model:'opus', effort:'high'` (Opus 5) | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
-| Codex CLI `gpt-6-astra` medium | Escalated 2 | Low | 50 | 73% | `codex-cli.md` |
-| Workflow `model:'opus', effort:'low'` (Opus 5) | Scout | Low | 40 | 58% | Opus workflow above. |
-| Workflow `model:'opus', effort:'xhigh'` (Opus 5) | Designer | Low | 50 | 73% | Best design taste. Opus workflow above. |
-| Cursor CLI `cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
-| Codex CLI `gpt-6-astra` xhigh | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
-| CodeBuddy CLI `kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
+| Claude Code session, Fable 5.1 xhigh | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
+| Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker 1 - Default | Free | 43 | 67% | § Cursor CLI |
+| Workflow `model:'opus', effort:'medium'` | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
+| Workflow `model:'opus', effort:'high'` | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
+| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Escalated 2 | Low | 50 | 73% | `codex-cli.md` |
+| Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | Opus workflow above. |
+| Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. Opus workflow above. |
+| Cursor CLI `--model cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
+| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=xhigh` | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
+| CodeBuddy CLI `--model kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
 
 ## Agent Team vs Workflow
 
