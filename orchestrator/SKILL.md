@@ -39,8 +39,6 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=xhigh` | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
 | CodeBuddy CLI `--model kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
 
-First column = verbatim model+effort flags: paste into the CLI runner's model slot as-is, never re-derive. Runner template (all other flags) = that CLI's section/doc.
-
 ## Agent Team vs Workflow
 
 Key question decides: do workers need to TALK to each other mid-job?
