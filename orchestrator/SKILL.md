@@ -28,7 +28,7 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
 | --- | --- | --- | --- | --- | --- |
-| Claude Code session, Fable 5.1 xhigh | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
+| Fable 5.1 | Orchestrator | Max | 53 | Max | Expensive: judgment only, never labor. Never pipeline worker. |
 | Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker 1 - Default | Free | 43 | 67% | § Cursor CLI |
 | Workflow `model:'opus', effort:'medium'` | Worker 2 | Low | 45 | 69% | Claude-side fleets, fan-out, dynamic workflows. § Dispatch Mechanics + `workflows.md` |
 | Workflow `model:'opus', effort:'high'` | Escalated 1 - Default | Low | 48 | 73% | Opus workflow above. |
@@ -39,18 +39,12 @@ BANNED: Sonnet 5 (worse value); Haiku 4.5.
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=xhigh` | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
 | CodeBuddy CLI `--model kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
 
-## Agent Team vs Workflow
+## Workflow
 
-Key question decides: do workers need to TALK to each other mid-job?
-
-**Agent Team = collaboration.** Small crew 2–5, group chat: peer `SendMessage` + shared task list, live debate/handoff/renegotiation — value comes from the discussion. Lead = Orchestrator, Teammates = separate Claude sessions, model chosen per teammate (Opus default). Must-knows (not in tool schemas): spawn = `Agent` tool + `name` param — SOLE exception to the Agent-tool ban; name the model in the spawn prompt (no model param; blocked/unnamed → lead's model; effort NOT settable, inherits lead's). Teammate idle notice carries NO output — results arrive only via SendMessage/task list; teammates forget to mark tasks done, nudge them. Stop = `TaskStop` with teammate name; `SendMessage` to a stopped teammate auto-resumes it with its transcript. In-process teammates (only mode in desktop GUI) can't run background subagents (synchronous OK); only lead approves plans; team auto-cleans at session end; one team/session, no nesting, `/resume` drops in-process teammates.
-
-**Workflow = brute-force parallelism.** Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). Read: `workflows.md`.
+Brute-force parallelism. Isolated agents never talk; script holds the plan: deterministic, resumable, reusable, budgeted. Structurally defends vs agent laziness, self-preferential bias, goal drift (fresh context each, producer ≠ verifier). Read: `workflows.md`.
 
 Route:
-- Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; reproducibility wanted → Workflow.
-- Team ONLY when ALL hold: few pieces (2–5), deeply interdependent, interfaces uncertain/evolving, live negotiation essential. Examples: rival-hypothesis debugging, cross-layer API negotiation, multi-angle exploration where findings must cross-pollinate mid-flight.
-- Small crew but no cross-talk needed → still Workflow: 3 isolated agents beat 3 chatting ones (cheaper, deterministic, no coordination overhead).
+- Many independent units; verification/adversarial-heavy; unknown-size discovery; ranking/sorting; multi-round cross-pollination (round N+1 prompts carry round N findings); reproducibility wanted → Workflow.
 - Depth not breadth — ONE thread grinding until done-criteria met (days OK) → `/goal <criteria>`: session Stop hook, agent CANNOT end turn until condition holds, auto-clears on success (`/goal clear` = abort early). Criteria must be verifiable/runnable; fights laziness. Breadth too big for one path → Workflow.
 
 ## Dispatch Mechanics
@@ -59,7 +53,7 @@ Claude-side workers (Opus, never Sonnet):
 - ONLY via `Workflow`: `agent(prompt, {model: 'opus', effort: 'medium', label: '...'})`; `'high'` for hardest ~10% and design. Multi-agent scripts, budgets, resume, multi-day loops: `workflows.md`.
 - Model AND effort stated every spawn.
 - One worker = still a one-`agent()` Workflow.
-- `Agent` tool BANNED (no effort field) — sole exception: teammate spawns (§ Agent Team).
+- `Agent` tool BANNED (no effort field).
 
 Task orders:
 - Big jobs: spec in `<project>/docs/orchestration/MM-DD-##.md`; dispatch "Read and execute exactly the contract at <path>".
