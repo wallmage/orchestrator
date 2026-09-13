@@ -113,14 +113,13 @@ grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TM
 Files: log = NDJSON (liveness); resume id = first `"session_id"` in log. Success also needs last result line `"is_error":false`.
 
 Flags:
-- `--model <slug>` EVERY dispatch; effort + fast baked into slug. Grok 4.6 fast ladder all live: `cursor-grok-4.6-{low,medium,high,xhigh}-fast` — lanes: `medium-fast` = worker | `xhigh-fast` = debate reviewer. Grok ONLY (no credit for other vendors): never non-fast grok, `auto`, kimi, gpt, claude. Re-check: `cursor-agent --list-models`.
+- `--model <slug>` EVERY dispatch; effort + fast baked into slug. Grok ONLY, fast ONLY: `cursor-grok-4.6-{low,medium,high,xhigh}-fast` — lanes: `medium-fast` = worker | `xhigh-fast` = debate reviewer. Every other slug BANNED. Re-check ladder: `cursor-agent --list-models | grep grok`.
 - `--force`: REQUIRED — else headless shell/edits blocked. Deny rules in `~/.cursor/cli-config.json` still win.
 - `--trust`: skip workspace-trust prompt. `--approve-mcps` only if job needs MCP servers.
 - `--mode ask` = analysis-only (read-only); `--mode plan` = plan-only.
 - Worktree edits: `cd` in, or `--add-dir <dir>`.
 - No schema flag (demand JSON in prompt), no image flag.
 - `-w/--worktree` + `--workspace` BANNED — always `cd`.
-- Max mode: legacy plans only, no grok support — ignore.
 
 Prompts:
 - Fans out via `Task` tool (built-in Explore/Bash/Browser, custom `.cursor/agents/*.md`; parallel when several calls in one message). Remind: "Use Task subagents in parallel to make the task faster".
