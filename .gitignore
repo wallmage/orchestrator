@@ -19,5 +19,8 @@ orchestrator/*
 !orchestrator/dispatch.sh
 !orchestrator/update-clis.sh
 !orchestrator/update-clis.md
+!orchestrator/sync-rules.sh
 !update-clis/
 !update-clis/SKILL.md
+!sync-rules/
+!sync-rules/SKILL.md
