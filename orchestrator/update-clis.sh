@@ -7,6 +7,14 @@
 # Drift = backticked --flag in the CLI's doc region no longer in its help.
 #   *-cli.md → whole file; SKILL.md → from header to next '##' heading.
 #
+# AGENT PROCEDURE (after running):
+# 1. `weekly` unset → ask once "Auto-run weekly? yes/no", store via `weekly <answer>`; yes → create_scheduled_task id `update-clis`, cron `0 9 * * 1`, prompt "update the CLIs".
+# 2. Inspect per CLI: HELP-DIFF, MODELS-DIFF, DRIFT, CHANGELOG. Unknown subcommand/flag → run its --help.
+#    BROKEN: DRIFT hit or doc runner/flag/slug removed → must fix. RELEVANT: new headless/resume/schema/sandbox/model capability → propose. NOISE → drop.
+# 3. Propose unified diff vs instruction files, ≤1 line reason per hunk. Nothing written yet.
+# 4. User approves per hunk. Unattended → stop, notify "CLIs updated: <versions>; <N> doc changes proposed".
+# 5. Apply approved hunks. Commit. Sync installed copy. Notice: versions before→after, ≤5 bullets.
+#
 #   sh update-clis.sh           run
 #   sh update-clis.sh weekly    print yes|no|unset
 #   sh update-clis.sh weekly yes|no
