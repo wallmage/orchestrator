@@ -162,7 +162,7 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 | Reviewer | Question | When | Model |
 |---|---|---|---|
 | SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family than the author, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast --mode ask`. Never Scout. |
-| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, whole branch after all merges | Different family than the author: grok-written → Workflow `model:'opus', effort:'high'`; Opus-written → Cursor CLI `cursor-grok-4.6-xhigh-fast --mode ask` |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, whole branch after all merges | Same rule as SDD, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
 | `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate (`debate.md`); final branch on big jobs, different family than judgment | per `debate.md` |
 
 ## Best Among Workers
