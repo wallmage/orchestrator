@@ -1,10 +1,5 @@
 #!/bin/sh
 # Fleet dispatch: ONE Monitor call launches 1..N CLI jobs AND watches them all.
-#
-#   Monitor(persistent:true, description:"<fleet>", command:
-#     "TMP=<state dir> JOBS='<name>|<workdir>|<full CLI command>
-#      <name>|<workdir>|<full CLI command>' sh ~/.claude/skills/orchestrator/dispatch.sh")
-#
 # JOBS: one job per line, split on the FIRST TWO '|' only (command may contain '|'; name/workdir may not). Blank lines ignored.
 # Single-job shorthand: CLI='<cmd>' WD=<workdir> JOB=<name>.
 # TMP: state dir for <name>.log/.pid/.final.txt (default: parent of each job's workdir).
@@ -38,9 +33,9 @@ for line in $JOBS; do
   state=${TMP:-$(dirname "$wd")}
   log="$state/$name.log"; pidf="$state/$name.pid"; outf="$state/$name.final.txt"
   ( cd "$wd" || exit 127; exec </dev/null; sh -c "$cmd" > "$log" 2>&1; printf '\nEXIT=%s\n' $? >> "$log" ) &
-  echo $! > "$pidf"
-  echo "LAUNCHED [$name]: pid $(cat "$pidf"), log $log"
-  # Children: incidents immediate, routine status muted — the parent consolidates it.
+  pid=$!; echo "$pid" > "$pidf"
+  echo "LAUNCHED [$name]: pid $pid, log $log"
+  # Children: incidents immediate, routine status muted (parent heartbeat covers it).
   LOG=$log PIDFILE=$pidf OUTFILE=$outf JOB=$name HEARTBEAT_SECS=99999999 sh "$DIR/watcher.sh" &
   WPIDS="$WPIDS $!"
   NAMES="$NAMES $name"

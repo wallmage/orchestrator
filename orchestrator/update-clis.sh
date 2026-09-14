@@ -3,14 +3,14 @@
 # Table: one CLI per line, fields split on ' :: ' (commands may contain | and ;):
 #   <bin> :: <doc> :: <update cmd> :: <help cmd>[; <cmd>] :: <models cmd> :: <changelog cmd>
 #   doc = file in this dir; 'file#Heading' = only that section (to the next '##'). models/changelog optional; changelog sees $OLD $NEW.
-# Output = stdout only. Sections per CLI: VERSION, HELP-DIFF, MODELS-DIFF, DRIFT, CHANGELOG.
+# Sections per CLI: VERSION, HELP-DIFF, MODELS-DIFF, DRIFT, CHANGELOG.
 # Drift = backticked --flag in the CLI's doc region no longer in its help.
 #
 # AGENT PROCEDURE (after running):
 # 1. `weekly` unset → ask once "Auto-run weekly? yes/no", store via `weekly <answer>`; yes → create_scheduled_task id `update-clis`, cron `0 9 * * 1`, prompt "update the CLIs".
 # 2. Inspect per CLI: HELP-DIFF, MODELS-DIFF, DRIFT, CHANGELOG. Unknown subcommand/flag → run its --help.
 #    BROKEN: DRIFT hit or doc runner/flag/slug removed → must fix. RELEVANT: new headless/resume/schema/sandbox/model capability → propose. NOISE → drop.
-# 3. Propose unified diff vs instruction files, ≤1 line reason per hunk. Nothing written yet.
+# 3. Propose unified diff vs instruction files, ≤1 line reason per hunk.
 # 4. User approves per hunk. Unattended → stop, notify "CLIs updated: <versions>; <N> doc changes proposed".
 # 5. Apply approved hunks. Commit. Sync installed copy. Notice: versions before→after, ≤5 bullets.
 #
