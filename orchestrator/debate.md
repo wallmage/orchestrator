@@ -25,7 +25,7 @@ One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate
 1. Read only 5 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate per § Rounds; then plan at `...-plan.md` from the agreed spec, debate per § Rounds.
-4. Each doc: version header, changelog (per entry: section + finding #), numbered decision table (stable anchors).
+4. Each doc: version header, numbered decision table (stable anchors).
 5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees.
 
 ## Reviewer prompt
@@ -53,9 +53,9 @@ Only verified P0–P2 get fixed.
 
 ## Rounds — hard cap 2, any committee size
 
-1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <doc>.v1`; fix P0–P2. Merge → v2 once; never concurrent versions; `diff -u <doc>.v1 <doc> > <doc>.v2.diff`.
-2. Round 2 — resume each thread with the round-2 template on v2, diff scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
-Done = round 1 with nothing to fix, or round 2 → human go/no-go → execute.
+1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <doc>.v1`; fix P0–P2. Merge → v2 once; never concurrent versions.
+2. Round 2 — `diff -u <doc>.v1 <doc> > <doc>.v2.diff`; resume each thread with the round-2 template on v2, diff scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
+Done = round 1 with nothing to fix, or round 2 → `rm -f <doc>.v1 <doc>.v2.diff` → human go/no-go → execute.
 Executable target → one real run per round beats a reviewer.
 
 ## Templates
@@ -75,4 +75,4 @@ Review only <doc path>.v2.diff: confirm each accepted fix landed; P0–P2 introd
 
 1. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
 2. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-3. No process files: spec + plan are the only documents; `<doc>.v1`, `<doc>.v2.diff` live beside the doc (reviewer reads are cwd-scoped), deleted at Done.
+3. No process files: spec + plan are the only documents.
