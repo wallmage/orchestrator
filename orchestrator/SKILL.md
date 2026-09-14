@@ -67,8 +67,8 @@ Flags (every dispatch):
 - Structured answers: CLI's schema flag if any, else demand JSON in the prompt.
 
 Prompts:
-- CLIs fan out subagents only when reminded: "Use subagents to make the task faster".
-- Superpowers: prepend `[$superpowers:using-superpowers](<path per CLI>)` to every Worker prompt; never to judgment/adversarial reviewers (their prompt file is their whole method; SDD task reviewer keeps its own template). TDD = verifiable acceptance checks (failing test first, tests in the diff), not trust.
+- CLIs fan out subagents only when reminded: "Use subagents to make the task faster if possible".
+- Superpowers: prepend `[$superpowers:using-superpowers](<path per CLI>)` to every Worker prompt; never to judgment/adversarial reviewers (their prompt file is their whole method; SDD task reviewer keeps its own template).
 
 Follow-ups:
 - Resume: CLI's resume flag + id from the log, same cwd, delta only.
@@ -161,8 +161,8 @@ Three prompts, three questions; never substitute one for another. Reviewer reads
 
 | Reviewer | Question | When | Model |
 |---|---|---|---|
-| SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family than the author, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast --mode ask`. Never Scout. |
-| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, whole branch after all merges | Same rule as SDD, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
+| SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast --mode ask` |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, whole branch after all merges | Same SDD rule, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
 | `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate (`debate.md`); final branch on big jobs, different family than judgment | per `debate.md` |
 
 ## Best Among Workers

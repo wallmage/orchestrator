@@ -14,10 +14,10 @@ printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
 grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.structured_output // .result' > <TMP_PATH>/<job>.final.txt
 ```
 
-Files: log = NDJSON; resume id = first `"session_id"` in log. Signal kills exit 130/143, session saved to last tool call.
+Files: log = NDJSON; resume id = first `"session_id"` in log.
 
 Flags:
-- `-m grok-4.6` + `--effort` EVERY dispatch: `medium` = worker, `xhigh` = escalated/reviewer (omitted = `high`, no lane). Never `grok-4.5`.
+- `-m grok-4.6` + `--effort` EVERY dispatch: `medium` = worker, `xhigh` = escalated/reviewer (omitted = `high`, no lane).
 - `--always-approve`: deny rules + hooks still apply.
 - `--sandbox read-only` for analysis jobs; default `off` (no extra-dir flag needed).
 - `--json-schema '<inline JSON>'` (string, not file) → `structured_output` in result line.

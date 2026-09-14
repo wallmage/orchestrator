@@ -17,14 +17,14 @@ Files: `-o` writes `.final.txt` directly. Resume id = `thread_id` in log. `item.
 
 Flags:
 - `-m` + `-c model_reasoning_effort=` EVERY dispatch.
-- `gpt-6-astra` ONLY, `xhigh` = debate/judgment reviewer, no other lane. Levels `low…max`; `ultra` (= max + auto task delegation) unused. Source: `supported_reasoning_levels` in `~/.codex/models_cache.json`.
+- `gpt-6-astra` ONLY, `xhigh` = debate reviewer, no other lane. Levels `low…max`unused. Source: `supported_reasoning_levels` in `~/.codex/models_cache.json`.
 - `-s read-only|workspace-write|danger-full-access`; `read-only` = analysis-only.
 - `--output-schema <file>`: JSON Schema file fixing answer shape; `-o` then holds JSON. Every property needs explicit `type`; `uniqueItems` unsupported.
 - `-C <dir>`, `--worktree` BANNED.
 - Worktree edits: `--add-dir <dir>` makes it writable.
 
 Prompts:
-- Parent thread fans out 3 parallel subagents (max 4 workers).
+
 - Superpowers: `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/using-superpowers/SKILL.md` (bump version if plugin changes).
 
 Follow-ups:

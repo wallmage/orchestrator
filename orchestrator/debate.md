@@ -6,12 +6,12 @@ Orchestrator drafts spec + plan, dispatches adversarial reviewers, arbitrates. C
 
 Each tier adds one reviewer:
 
-| Job size | Time box | Adds reviewer (roster slugs, read-only mode) |
+| Job size | Time box | Adds reviewer (roster slugs, read-only) |
 |---|---|---|
 | <1h | — | — |
 | 1-2h | 30 min max | Debate Reviewer 1 |
 | 2-4h | 60 min max | + Debate Reviewer 2 |
-| >4h | can be hours | + Debate Reviewer 3 (expensive — last seat only) |
+| >4h | can be hours | + Debate Reviewer 3 |
 
 One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate one tier.
 
@@ -22,7 +22,7 @@ One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate
 
 ## Draft, Debate, Execute
 
-1. Read only these 5 Superpowers skills, once, from `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
+1. Read only 5 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
 4. Each doc: version header, changelog, numbered decision table (stable anchors).
@@ -44,22 +44,20 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 
 ## Triage — every round, every claim
 
-Orchestrator is the judge. Verify each claim in the target first (open the file, trace the path, run it when runnable); reviewer severity labels ignored; a claim that cannot be shown true = rejected. Expect half to fail verification.
+Verify each claim in the target first (open the file, trace the path, run it when runnable); a claim that cannot be shown true = rejected.
 - P0 doesn't work: crash, data lost/overwritten, main feature broken, purpose not met
-- P1 runs, but a major problem
-- P2 minor, but the user notices
-- P3 the user never notices: wording, hygiene, doc consistency, far edge cases → reject on sight
+- P1 runs, but major problem
+- P2 minor, but user notices
+- P3 user never notices: wording, hygiene, doc consistency, edge cases → reject on sight
 Only verified P0–P2 get fixed.
 
 ## Rounds — hard cap 3, any committee size
 
-Reviewer count buys coverage per round, never more rounds. Observed: r1 24 findings (20 real), r2 15 (8), r3 11 (2), r4–r7 ≤1 each, all regressions of the previous fix.
-
 1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — resume each thread with the round-N template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3.
-3. Round 3 — only if round 2 changed anything: recheck v3, fix P0–P2, nobody reviews those fixes. Stop.
+3. Round 3 — only if round 2 changed anything: recheck v3, fix P0–P2, nobody reviews those fixes.
 Done = a round with nothing to fix, or round 3 → human go/no-go → execute. Second rejection of the same finding = FINAL: stamp FINAL in the next message, rationale → decision table.
-Executable target → one real run per round beats a reviewer (they reason statically).
+Executable target → one real run per round beats a reviewer.
 
 ## Templates
 
@@ -78,4 +76,4 @@ Re-review v<N>: confirm fixes landed; new P0–P2 only, same format; PASS if non
 
 1. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
 2. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-3. No framework files. `<TMP_PATH>` = transport only, never documentation.
+3. No process files: spec + plan are the only documents.
