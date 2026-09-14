@@ -1,5 +1,4 @@
 # CodeBuddy CLI
-<!-- cli: codebuddy :: update: codebuddy update :: help: codebuddy --help :: models: codebuddy --help | grep -o 'Currently supported: ([^)]*)' :: changelog: awk -v o="$OLD" '/^## \[[0-9]/{if(index($0,o))exit; p=1} p' "$(npm root -g)/@tencent-ai/codebuddy-code/CHANGELOG.md" -->
 
 Shared contract: `SKILL.md` § CLI Jobs.
 

@@ -75,7 +75,6 @@ Follow-ups:
 - Cancel: `TaskStop` the Bash task; confirm no `EXIT=` was written.
 
 ### Cursor CLI
-<!-- cli: cursor-agent :: update: cursor-agent update :: help: cursor-agent --help :: models: cursor-agent --list-models -->
 
 Runner:
 

@@ -1,5 +1,4 @@
 # Grok Build CLI
-<!-- cli: grok :: update: grok update :: help: grok --help -->
 
 Shared contract: `SKILL.md` § CLI Jobs.
 
