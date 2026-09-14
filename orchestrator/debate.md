@@ -17,22 +17,22 @@ One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate
 
 ## Conversation mechanics
 
-- Each round resumes each reviewer's CLI session (same cwd) with the delta only; reviewers run in parallel.
+- Reviewers run in parallel. Round 2 resumes each reviewer's CLI session (same cwd) with the round-2 template only.
 - At FLEET DONE read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call.
 
 ## Draft, Debate, Execute
 
 1. Read only 5 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
-3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
-4. Each doc: version header, changelog, numbered decision table (stable anchors).
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate per § Rounds; then plan at `...-plan.md` from the agreed spec, debate per § Rounds.
+4. Each doc: version header, changelog (per entry: section + finding #), numbered decision table (stable anchors).
 5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees.
 
 ## Reviewer prompt
 
 `NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
-Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin after:
+Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin round 2:
 ```
 1. Evidence and reasoning only. Agreement never courtesy; disagreement never posture.
 2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it.
@@ -68,7 +68,7 @@ Number every finding. Do not edit any file.
 Round 2:
 ```
 <doc path> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
-Review only the v2 changelog entries: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope. PASS if none.
+Review only the v2 changelog entries: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope, except a rejected finding you restate per rule 2. PASS if none.
 ```
 
 ## Hard rules
