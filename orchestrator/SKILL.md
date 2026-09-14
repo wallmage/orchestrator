@@ -152,7 +152,7 @@ Rules:
 
 ## Debate on Big Jobs
 
-Job >1 h → `debate.md` first: spec + plan debated with an adversarial committee, 2 rounds max, then execute.
+Job >1 h → `debate.md` first: spec + plan debated to all-PASS with an adversarial committee, then execute.
 
 ## Reviewers
 
