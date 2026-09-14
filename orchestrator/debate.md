@@ -51,12 +51,11 @@ Verify each claim in the target first (open the file, trace the path, run it whe
 - P3 user never notices: wording, hygiene, doc consistency, edge cases → reject on sight
 Only verified P0–P2 get fixed.
 
-## Rounds — hard cap 3, any committee size
+## Rounds — hard cap 2, any committee size
 
-1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
-2. Round 2 — resume each thread with the round-N template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3.
-3. Round 3 — only if round 2 changed anything: recheck v3, fix P0–P2, nobody reviews those fixes.
-Done = a round with nothing to fix, or round 3 → human go/no-go → execute. Second rejection of the same finding = FINAL: stamp FINAL in the next message, rationale → decision table.
+1. Round 1 — all reviewers on v1, whole doc. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
+2. Round 2 — resume each thread with the round-2 template on v2, changelog scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
+Done = round 1 with nothing to fix, or round 2 → human go/no-go → execute. Second rejection of the same finding = FINAL; rationale → decision table.
 Executable target → one real run per round beats a reviewer.
 
 ## Templates
@@ -66,10 +65,10 @@ Round 1:
 Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
 Number every finding. Do not edit any file.
 ```
-Round N:
+Round 2:
 ```
-<doc path> is now v<N>. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
-Re-review v<N>: confirm fixes landed; new P0–P2 only, same format; PASS if none.
+<doc path> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
+Review only the v2 changelog entries: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope. PASS if none.
 ```
 
 ## Hard rules
