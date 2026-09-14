@@ -53,7 +53,7 @@ Only verified P0–P2 get fixed.
 
 ## Rounds — hard cap 2, any committee size
 
-1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <TMP_PATH>/<doc>.v1.md`; fix P0–P2. Merge → v2 once; never concurrent versions; `diff -u <TMP_PATH>/<doc>.v1.md <doc> > <TMP_PATH>/<doc>.v2.diff`.
+1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <doc>.v1`; fix P0–P2. Merge → v2 once; never concurrent versions; `diff -u <doc>.v1 <doc> > <doc>.v2.diff`.
 2. Round 2 — resume each thread with the round-2 template on v2, diff scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
 Done = round 1 with nothing to fix, or round 2 → human go/no-go → execute.
 Executable target → one real run per round beats a reviewer.
@@ -68,11 +68,11 @@ Number every finding. Do not edit any file.
 Round 2:
 ```
 <doc path> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
-Review only <TMP_PATH>/<doc>.v2.diff: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope, except a rejected finding you restate per rule 2. PASS if none.
+Review only <doc path>.v2.diff: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope, except a rejected finding you restate per rule 2. PASS if none.
 ```
 
 ## Hard rules
 
 1. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
 2. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-3. No process files: spec + plan are the only documents.
+3. No process files: spec + plan are the only documents; `<doc>.v1`, `<doc>.v2.diff` live beside the doc (reviewer reads are cwd-scoped), deleted at Done.
