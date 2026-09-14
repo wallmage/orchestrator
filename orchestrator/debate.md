@@ -12,8 +12,6 @@ Each tier adds one reviewer:
 | 1-2h | 30 min max | Debate Reviewer 1 |
 | >2h | 60 min max | + Debate Reviewer 2 |
 
-One seat per vendor, cheapest first.
-
 ## Conversation mechanics
 
 - Each round resumes each reviewer's CLI session (same cwd) with the delta only; reviewers run in parallel.
@@ -23,7 +21,7 @@ One seat per vendor, cheapest first.
 
 1. Read only 5 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
-3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate to all-PASS; then plan at `...-plan.md` from the agreed spec, debate to all-PASS.
+3. Spec at `<project>/docs/orchestration/MM-DD-##-spec.md`, debate; then plan at `...-plan.md` from the agreed spec, debate.
 4. Each doc: version header, changelog, numbered decision table (stable anchors).
 5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees.
 
@@ -50,7 +48,7 @@ Verify each claim in the target first (open the file, trace the path, run it whe
 - P3 user never notices: wording, hygiene, doc consistency, edge cases → reject on sight
 Only verified P0–P2 get fixed.
 
-## Rounds — hard cap 2, any committee size
+## Rounds — Hard Cap 2
 
 1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — resume each thread with the round-2 template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3; nobody reviews those fixes.
