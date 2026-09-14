@@ -51,7 +51,7 @@ Verify each claim in the target first (open the file, trace the path, run it whe
 - P3 user never notices: wording, hygiene, doc consistency, edge cases → reject on sight
 Only verified P0–P2 get fixed.
 
-## Rounds — hard cap 2, any committee size
+## Rounds
 
 1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <doc>.v1`; fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — `diff -u <doc>.v1 <doc> > <doc>.v2.diff`; resume each thread with the round-2 template on v2, diff scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
