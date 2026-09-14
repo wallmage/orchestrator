@@ -12,7 +12,7 @@ Each tier adds one reviewer:
 | 1-2h | 30 min max | Debate Reviewer 1 |
 | >2h | 60 min max | + Debate Reviewer 2 |
 
-One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate one tier.
+One seat per vendor, cheapest first.
 
 ## Conversation mechanics
 
