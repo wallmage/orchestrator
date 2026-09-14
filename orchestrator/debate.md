@@ -35,7 +35,7 @@ One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate
 Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin after:
 ```
 1. Evidence and reasoning only. Agreement never courtesy; disagreement never posture.
-2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it. A rejection marked FINAL closes the item.
+2. A finding stands until refuted by a specific fact — not restatement, authority, or repetition. Rejected without refutation → restate it.
 3. Shown wrong → concede at once, naming what convinced you; unexplained concession invalid.
 4. Never soften, drop, or downgrade a finding to end a round; never add one to look useful.
 5. Every accept/reject = one line of why.
@@ -55,7 +55,7 @@ Only verified P0–P2 get fixed.
 
 1. Round 1 — all reviewers on v1, whole doc. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — resume each thread with the round-2 template on v2, changelog scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
-Done = round 1 with nothing to fix, or round 2 → human go/no-go → execute. Second rejection of the same finding = FINAL; rationale → decision table.
+Done = round 1 with nothing to fix, or round 2 → human go/no-go → execute.
 Executable target → one real run per round beats a reviewer.
 
 ## Templates
