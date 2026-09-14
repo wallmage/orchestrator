@@ -10,8 +10,7 @@ Each tier adds one reviewer:
 |---|---|---|
 | <1h | — | — |
 | 1-2h | 30 min max | Debate Reviewer 1 |
-| 2-4h | 60 min max | + Debate Reviewer 2 |
-| >4h | can be hours | + Debate Reviewer 3 |
+| >2h | 60 min max | + Debate Reviewer 2 |
 
 One seat per vendor, cheapest first. Round agrees suspiciously fast → escalate one tier.
 
@@ -53,9 +52,9 @@ Only verified P0–P2 get fixed.
 
 ## Rounds — hard cap 2, any committee size
 
-1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <doc>.v1`; fix P0–P2. Merge → v2 once; never concurrent versions.
-2. Round 2 — `diff -u <doc>.v1 <doc> > <doc>.v2.diff`; resume each thread with the round-2 template on v2, diff scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
-Done = round 1 with nothing to fix, or round 2 → `rm -f <doc>.v1 <doc>.v2.diff` → human go/no-go → execute.
+1. Round 1 — all reviewers on v1, whole doc. Triage; `cp <doc> <TMP_PATH>/<doc>.v1.md`; fix P0–P2. Merge → v2 once; never concurrent versions; `diff -u <TMP_PATH>/<doc>.v1.md <doc> > <TMP_PATH>/<doc>.v2.diff`.
+2. Round 2 — resume each thread with the round-2 template on v2, diff scope only: confirm fixes landed, P0–P2 introduced by the changes. Triage, fix → v3; nobody reviews those fixes.
+Done = round 1 with nothing to fix, or round 2 → human go/no-go → execute.
 Executable target → one real run per round beats a reviewer.
 
 ## Templates
@@ -68,7 +67,7 @@ Number every finding. Do not edit any file.
 Round 2:
 ```
 <doc path> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
-Review only <doc path>.v2.diff: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope, except a rejected finding you restate per rule 2. PASS if none.
+Review only <TMP_PATH>/<doc>.v2.diff: confirm each accepted fix landed; P0–P2 introduced by the changes only, same format. Unchanged sections out of scope, except a rejected finding you restate per rule 2. PASS if none.
 ```
 
 ## Hard rules

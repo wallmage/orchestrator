@@ -32,7 +32,6 @@ BANNED: Sonnet 5 (worse value), Haiku 4.5.
 | Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. § Dispatch Mechanics |
 | Cursor CLI `--model cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=xhigh` | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
-| CodeBuddy CLI `--model kimi-k3-2 --effort max` | Debate Reviewer 3 | High | 44 | 69% | `codebuddy-cli.md` |
 
 ## Dispatch Mechanics
 
@@ -47,7 +46,7 @@ Task orders:
 
 ### CLI Jobs (shared contract)
 
-Per-CLI specifics: § Cursor CLI below, `codex-cli.md`, `codebuddy-cli.md` (`grok-cli.md` parked — never dispatch). Read only the one you dispatch to.
+Per-CLI specifics: § Cursor CLI below, `codex-cli.md` (`grok-cli.md`, `codebuddy-cli.md` parked — never dispatch). Read only the one you dispatch to.
 
 Runner shape:
 - Launch + watch: § Fleet Dispatch & Watcher Protocol.

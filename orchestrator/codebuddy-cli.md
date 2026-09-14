@@ -8,7 +8,7 @@ Runner:
 exec </dev/null
 echo $$ > <TMP_PATH>/<job>.pid
 cd <PROJECT ROOT>
-codebuddy -p -y --output-format stream-json --model <slug> [--effort <level>] \
+codebuddy -p -y --output-format stream-json --model <slug> \
   "<prompt>" > <TMP_PATH>/<job>.log 2>&1
 printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
 grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TMP_PATH>/<job>.final.txt
@@ -17,8 +17,8 @@ grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TM
 Files: log = NDJSON; resume id = `session_id` (every line, first in `"type":"init"`). Success also needs last result line `"is_error":false`.
 
 Flags:
-- `--model <slug>` EVERY dispatch. `kimi-k3-2` = debate seat 3 only. `deepseek-v4.1-flash` (40 IQ / 74% SWE) = dormant, never auto-triggered. All others BANNED.
-- `--effort`: `kimi-k3-2` → `max`; deepseek has no mapping — omit. `ultracode` accepted though absent from help (below).
+- `--model deepseek-v4.1-flash` (40 IQ / 74% SWE) EVERY dispatch — dormant, never auto-triggered. `kimi-k3-2` and all others BANNED.
+- `--effort`: deepseek has no mapping — omit. `ultracode` accepted though absent from help (below).
 - `-y` (`--dangerously-skip-permissions`): REQUIRED, else headless shell/edits blocked. HIGH/CRITICAL-risk commands still ask under `-y` → headless = WAITING; only `CODEBUDDY_IS_SANDBOX=1` (env) passes them — set only for jobs that legitimately need destructive shell.
 - Analysis-only: `--permission-mode plan` INSTEAD of `-y` — Read/Grep/Glob allowed, Write + Bash denied (no `git diff` via shell; point it at files). Reads are cwd-scoped and `--add-dir` does NOT widen them — prompt pointing outside the project (skill templates) → `WD=$HOME`.
 - `--json-schema '<inline JSON Schema>'` (inline string, not file) → result line carries `structured_output`; extract `jq -r '.structured_output'`.
