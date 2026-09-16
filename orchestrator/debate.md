@@ -12,6 +12,10 @@ Each tier adds one reviewer:
 | 1-3h | Debate Reviewer 1 |
 | >3h | + Debate Reviewer 2 |
 
+## Manual — user-triggered
+
+User names reviewer (any model, any effort) and scope; unnamed → Debate Reviewer 1. Everything else standard.
+
 ## Conversation mechanics
 
 - Each round resumes each reviewer's CLI session (same cwd) with the delta only; reviewers run in parallel.

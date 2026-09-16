@@ -144,6 +144,7 @@ Rules:
 ## Debate Big Jobs
 
 Job >1 h → `debate.md` first: spec + plan debated with adversarial committee.
+Manual: user says "debate …" → `debate.md` § Manual.
 
 ## Reviewers
 
