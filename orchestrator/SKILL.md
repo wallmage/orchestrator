@@ -141,10 +141,10 @@ Rules:
 - Merge from main root; full suite on merged tree; green → remove worktree + branch, red → keep it. Push once, after judgment passes. Removal refused → never `--force`, surface the files. Never force-push.
 - Close: no stranded worktrees, merge landed on main.
 
-## Debate Big Jobs
+## Debate
 
 Job >1 h → `debate.md` first: spec + plan debated with adversarial committee.
-Manual: user says "debate …" → `debate.md` § Manual.
+Manual: user says "debate …" or "adversarial review" → `debate.md` § Manual.
 
 ## Reviewers
 
@@ -154,7 +154,7 @@ Never substitute one reviewer for another. Reviewer reads its prompt file by pat
 |---|---|---|---|
 | SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast --mode ask` |
 | `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, after all merges, before push | Same SDD rule, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
-| `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate only (`debate.md`) | per `debate.md` |
+| `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | `debate.md` | per `debate.md` |
 
 ## Best Among Workers
 

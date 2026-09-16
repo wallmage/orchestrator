@@ -1,6 +1,6 @@
-# Debate Big Jobs
+# Debate
 
-Orchestrator drafts spec + plan, dispatches adversarial reviewers, arbitrates. Cost irrelevant.
+Target: big job spec + plan; manual anything. Orchestrator dispatches adversarial reviewers, arbitrates, fixes. Cost irrelevant.
 
 ## Committee
 
@@ -14,14 +14,14 @@ Each tier adds one reviewer:
 
 ## Manual — user-triggered
 
-Reviewer model + effort per user's order; unnamed → Debate Reviewer 1. Scope per user; unnamed → ask once.
+Reviewer model + effort per user's order; unnamed → Debate Reviewer 1. Target per user; unnamed → ask once.
 
 ## Conversation mechanics
 
 - Each round resumes each reviewer's CLI session (same cwd) with the delta only; reviewers run in parallel.
 - At FLEET DONE read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call.
 
-## Draft, Debate, Execute
+## Big Jobs — Draft, Debate, Execute
 
 1. Read only 5 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
@@ -40,7 +40,7 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 3. Shown wrong → concede at once, naming what convinced you; unexplained concession invalid.
 4. Never soften, drop, or downgrade a finding to end a round; never add one to look useful.
 5. Every accept/reject = one line of why.
-6. Re-review the doc itself, not the round message: confirm accepted fixes actually landed before `NO MATERIAL OBJECTION`.
+6. Re-review the target itself, not the round message: confirm accepted fixes actually landed before `NO MATERIAL OBJECTION`.
 ```
 
 ## Triage — every round, every claim
@@ -56,24 +56,24 @@ Only verified P0–P2 get fixed.
 
 1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — resume each thread with the round-2 template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3; nobody reviews those fixes.
-Done = a round with nothing to fix, or round 2 → human go/no-go → execute.
+Done = nothing to fix, or round 2. Big job → human go/no-go → execute.
 Executable target → one real run per round beats a reviewer.
 
 ## Templates
 
 Round 1:
 ```
-Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <doc path> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
+Read and follow ~/.claude/skills/orchestrator/adversarial-reviewer.md. Target: <target> (v1). Context: <1–2 sentences: purpose, consumer>. <honesty rules>
 Number every finding. Do not edit any file.
 ```
 Round 2:
 ```
-<doc path> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
+<target> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
 Re-review v2: confirm fixes landed; new P0–P2 only, same format; verdict `NO MATERIAL OBJECTION` if none.
 ```
 
 ## Hard rules
 
-1. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table.
+1. Reviewers never learn others exist. Conflicts: Orchestrator adjudicates, records rationale in decision table; manual: ledger.
 2. Pointers, not payloads: reviewers run in the project root. Spikes/experiments → `<TMP_PATH>`.
-3. Output files: spec + plan only.
+3. Output files: spec + plan; manual: target fixes.
