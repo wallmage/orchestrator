@@ -136,7 +136,7 @@ Rules:
 - Fan out everything the dependency graph allows (speed gain > merge cost): independent slices, one writer per file/worktree, script-mergeable results. Not when: heavy same-module overlap, related failures, whole-system view needed, nobody knows what's broken yet. Shared state: partition per job, else serialize.
 - Mechanical checks = Scout, batch independent checks into one Workflow script.
 - Orchestrator owns git: create worktrees, verify, merge serially, delete after merge. Delegate big-diff reading to Scout, never git commands.
-- Create: `EnterWorktree` (→ `.claude/worktrees/<name>`) from main, never inside another worktree; install deps. Suite green on main once before dispatch.
+- Create: workers → from root `git worktree add .claude/worktrees/<name> -b <name>`; own edit → `EnterWorktree`; inside, content via Edit/Write, Bash flat (nested `$(…)`, functions, git-in-loop, heredocs naming git/paths → refused); `ExitWorktree(keep)` before any root git. Install deps. Suite green on main once before dispatch.
 - On return: check edit overlap between workers; spot-check one thing per worker (systematic errors).
 - Merge from main root; full suite on merged tree; green → remove worktree + branch, red → keep it. Push once, after judgment passes. Removal refused → never `--force`, surface the files. Never force-push.
 - Close: no stranded worktrees, merge landed on main.
