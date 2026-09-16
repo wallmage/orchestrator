@@ -16,7 +16,7 @@ Model names, slugs, and paths describe one machine's toolchain. Rewrite them for
 ## Install
 
 ```bash
-cp -r orchestrator ~/.claude/skills/orchestrator
+mkdir -p ~/.claude/skills/orchestrator && cp -r orchestrator/. ~/.claude/skills/orchestrator/
 ```
 
 Invoke with `/orchestrator` or "orchestrate this".

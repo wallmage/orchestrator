@@ -85,4 +85,4 @@ Then:
 - `Coverage`: evidence and attack surfaces examined;
 - `Residual uncertainty`: material unknowns still limiting confidence.
 
-Bar unmet → say `No material adversarial findings.` Never manufacture opposition. Clean = survived the attacks you could support, not universally safe or correct.
+Bar unmet → verdict `NO MATERIAL OBJECTION`, no findings. Never manufacture opposition. Clean = survived the attacks you could support, not universally safe or correct.

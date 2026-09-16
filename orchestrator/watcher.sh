@@ -61,7 +61,7 @@ while true; do
       exit 0
     fi
     missing_polls=$((missing_polls+1))
-    if [ "$missing_polls" = "1" ]; then echo "ARMING [$JOB]: watcher up, log not present yet at $LOG"; fi
+    [ "$missing_polls" = "1" ] && [ "${QUIET:-0}" != 1 ] && echo "ARMING [$JOB]: watcher up, log not present yet at $LOG"
     if [ $((now - start_ts)) -ge 10 ]; then
       echo "LAUNCH FAILURE [$JOB]: log never appeared at $LOG — wrong state dir or dead launch. Fix NOW."
       exit 0
@@ -90,16 +90,17 @@ while true; do
     fi
 
     # NDJSON logs embed file contents the CLI read: only structural failures count there.
-    ERR_SIGS=$FAIL_SIGS; [ "$(head -c1 "$LOG" 2>/dev/null)" = "{" ] && ERR_SIGS=$HARD_SIGS
+    ERR_SIGS=$FAIL_SIGS; head -c 4096 "$LOG" 2>/dev/null | grep -q '^{' && ERR_SIGS=$HARD_SIGS
     # FINISH first: terminal event outranks signatures. ^EXIT= only — turn.completed lands before -o is flushed; EXIT= sits at EOF, so tail-probe.
     if tail -c 64 "$LOG" 2>/dev/null | grep -qE '^EXIT=[0-9]+\r?$'; then
       TAILTXT=$(tail -c 1200 "$LOG" | tr '\n' ' ')
       SUSPECT=""
-      if grep -qE "$HARD_SIGS" "$LOG" 2>/dev/null; then
-        SUSPECT="match: $(grep -aE "$HARD_SIGS" "$LOG" | tail -1 | cut -c1-200)"
+      HARD=$({ grep -aE '"type":"turn.failed"|^EXIT=[1-9]' "$LOG"; grep -a '"type":"result"' "$LOG" | tail -1 | grep '"is_error":true'; } 2>/dev/null | tail -1 | cut -c1-200)
+      if [ -n "$HARD" ]; then
+        SUSPECT="match: $HARD"
       elif tail -c 4000 "$LOG" | grep -qE "$ERR_SIGS"; then
         SUSPECT="match: $(tail -c 4000 "$LOG" | grep -aE "$ERR_SIGS" | tail -1 | cut -c1-200)"
-      elif [ -n "${OUTFILE:-}" ] && [ "$(tr -d '[:space:]' < "${OUTFILE:-}" 2>/dev/null | wc -c | tr -d ' ')" = 0 ]; then
+      elif [ -n "${OUTFILE:-}" ] && [ "$(tr -d '[:space:]' 2>/dev/null < "${OUTFILE:-}" | wc -c | tr -d ' ')" = 0 ]; then
         SUSPECT="EXIT ok but OUTFILE missing/empty: $OUTFILE"
       fi
       if [ -n "$SUSPECT" ]; then
@@ -182,7 +183,7 @@ while true; do
                 stall_announced=1
                 echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s with $socks open sockets — remote hang? Last: $(tail -1 "$LOG" | cut -c1-200)"
               fi
-            elif [ "$stall_announced" = "0" ] && [ $((now - last_idle_stall)) -ge "$HB" ]; then
+            elif [ "$stall_announced" = "0" ] && [ $((now - last_idle_stall)) -ge 300 ]; then
               stall_announced=1; last_idle_stall=$now
               echo "STALL [$JOB]: log frozen $((zero_polls*POLL))s at $size bytes, cputime +${delta}s/poll (idle), 0 open sockets. Last: $(tail -1 "$LOG" | cut -c1-200)"
             fi

@@ -56,8 +56,8 @@ printf '%s\n' "$CLIS" | while IFS= read -r line; do
   echo "HELP-DIFF: added [${add% }] removed [${rem% }]"
   [ -n "$models" ] && echo "MODELS-DIFF: $(diff "$T/$cli.before.models" "$T/$cli.after.models" | grep '^[<>]' | tr '\n' ' ')"
   if [ -n "$sect" ]; then region=$(awk -v h="$sect" 'p && /^##+ /{exit} index($0,"# "h)==2||index($0,"# "h)==3{p=1;next} p' "$file"); else region=$(cat "$file"); fi
-  printf '%s\n' "$region" | grep -oE '`-[^`]*`' | tr -d '`' | tr '/' '\n' | grep -oE '^--?[A-Za-z][A-Za-z0-9-]*' | sort -u | while read -r f; do
-    grep -q -- "$f" "$T/$cli.after.help" || echo "DRIFT: $f in $doc not in help"
+  { printf '%s\n' "$region" | grep -oE '`-[^`]*`' | tr -d '`'; printf '%s\n' "$region" | grep -E "^$cli " | cut -d';' -f1; } | tr '/' '\n' | grep -oE '(^|[^A-Za-z0-9_-])--?[A-Za-z][A-Za-z0-9-]*' | sed 's/^[^-]*//' | sort -u | while read -r f; do
+    grep -qE -- "(^|[^A-Za-z0-9-])$f([^A-Za-z0-9-]|$)" "$T/$cli.after.help" || echo "DRIFT: $f in $doc not in help"
   done
   [ -n "$chlog" ] && [ "$OLD" != "$NEW" ] && { echo "CHANGELOG:"; OLD="$OLD" NEW="$NEW" sh -c "$chlog" 2>&1 | head -80; }
 done

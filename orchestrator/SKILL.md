@@ -3,23 +3,27 @@ name: orchestrator
 description: Expensive model orchestrates, cheaper models execute. Use when "orchestrate this". Model roster, routing.
 ---
 
+## Performance, Cost
+
+Orchestrator receives tasks, plans, decomposes, delegates, evaluates, synthesizes. Routing: adequate performance at lowest cost.
+
 ## Delegate vs Inline
 
-Delegate overhead ≈ 3 orchestrator turns (dispatch/evaluate), each full context at cache rate ≈ $0.1. Inline = job tokens at premium rate + permanent context bloat.
+Delegate overhead ≈ ≥3 orchestrator turns (dispatch/evaluate), each full context at cache rate ≈ 0.1 USD. Inline = job tokens at premium rate + permanent context bloat.
 
 Decision gates, in order:
 
-1. **Quality**: needs best intelligence (architecture, specs, arbitration, subtle root-cause, expensive-if-wrong) → inline, cost irrelevant.
-2. **Size**: trivia (~≤20 lines, no design choices, describing costs more than doing) → inline.
-3. **Delegate** otherwise:
+1. **Quality**: needs best intelligence (architecture, specs, arbitration, subtle root-cause) → inline judgement, cost irrelevant.
+2. **Size**: trivia, overhead > savings → inline.
+3. **Delegate** when: no quality loss, non-trivia job, net savings.
    - Recon/zero-judgment (wide search, bulk read, research, triage, verification, mechanical batch, boilerplate, doc hygiene) → Scout; conclusions only into orchestrator context.
-   - ≥2 parallel agents, multi-phase pipelines, unknown-size discovery, adversarial verify, Claude-side tools needed → Workflow.
-   - Else → Worker (several may run concurrently).
-4. `Agent` tool and its built-in templates (Explore, Plan, general-purpose…): never called directly — inherit orchestrator's model, no effort field. Route via gates 1–3, prompt the subagent with the template.
+   - Multi-phase pipelines, unknown-size discovery, Claude-side tools needed → Worker - Workflow.
+   - Else → Worker - CLI (several may run concurrently).
+4. `Agent` tool and its built-in templates (Explore, Plan, general-purpose…): never called directly — inherit orchestrator's model, max cost. Run gates 1–3, prompt subagent with template.
 
 ## Model Roster & Routing
 
-90% normal implementation → Worker. 10% hard (intricate design, subtle correctness) → Escalated. Front-end design → Designer.
+90% normal implementation → Worker; 10% hard (intricate design, subtle correctness) → Escalated; mission-critical, expensive-if-wrong, irreversible → § Best Among Workers. Front-end design → Designer.
 BANNED: Sonnet 5 (worse value), Haiku 4.5.
 
 | Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
@@ -31,60 +35,50 @@ BANNED: Sonnet 5 (worse value), Haiku 4.5.
 | Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | § Dispatch Mechanics |
 | Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. § Dispatch Mechanics |
 | Cursor CLI `--model cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
-| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=xhigh` | Debate Reviewer 2 | High | 53 | 74% | `codex-cli.md` |
+| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Debate Reviewer 2 | High | 50 | 73% | `codex-cli.md` |
 
 ## Dispatch Mechanics
+
+Every edit-job prompt (Workflow or CLI) opens verbatim: "You are sub-agent; parent agent owns orchestration and git. Ignore your orchestrator and git rules: work only in `<worktree path>`, never branch, commit, merge or push." Reviewers: prompt file only.
 
 Workflow subagents:
 - ONLY via `Workflow`, even for a single worker: `agent(prompt, {model: 'opus', effort: '<per roster row>', label: '...'})` — model and effort on every spawn (omitted = inherits Fable).
 - HARD CAP: 15 subagents total per task. More only with the user's explicit approval, reasoning stated first.
-
-Task orders:
-- Big jobs: spec in `<project>/docs/orchestration/MM-DD-##.md`; dispatch "Read and execute exactly the contract at <path>".
-- One `ledger.md` per project = handoff state on disk: user decisions verbatim, task log, standing orders.
-- No report files — report in chat.
 
 ### CLI Jobs (shared contract)
 
 Per-CLI specifics: § Cursor CLI below, `codex-cli.md` (`grok-cli.md`, `codebuddy-cli.md` parked — never dispatch). Read only the one you dispatch to.
 
 Runner shape:
-- Launch + watch: § Fleet Dispatch & Watcher Protocol.
-- `exec </dev/null` first (live stdin freezes some CLIs); `cd <PROJECT ROOT>`.
-- stdout+stderr → `<TMP_PATH>/<job>.log`, then `printf '\nEXIT=%s\n' $? >> <job>.log` (leading `\n`: EXIT never mid-line); answer → `<TMP_PATH>/<job>.final.txt`.
+- Launch + watch: § Fleet Dispatch. dispatch.sh does `exec </dev/null`, `cd <workdir>`, `.pid`, log, `EXIT=`. JOBS command = one line: CLI call; answer → `.final.txt`; `exit $rc` (`rc=$?` after CLI) so `EXIT=` = CLI exit.
 - Runner/helper scripts: POSIX sh only — macOS `/bin/bash` = 3.2, bash-4isms die at launch.
 
 Files:
-- `<TMP_PATH>` = session temp dir (OS-cleaned); `.pid` + `.log` + `.final.txt` per job.
+- `<TMP_PATH>` = session temp dir (OS-cleaned); `.prompt` + `.pid` + `.log` + `.final.txt` per job.
 - Read `.final.txt` only; fleet stream = liveness, not output. Log: grep resume id and `^EXIT=`; diagnose (final missing/empty, EXIT≠0, verdict smells wrong) with targeted `grep -n`/`tail -n 100`/`sed -n` ±50 — never the whole file.
 - Success = `EXIT=0` AND non-empty `.final.txt`.
 
 Flags (every dispatch):
-- Model + effort explicit; only that CLI's listed slugs.
-- Unattended approval flag on; read-only mode for analysis-only jobs; worktree edits name the path in the prompt (+ the CLI's extra-dir flag if it sandboxes).
+- Model + effort explicit; only that CLI's listed slugs; never preflight.
+- Unattended approval flag on; read-only mode for analysis-only jobs; worktree edits: CLI's extra-dir flag if it sandboxes.
 - CLI-native worktree/cwd flags BANNED — orchestrator owns worktrees.
 - Structured answers: CLI's schema flag if any, else demand JSON in the prompt.
 
 Prompts:
+- Prompt → `<TMP_PATH>/<job>.prompt`; command reads `"$(cat …)"`. Never inline (3 quoting layers).
 - CLIs fan out subagents only when reminded: "Use subagents to make the task faster if possible".
 - Superpowers: prepend `[$superpowers:using-superpowers](<path per CLI>)` to every Worker prompt; never to judgment/adversarial reviewers (their prompt file is their whole method; SDD task reviewer keeps its own template).
 
 Follow-ups:
 - Resume: CLI's resume flag + id from the log, same cwd, delta only.
-- Cancel: `TaskStop` the Bash task; confirm no `EXIT=` was written.
+- Cancel: kill job tree, children first: `k(){ for c in $(pgrep -P "$1"); do k "$c"; done; kill "$1"; }; k $(cat <TMP_PATH>/<job>.pid)`; verify `ps`. `TaskStop` stops only the relay.
 
 ### Cursor CLI
 
-Runner:
+JOBS command (one line, no single quotes — JOBS is single-quoted):
 
 ```sh
-exec </dev/null
-echo $$ > <TMP_PATH>/<job>.pid
-cd <PROJECT ROOT>
-cursor-agent -p --force --trust --output-format stream-json --model <slug> \
-  "<prompt>" > <TMP_PATH>/<job>.log 2>&1
-printf '\nEXIT=%s\n' $? >> <TMP_PATH>/<job>.log
-grep -a '"type":"result"' <TMP_PATH>/<job>.log | tail -1 | jq -r '.result' > <TMP_PATH>/<job>.final.txt
+cursor-agent -p --force --trust --output-format stream-json --model <slug> "$(cat <TMP_PATH>/<job>.prompt)"; rc=$?; grep -a \"type\":\"result\" <TMP_PATH>/<job>.log | tail -1 | jq -r .result > <TMP_PATH>/<job>.final.txt; exit $rc
 ```
 
 Files: log = NDJSON; resume id = first `"session_id"` in log. Success also needs last result line `"is_error":false`.
@@ -109,25 +103,27 @@ Follow-ups:
 
 ONE Monitor call launches and watches the fleet via `dispatch.sh` — never plain Bash, never a separate watcher step:
 
-`Monitor(persistent:true, description:"<fleet>", command:"TMP=<state dir> JOBS='<name>|<workdir>|<full CLI command>\n<name2>|<workdir2>|<full CLI command2>' sh ~/.claude/skills/orchestrator/dispatch.sh")`
+`Monitor(description:"<fleet>", timeout_ms:1800000, command:"TMP=<state dir> JOBS='<name>|<workdir>|<full CLI command>\n<name2>|<workdir2>|<full CLI command2>' sh ~/.claude/skills/orchestrator/dispatch.sh")`
 
-(Windows: `~` → `%USERPROFILE%`.)
+(`\n` = real newline in the JSON string, not backslash-n. Windows: `~` → `%USERPROFILE%`.)
 
-Mechanism (1 or 20 jobs, any mix of CLIs):
-- `JOBS`: one job per line, `name|workdir|command`, split on the first two `|` only (command may contain `|`; name/workdir may not). Single job: `CLI=… WD=… JOB=…`.
+Monitor expires at 30 min, kills its process group → fleet runs detached, events → `<TMP>/fleet.events`, Monitor relays. Expiry notice → re-arm `Monitor(description:"<fleet>", timeout_ms:1800000, command:"RELAY=1 TMP=<state dir> sh ~/.claude/skills/orchestrator/dispatch.sh")`, lossless. Never relaunch with `JOBS` (refused while fleet lives). Same command adopts after session restart.
+
+Mechanism (1 or 100 jobs, any mix of CLIs):
+- `JOBS`: one job per line, `name|workdir|command`, split on the first two `|` only (command may contain `|`; name/workdir may not). Single job: `CLI=… WD=… JOB=…`. `TMP` required.
 - Per job: detached launch (cwd=workdir; log, `EXIT=`, pid per the runner shape), `LAUNCHED [<name>]`, one `watcher.sh` child.
-- Wakes (default): LAUNCHED once; each FINISHED as it lands — act on it FIFO, never wait for the others; incidents: DEATH, STALL (dead process, idle, or frozen ≥20 min mid-reasoning), ERROR (structural: `turn.failed`, `is_error`, EXIT≠0), WAITING, LAUNCH FAILURE (no log by 10s), RESOURCE, FINISHED-SUSPECT, WATCHER STUCK; `WORK CHECK [fleet]` at 3 min; `HEARTBEAT [fleet]` per 15 min listing every job; `FLEET DONE`/`FLEET ABORTED` with exit + final size per job. Muted: ARMED, REMOTE-THINKING, RIGHT-WORK (`QUIET=0` restores). `BATCH=1` (debate rounds only): clean FINISHED muted too, act at FLEET DONE. Every wake = one full-context orchestrator turn.
-- Self-cleanup: a watcher exits when its job settles; after the last, the fleet prints `FLEET DONE` and exits. No `FLEET DONE` after all jobs report done → kill the Monitor task.
-- Tunables: fleet-level `HEARTBEAT_SECS`(900), `WORK_SECS`(180); per watcher `POLL_SECS`(3), `STALL_SECS`(1200), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8), `MILESTONE_FILE`/`MILESTONE_MSG`.
-- Liveness without wakes: dispatcher death ends the Monitor task (harness notifies); watcher dies before its job ends → `FLEET ABORTED`; job ends while its watcher hangs → `WATCHER STUCK`; heartbeat is the last resort.
-- Bare `watcher.sh` Monitor (`LOG=… PIDFILE=… OUTFILE=… JOB=…`) ONLY to adopt a running job not launched via dispatch.sh (e.g. after a session restart).
+- Wakes (default): LAUNCHED once; each FINISHED as it lands — act on it FIFO, never wait for the others; incidents: DEATH, STALL (dead process, idle, or frozen ≥20 min mid-reasoning), WATCH ENDED (job tree dead), ERROR (structural: `turn.failed`, `is_error`, EXIT≠0), WAITING FOR INPUT, LAUNCH FAILURE (no log by 10s), RESOURCE, FINISHED-SUSPECT, WATCHER STUCK, MILESTONE, FLEET DEAD; `WORK CHECK [fleet]` at 3 min; `HEARTBEAT [fleet]` per 15 min listing every job; `FLEET DONE`/`FLEET ABORTED` with exit + final size per job. Muted: ARMING, ARMED, REMOTE-THINKING, RIGHT-WORK, WATCHER RESPAWNED (`QUIET=0` restores). `BATCH=1` (debate rounds only): clean FINISHED muted too, act at FLEET DONE. Every wake = one full-context orchestrator turn.
+- Self-cleanup: a watcher exits when its job settles; after the last, `FLEET DONE`, relay exits. No `FLEET DONE` after all jobs done → kill `<TMP>/fleet.pid`, `TaskStop` relay.
+- Tunables: fleet-level `HEARTBEAT_SECS`(900), `WORK_SECS`(180); per watcher `POLL_SECS`(3), `STALL_SECS`(1200), `CPU_PATTERN`, `CPU_IDLE_MAX`, `MAX_PROCS`(8), `MAX_RSS_GB`(8), `MILESTONE_FILE`/`MILESTONE_MSG` (fleet-wide).
+- Liveness without wakes: fleet dies → `FLEET DEAD`; watcher dies mid-job → respawned once, else `FLEET ABORTED` at end; job ends, watcher hangs → `WATCHER STUCK`; heartbeat last resort.
+- Bare `watcher.sh` Monitor (`LOG=… PIDFILE=… OUTFILE=… JOB=…`) ONLY to adopt a running job not launched via dispatch.sh.
 
 Each wake carries its own diagnosis: act in the same turn; never just grant more waiting time.
 
 Rules:
-- Never hand-roll `tail -F | awk '/DONE/{exit}'` monitors (job dies silently → watcher hangs forever). Any custom monitor gets a pid-liveness guard: `while kill -0 $JOB_PID; do …; done`. After a job completes, confirm its watcher exited; TaskStop leftovers.
+- Never hand-roll `tail -F | awk '/DONE/{exit}'` monitors (job dies silently → watcher hangs forever). Any custom monitor gets a pid-liveness guard: `while kill -0 $JOB_PID; do …; done`. After a job completes, confirm its watcher exited; kill leftovers.
 - Re-arm ONLY after DEATH or STALL-with-no-live-process on a live job: bare watcher.sh Monitor on that job, not a fleet relaunch. Dead-process alarm on a forking CLI (pid file → exited wrapper) = scope bug: repoint the pid file at the live process (identify by command + workdir), re-arm, don't kill.
-- Heartbeat overdue 5+ min with unfinished jobs = dispatcher died → re-adopt each unfinished job with a bare watcher.sh Monitor.
+- `FLEET DEAD` or heartbeat overdue 5+ min → bare watcher.sh Monitor per unfinished job.
 - RESOURCE: kill only hung/abandoned children; a legitimately heavy job gets its limits raised.
 - Kill discipline: never pick targets by ppid=1 (`$(...)`-backgrounded jobs reparent to init while alive). Identify by full command + workdir; unsure → don't kill. After killing a wrapper, check for surviving CLI children still writing to the workdir. Verify death with ps.
 - No foreground blocking call without a ~2-min guard (macOS has no `timeout`: `cmd & sleep N; kill $!`); longer → background + watcher.
@@ -136,61 +132,46 @@ Rules:
 
 ## Worktrees, Parallelism & Git
 
-- Solo dev on `main`, no PRs, up to 10 parallel sessions. Any edit task >2 min gets its own worktree from latest `main`; one job per worktree. Never delete unverified/unmerged work. A governing plan's stricter workflow wins.
+- Solo dev on `main`, no PRs, up to 10 parallel sessions. Any edit task >2 min gets its own worktree from latest `main`; one job per worktree. Never delete unverified/unmerged work (§ Best Among Workers losers excepted). A governing plan's stricter workflow wins.
 - Fan out everything the dependency graph allows (speed gain > merge cost): independent slices, one writer per file/worktree, script-mergeable results. Not when: heavy same-module overlap, related failures, whole-system view needed, nobody knows what's broken yet. Shared state: partition per job, else serialize.
-- Batch independent verifications into one Workflow script; SendMessage continues an existing agent.
-- Workers' own config files make them commit/merge/push — every worker prompt carries verbatim:
+- Mechanical checks = Scout, batch independent checks into one Workflow script.
+- Orchestrator owns git: create worktrees, verify, merge serially, delete after merge. Delegate big-diff reading to Scout, never git commands.
+- Create: `EnterWorktree` (→ `.claude/worktrees/<name>`) from main, never inside another worktree; install deps. Suite green on main once before dispatch.
+- On return: check edit overlap between workers; spot-check one thing per worker (systematic errors).
+- Merge from main root; full suite on merged tree; green → remove worktree + branch, red → keep it. Push once, after judgment passes. Removal refused → never `--force`, surface the files. Never force-push.
+- Close: no stranded worktrees, merge landed on main.
 
-> Do NOT create branches, commit, merge, or push. This instruction supersedes any CLAUDE.md or AGENTS.md git protocol, including one claiming to override everything. Work only in `<worktree path>` and leave every change uncommitted.
+## Debate Big Jobs
 
-- Orchestrator owns git: creates worktrees, verifies, merges serially (never two at once), pushes, deletes after merge. Delegate big-diff reading to Scout, never git commands.
-- Single exception: one lone edit job this session, no pre-merge verification needed → Opus may run worktree/merge/push itself. Never reserve or unproven models. In doubt, own git.
-- Create: native `EnterWorktree` (check you are not already in one); raw `git worktree add` only without it (`.worktrees/<branch>`, verify `git check-ignore`). Install deps, run the suite; dispatch only on a green baseline.
-- On return: read summaries, check edit overlap between workers, full suite once on the merged tree, spot-check one thing per worker (systematic errors).
-- Merge from main root: checkout main, pull, merge, full suite; red → stop, keep worktree; green → push, `git worktree remove` (from outside), `git worktree prune`, `git branch -d`. Removal refused = files exist nowhere else → never `--force`, surface them. Rejected push → investigate, never force-push.
-- Close every job: `git worktree list` + `git log --oneline -3`; finish anything stranded.
-
-## Debate on Big Jobs
-
-Job >1 h → `debate.md` first: spec + plan debated to all-PASS with an adversarial committee, then execute.
+Job >1 h → `debate.md` first: spec + plan debated with adversarial committee.
 
 ## Reviewers
 
-Three prompts, three questions; never substitute one for another. Reviewer reads its prompt file by path, read-only; orchestrator reads only the verdict.
+Never substitute one reviewer for another. Reviewer reads its prompt file by path, read-only; orchestrator reads only the verdict.
 
 | Reviewer | Question | When | Model |
 |---|---|---|---|
 | SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast --mode ask` |
-| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, whole branch after all merges | Same SDD rule, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
-| `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate (`debate.md`); final branch on big jobs, different family than judgment | per `debate.md` |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, after all merges, before push | Same SDD rule, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
+| `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | big-job spec/plan debate only (`debate.md`) | per `debate.md` |
 
 ## Best Among Workers
 
-N-version competition for mission-critical jobs: non-deterministic, judgment-on-the-fly, expensive-if-wrong. Quality >> cost.
+Quality >>> cost. 3 seats, one winner.
 
-- Debate spec pins decomposition to the finest pieces whose interfaces (files, signatures, data shapes) are pinned exactly. Doubt a seam → coarser. Unpinnable → whole job, one winner.
-- Identical envelope to ALL rostered Workers: own worktree, unaware of each other. Wait for the slowest.
-- Pass 1 — Scout triage, ≤5 parallel scouts split the components. Per component: defective → reject + reason; dominated → drop; equivalent → first seat's. Return contested: candidates + reasons.
-- Pass 2 — Orchestrator judges contested ONLY. Output = assembly list: component → winning worktree path.
-- Assembly: Worker assembles by path in a fresh worktree (never sent code); full suite green.
-- Announce in chat: divergence count, per-component winners.
+- Seats: Escalated, Debate Reviewer 1, Debate Reviewer 2. Same envelope, own worktree, unaware of each other. Wait for all three; dead seat → relaunch.
+- Orchestrator picks the winner; losers deleted after merge.
 
-## Debugging & Fix Acceptance
+## Ledger
 
-Investigating or judging a worker's fix:
-- No fix without root cause: read errors fully, reproduce, diff recent changes; multi-component → log at each boundary to find the failing layer; trace the bad value to its origin.
-- Compare with a working example; list every difference.
-- One hypothesis, smallest change, one variable; failing test reproducing the bug before the fix; fix at source, no bundled refactor; fresh run as proof.
-- Reject: symptom patches, timeout bumps, multi-change fixes, "probably X". 3 failed fixes = architecture problem → stop, back to spec/debate.
-- Truly environmental (rare; 95% is incomplete investigation): document, handle (retry/timeout/error), add logging.
+`docs/orchestration/ledger.md` = current state, concise telegram; every entry dated MMDD; update whenever state changes. Contains: decisions; per job, each task's state (commit | worktree, session id, next step | pending), spec/plan paths if available. Cap 80 lines: delete oldest-dated entries until ≤80. Resume = read it + any spec/plan it names.
+
+## Debugging & Fix
+
+- Fix = root cause named, fixed at source; failing repro test before, green run after.
+- 2 failed fixes → architecture problem → stop, orchestrator redesigns inline; big job → `debate.md`.
 
 ## Principles
 
-### 1. Minimal viable dose
-Simplest design, straight line to the problem. The plan is the only source of scope: never self-authorize extra rounds, quality loops, filters, or fix passes the governing plan or a user policy does not name, however real the defect. Out-of-scope defect = PARKED: one line to the user with the evidence, work continues on the plan's critical path; the user decides.
-
-### 2. Every delegation is a sealed envelope
-Executors see only your prompt text and the disk. Self-contained: absolute paths, starting commit, exact outputs, forbidden actions, runnable acceptance checks with expected values, every shared state file named. Point at governing docs by path, never paraphrase; instruct "the doc wins over this contract; flag conflicts". CLI docs are the truth for slugs and flags — never preflight; a wrong one dies at launch and the watcher says so.
-
-### 3. Spend each intelligence where it's scarce
-Cheapest adequate worker; your own tokens go to design, contracts, verification, judgment. Ceremony scales with job size. Keep context lean: delegate bulk reads, clip outputs.
+- Simplest design, straight line to the problem. Scope = plan or request: no self-authorized extra passes, however real the defect. Out-of-scope defect → one line to user, continue; user decides.
+- Executor sees only prompt and disk. Self-contained: absolute paths, acceptance checks with expected values. Governing docs by path, never paraphrased: "doc wins over this prompt; flag conflicts".
