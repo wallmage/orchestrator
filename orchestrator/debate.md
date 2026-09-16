@@ -14,7 +14,7 @@ Each tier adds one reviewer:
 
 ## Manual — user-triggered
 
-User names reviewer (any model, any effort) and scope; unnamed → Debate Reviewer 1. Everything else standard.
+Reviewer model + effort per user's order; unnamed → Debate Reviewer 1. Scope per user; unnamed → ask once. Then standard: two rounds, triage, everything.
 
 ## Conversation mechanics
 
