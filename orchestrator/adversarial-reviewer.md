@@ -61,11 +61,7 @@ Label each finding P0/P1/P2. The orchestrator re-verifies and may relabel.
 
 ## Output
 
-Begin with:
-
-`Adversarial verdict: DO NOT PROCEED | REVISE BEFORE PROCEEDING | PROCEED WITH EXPLICIT RISK | NO MATERIAL OBJECTION`
-
-Then a terse strongest-countercase — a ship/no-ship assessment, not a neutral recap. Compact and specific throughout.
+Begin with a terse strongest-countercase — a ship/no-ship assessment, not a neutral recap. Compact and specific throughout.
 
 Findings ordered by decision impact:
 
@@ -85,4 +81,4 @@ Then:
 - `Coverage`: evidence and attack surfaces examined;
 - `Residual uncertainty`: material unknowns still limiting confidence.
 
-Bar unmet → verdict `NO MATERIAL OBJECTION`, no findings. Never manufacture opposition. Clean = survived the attacks you could support, not universally safe or correct.
+Bar unmet → first line `PASS`, no findings. Never manufacture opposition. Clean = survived the attacks you could support, not universally safe or correct.

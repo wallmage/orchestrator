@@ -1,6 +1,6 @@
 # Debate
 
-Target: big job spec + plan; manual anything. Orchestrator dispatches adversarial reviewers, arbitrates, fixes. Cost irrelevant.
+Target: big job spec + plan; manual anything. Orchestrator dispatches adversarial reviewers, arbitrates, fixes docs. Cost irrelevant.
 
 ## Committee
 
@@ -14,24 +14,22 @@ Each tier adds one reviewer:
 
 ## Manual — user-triggered
 
-Reviewer model + effort per user's order; unnamed → Debate Reviewer 1. Target per user; unnamed → ask once.
+Reviewer model + effort per user's order, wins conflicts; unnamed → Debate Reviewer 1. Target per user; unnamed → ask. Code fixes → `SKILL.md` routing. Skip § Big Jobs.
 
 ## Conversation mechanics
 
 - Each round resumes each reviewer's CLI session (same cwd) with the delta only; reviewers run in parallel.
-- At FLEET DONE read every `<TMP_PATH>/<reviewer>.r<N>.final.txt` in ONE call.
+- Dispatch `BATCH=1`; FLEET DONE → read every `<TMP_PATH>/<reviewer>.r<N>.final.txt`.
 
 ## Big Jobs — Draft, Debate, Execute
 
-1. Read only 5 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `receiving-code-review` (arbitration), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
+1. Read only 4 Superpowers skills once `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/<name>/SKILL.md`: `brainstorming` (spec), `writing-plans` (plan), `verification-before-completion` (accepting work), `subagent-driven-development` (execution; helper scripts + reviewer template in that dir).
 2. Full brainstorming Q&A with user until spec approval.
 3. Spec at `<project>/docs/orchestration/MMDD-##-spec.md`, debate; then plan at `...-plan.md` from the agreed spec, debate.
 4. Each doc: version header, changelog, numbered decision table (stable anchors).
 5. Workers execute the plan per subagent-driven-development. Overrides: parallel Workers allowed, one per worktree; merge per `SKILL.md` § Worktrees.
 
 ## Reviewer prompt
-
-`NO MATERIAL OBJECTION` = PASS; anything else = findings to rule on.
 
 Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re-pin after:
 ```
@@ -40,7 +38,7 @@ Honesty rules — bind Reviewers AND Orchestrator; verbatim round 1, one-line re
 3. Shown wrong → concede at once, naming what convinced you; unexplained concession invalid.
 4. Never soften, drop, or downgrade a finding to end a round; never add one to look useful.
 5. Every accept/reject = one line of why.
-6. Re-review the target itself, not the round message: confirm accepted fixes actually landed before `NO MATERIAL OBJECTION`.
+6. Re-review the target itself, not the round message: confirm accepted fixes actually landed before `PASS`.
 ```
 
 ## Triage — every round, every claim
@@ -56,7 +54,7 @@ Only verified P0–P2 get fixed.
 
 1. Round 1 — all reviewers on v1. Triage, fix P0–P2. Merge → v2 once; never concurrent versions.
 2. Round 2 — resume each thread with the round-2 template on v2: confirm fixes landed, report new P0–P2. Triage, fix → v3; nobody reviews those fixes.
-Done = nothing to fix, or round 2. Big job → human go/no-go → execute.
+Done = nothing to fix, or round-2 fixes landed. Big job → human go/no-go → execute.
 Executable target → one real run per round beats a reviewer.
 
 ## Templates
@@ -69,7 +67,7 @@ Number every finding. Do not edit any file.
 Round 2:
 ```
 <target> is now v2. Your #<ids> accepted. #<ids> rejected: <one line each>. Honesty rules still bind.
-Re-review v2: confirm fixes landed; new P0–P2 only, same format; verdict `NO MATERIAL OBJECTION` if none.
+Re-review v2: confirm fixes landed; new P0–P2 only, same format; `PASS` if none.
 ```
 
 ## Hard rules
