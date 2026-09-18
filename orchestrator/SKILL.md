@@ -29,12 +29,12 @@ BANNED: Sonnet 5 (worse value), Haiku 4.5.
 | Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Fable 5.1 | Orchestrator | Max | 53 | Max | Judgment only, never labor. |
-| Cursor CLI `--model cursor-grok-4.6-medium-fast` | Worker - CLI (Default) | Free | 43 | 67% | § Cursor CLI |
+| Grok Build `-m grok-4.6 --effort medium` | Worker - CLI (Default) | Flat sub | 43 | 67% | 500k ctx. § Grok Build CLI |
 | Workflow `model:'opus', effort:'medium'` | Worker - Workflow | Low | 45 | 69% | § Dispatch Mechanics |
 | Workflow `model:'opus', effort:'high'` | Escalated | Low | 48 | 73% | § Dispatch Mechanics |
 | Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | § Dispatch Mechanics |
 | Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. § Dispatch Mechanics |
-| Cursor CLI `--model cursor-grok-4.6-xhigh-fast` | Debate Reviewer 1 | Free | 44 | 67% | § Cursor CLI |
+| Grok Build `-m grok-4.6 --effort xhigh` | Debate Reviewer 1 | Flat sub | 44 | 67% | 500k ctx. § Grok Build CLI |
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Debate Reviewer 2 | High | 50 | 73% | `codex-cli.md` |
 
 ## Dispatch Mechanics
@@ -47,7 +47,7 @@ Workflow subagents:
 
 ### CLI Jobs (shared contract)
 
-Per-CLI specifics: § Cursor CLI below, `codex-cli.md` (`grok-cli.md`, `codebuddy-cli.md` parked — never dispatch). Read only the one you dispatch to.
+Per-CLI specifics: § Grok Build CLI below, `codex-cli.md` (`cursor-cli.md`, `codebuddy-cli.md` parked — never dispatch). Read only the one you dispatch to.
 
 Runner shape:
 - Launch + watch: § Fleet Dispatch. dispatch.sh does `exec </dev/null`, `cd <workdir>`, `.pid`, log, `EXIT=`. JOBS command = one line: CLI call; answer → `.final.txt`; `exit $rc` (`rc=$?` after CLI) so `EXIT=` = CLI exit.
@@ -73,31 +73,32 @@ Follow-ups:
 - Resume: CLI's resume flag + id from the log, same cwd, delta only.
 - Cancel: kill job tree, children first: `k(){ for c in $(pgrep -P "$1"); do k "$c"; done; kill "$1"; }; k $(cat <TMP_PATH>/<job>.pid)`; verify `ps`. `TaskStop` stops only the relay.
 
-### Cursor CLI
+### Grok Build CLI
 
 JOBS command (one line, no single quotes — JOBS is single-quoted):
 
 ```sh
-cursor-agent -p --force --trust --output-format stream-json --model <slug> "$(cat <TMP_PATH>/<job>.prompt)"; rc=$?; grep -a \"type\":\"result\" <TMP_PATH>/<job>.log | tail -1 | jq -r .result > <TMP_PATH>/<job>.final.txt; exit $rc
+grok -p "$(cat <TMP_PATH>/<job>.prompt)" -m grok-4.6 --effort <medium|xhigh> --always-approve --output-format streaming-messages-json; rc=$?; grep -a \"type\":\"result\" <TMP_PATH>/<job>.log | tail -1 | jq -r \".structured_output // .result\" > <TMP_PATH>/<job>.final.txt; exit $rc
 ```
 
-Files: log = NDJSON; resume id = first `"session_id"` in log. Success also needs last result line `"is_error":false`.
+Files: log = NDJSON; resume id = first `"session_id"` in log.
 
 Flags:
-- `--model cursor-grok-4.6-medium-fast` (worker, task reviewer) or `cursor-grok-4.6-xhigh-fast` (debate/judgment reviewer); every other slug BANNED. Ladder: `cursor-agent --list-models | grep grok`.
-- `--force`: REQUIRED, else headless shell/edits blocked. Deny rules in `~/.cursor/cli-config.json` still win.
-- `--trust`: skips workspace-trust prompt. `--approve-mcps` only if the job needs MCP servers.
-- `--mode ask` = read-only; `--mode plan` = plan-only.
-- Worktree edits: `cd` in, or `--add-dir <dir>`.
-- No schema or image flag.
-- `-w/--worktree`, `--workspace` BANNED.
+- `-m grok-4.6` + `--effort` EVERY dispatch: `medium` = worker, task reviewer; `xhigh` = debate/judgment reviewer. Every other slug BANNED. Ladder: `grok models`.
+- `--always-approve`: REQUIRED, else headless shell/edits blocked. Deny rules + hooks still win.
+- `--sandbox read-only` for analysis-only jobs; default `off` — writes anywhere, no extra-dir flag needed.
+- `--json-schema '<inline JSON>'` (string, not file) → `structured_output` in result line.
+- `--prompt-file <path>` for long prompts.
+- `--max-turns <N>` for runaway risk (`stopReason: max_turn_requests`).
+- 500k context — no chunking below that.
+- `--cwd`, `-w/--worktree` BANNED.
 
 Prompts:
-- Fan-out = `Task` tool (built-in Explore/Bash/Browser, custom `.cursor/agents/*.md`; parallel when several calls share one message). Remind: "Use Task subagents in parallel to make the task faster".
-- Superpowers: `~/.cursor/skills/using-superpowers/SKILL.md`.
+- Fan-out = `spawn_subagent` (`general-purpose|explore|plan`, depth 1, own context). Remind: "Use subagents in parallel to make the task faster".
+- Superpowers: `~/.grok/installed-plugins/superpowers-5993746a/skills/using-superpowers/SKILL.md`.
 
 Follow-ups:
-- Resume: `--resume <session_id>`; `--continue` = latest.
+- Resume: `-r <session_id>`, same `-m`/`--effort`/`--sandbox` (differing refused).
 
 ### Fleet Dispatch & Watcher Protocol
 
@@ -152,8 +153,8 @@ Never substitute one reviewer for another. Reviewer reads its prompt file by pat
 
 | Reviewer | Question | When | Model |
 |---|---|---|---|
-| SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Cursor CLI `cursor-grok-4.6-medium-fast --mode ask` |
-| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, after all merges, before push | Same SDD rule, one tier up: Opus `effort:'high'` / Cursor `cursor-grok-4.6-xhigh-fast --mode ask` |
+| SDD `~/.codex/plugins/cache/openai-curated-remote/superpowers/6.3.0/skills/subagent-driven-development/task-reviewer-prompt.md` | Did the worker do exactly what was asked, well-built? Diff + brief + report only. | every worker result | Different family, same tier: grok-written → Workflow `model:'opus', effort:'medium'`; Opus-written → Grok Build `--effort medium --sandbox read-only` |
+| `judgment-reviewer.md` | Does the code actually work across files, state, errors, time? | once, after all merges, before push | Same SDD rule, one tier up: Opus `effort:'high'` / Grok Build `--effort xhigh --sandbox read-only` |
 | `adversarial-reviewer.md` | Should this exist; strongest reasons it fails? Universal (code, plans, writing, decisions). | `debate.md` | per `debate.md` |
 
 ## Best Among Workers

@@ -19,10 +19,10 @@
 #   sh update-clis.sh weekly yes|no
 
 CLIS=$(cat <<'EOF'
-cursor-agent :: SKILL.md#Cursor CLI :: cursor-agent update :: cursor-agent --help :: cursor-agent --list-models
+cursor-agent :: cursor-cli.md :: cursor-agent update :: cursor-agent --help :: cursor-agent --list-models
 codex :: codex-cli.md :: codex update :: codex exec --help; codex exec resume --help; codex exec review --help :: jq -r '.models[].slug' ~/.codex/models_cache.json :: gh release list -R openai/codex --exclude-pre-releases -L 30 --json tagName -q '.[].tagName' | grep '^rust-v' | while read t; do [ "$t" = "rust-v${OLD##* }" ] && break; echo "## $t"; gh release view "$t" -R openai/codex --json body -q .body | grep -E '^- ' | grep -viE '^- #[0-9]'; done
 codebuddy :: codebuddy-cli.md :: codebuddy update :: codebuddy --help :: codebuddy --help | grep -o 'Currently supported: ([^)]*)' :: awk -v o="$OLD" '/^## \[[0-9]/{if(index($0,o))exit; p=1} p' "$(npm root -g)/@tencent-ai/codebuddy-code/CHANGELOG.md"
-grok :: grok-cli.md :: grok update :: grok --help :: grok models | grep -oE 'grok-[0-9.]+' | sort -u
+grok :: SKILL.md#Grok Build CLI :: grok update :: grok --help :: grok models | grep -oE 'grok-[0-9.]+' | sort -u
 EOF
 )
 

@@ -7,7 +7,7 @@ Claude Code skill: an expensive model orchestrates, cheaper models execute. The 
 - `SKILL.md` — delegation gates, model roster, dispatch mechanics, worktree/git protocol, reviewers, debugging rules.
 - `debate.md` — adversarial reviewer debate: automatic on spec + plan for jobs over an hour; user-triggered on any target (e.g. the last commit).
 - `adversarial-reviewer.md`, `judgment-reviewer.md` — reviewer prompts, read by path.
-- `codex-cli.md` — per-CLI runner and flags (Cursor lives in `SKILL.md`; `grok-cli.md`, `codebuddy-cli.md` parked).
+- `codex-cli.md` — per-CLI runner and flags (Grok Build lives in `SKILL.md`; `cursor-cli.md`, `codebuddy-cli.md` parked).
 - `dispatch.sh`, `watcher.sh` — fleet launcher and per-job watcher.
 - `update-clis.sh` — update CLIs, diff help and models, flag doc drift. `sync-rules.sh` — copy the master AGENTS.md to each CLI's rules file.
 
