@@ -29,12 +29,12 @@ BANNED: Sonnet 5 (worse value), Haiku 4.5.
 | Harness & Model | Role | Cost | Intelligence | Notes |
 | --- | --- | --- | --- | --- |
 | Fable 5.1 | Orchestrator | Max | 53 | Judgment only, never labor. |
-| Grok Build `-m grok-4.7-build-fast --effort medium` | Worker - CLI (Default) | Low | 45 | 500k ctx. § Grok Build CLI |
+| Grok Build `-m grok-4.7-build-fast --effort medium` | Worker - CLI (Default) | Low | 45 | § Grok Build CLI |
 | Workflow Opus 5.5 `model:'opus', effort:'medium'` | Worker - Workflow | Low | 51 | § Dispatch Mechanics |
 | Workflow Opus 5.5 `model:'opus', effort:'high'` | Escalated | Low | 54 | § Dispatch Mechanics |
 | Workflow Opus 5.5 `model:'opus', effort:'low'` | Scout | Low | 42 | § Dispatch Mechanics |
 | Workflow Opus 5.5 `model:'opus', effort:'xhigh'` | Designer | Low | 56 | Best design taste. § Dispatch Mechanics |
-| Grok Build `-m grok-4.7-build-fast --effort xhigh` | Debate Reviewer 1 | Low | 46 | 500k ctx. § Grok Build CLI |
+| Grok Build `-m grok-4.7-build-fast --effort xhigh` | Debate Reviewer 1 | Low | 46 | § Grok Build CLI |
 | Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Debate Reviewer 2 | High | 50 | `codex-cli.md` |
 
 ## Dispatch Mechanics

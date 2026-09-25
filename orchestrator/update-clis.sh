@@ -7,7 +7,9 @@
 # Drift = backticked --flag in the CLI's doc region no longer in its help.
 #
 # Progress: timestamped '[HH:MM:SS] cli: step' lines + live updater output. Slow (network).
-# Agent: run in background → log file; Monitor/tail, relay each step to user.
+# Agent: ONE Monitor running the script itself (not tail -f, which never exits), relay each step:
+#   sh update-clis.sh 2>&1 | tee <log> | grep --line-buffered -E '^\[|FAILED|VERSION|DRIFT'
+#   Script exit = watch ends. Last line '[..] all done'.
 #
 # AGENT PROCEDURE (after running):
 # 1. `weekly` unset → ask once "Auto-run weekly? yes/no", store via `weekly <answer>`; yes → create_scheduled_task id `update-clis`, cron `0 9 * * 1`, prompt "update the CLIs".
@@ -69,4 +71,5 @@ printf '%s\n' "$CLIS" | while IFS= read -r line; do
   [ -n "$chlog" ] && [ "$OLD" != "$NEW" ] && { log "$cli: fetching changelog"; echo "CHANGELOG:"; OLD="$OLD" NEW="$NEW" sh -c "$chlog" 2>&1 | head -80; }
   log "$cli: done in $(( $(date +%s) - s ))s"
 done
+log "all done"
 exit 0
