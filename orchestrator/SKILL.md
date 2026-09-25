@@ -26,16 +26,16 @@ Decision gates, in order:
 90% normal implementation → Worker; 10% hard (intricate design, subtle correctness) → Escalated; mission-critical, expensive-if-wrong, irreversible → § Best Among Workers. Front-end design → Designer.
 BANNED: Sonnet 5 (worse value), Haiku 4.5.
 
-| Harness & Model | Role | Cost | Intelligence | DeepSWE | Notes |
-| --- | --- | --- | --- | --- | --- |
-| Fable 5.1 | Orchestrator | Max | 53 | Max | Judgment only, never labor. |
-| Grok Build `-m grok-4.6 --effort medium` | Worker - CLI (Default) | Flat sub | 43 | 67% | 500k ctx. § Grok Build CLI |
-| Workflow `model:'opus', effort:'medium'` | Worker - Workflow | Low | 45 | 69% | § Dispatch Mechanics |
-| Workflow `model:'opus', effort:'high'` | Escalated | Low | 48 | 73% | § Dispatch Mechanics |
-| Workflow `model:'opus', effort:'low'` | Scout | Low | 40 | 58% | § Dispatch Mechanics |
-| Workflow `model:'opus', effort:'xhigh'` | Designer | Low | 50 | 73% | Best design taste. § Dispatch Mechanics |
-| Grok Build `-m grok-4.6 --effort xhigh` | Debate Reviewer 1 | Flat sub | 44 | 67% | 500k ctx. § Grok Build CLI |
-| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Debate Reviewer 2 | High | 50 | 73% | `codex-cli.md` |
+| Harness & Model | Role | Cost | Intelligence | Notes |
+| --- | --- | --- | --- | --- |
+| Fable 5.1 | Orchestrator | Max | 53 | Judgment only, never labor. |
+| Grok Build `-m grok-4.7-build-fast --effort medium` | Worker - CLI (Default) | Low | 45 | 500k ctx. § Grok Build CLI |
+| Workflow Opus 5.5 `model:'opus', effort:'medium'` | Worker - Workflow | Low | 51 | § Dispatch Mechanics |
+| Workflow Opus 5.5 `model:'opus', effort:'high'` | Escalated | Low | 54 | § Dispatch Mechanics |
+| Workflow Opus 5.5 `model:'opus', effort:'low'` | Scout | Low | 42 | § Dispatch Mechanics |
+| Workflow Opus 5.5 `model:'opus', effort:'xhigh'` | Designer | Low | 56 | Best design taste. § Dispatch Mechanics |
+| Grok Build `-m grok-4.7-build-fast --effort xhigh` | Debate Reviewer 1 | Low | 46 | 500k ctx. § Grok Build CLI |
+| Codex CLI `-m gpt-6-astra -c model_reasoning_effort=medium` | Debate Reviewer 2 | High | 50 | `codex-cli.md` |
 
 ## Dispatch Mechanics
 
@@ -78,13 +78,13 @@ Follow-ups:
 JOBS command (one line, no single quotes — JOBS is single-quoted):
 
 ```sh
-grok -p "$(cat <TMP_PATH>/<job>.prompt)" -m grok-4.6 --effort <medium|xhigh> --always-approve --output-format streaming-messages-json; rc=$?; grep -a \"type\":\"result\" <TMP_PATH>/<job>.log | tail -1 | jq -r \".structured_output // .result\" > <TMP_PATH>/<job>.final.txt; exit $rc
+grok -p "$(cat <TMP_PATH>/<job>.prompt)" -m grok-4.7-build-fast --effort <medium|xhigh> --always-approve --output-format streaming-messages-json; rc=$?; grep -a \"type\":\"result\" <TMP_PATH>/<job>.log | tail -1 | jq -r \".structured_output // .result\" > <TMP_PATH>/<job>.final.txt; exit $rc
 ```
 
 Files: log = NDJSON; resume id = first `"session_id"` in log.
 
 Flags:
-- `-m grok-4.6` + `--effort` EVERY dispatch: `medium` = worker, task reviewer; `xhigh` = debate/judgment reviewer. Every other slug BANNED. Ladder: `grok models`.
+- `-m grok-4.7-build-fast` + `--effort` EVERY dispatch: `medium` = worker, task reviewer; `xhigh` = debate/judgment reviewer. Every other slug BANNED. Ladder: `grok models`.
 - `--always-approve`: REQUIRED, else headless shell/edits blocked. Deny rules + hooks still win.
 - `--sandbox read-only` for analysis-only jobs; default `off` — writes anywhere, no extra-dir flag needed.
 - `--json-schema '<inline JSON>'` (string, not file) → `structured_output` in result line.
